@@ -1,0 +1,73 @@
+/* SimUI Cards — the Minimalist × Apple-Home material, ported from the simUI panel.
+   Each card renders in its own shadow root, so tokens live on :host and read HA's
+   theme variables (with UI-Lovelace-Minimalist-style fallbacks for a standalone look).
+   CSS custom properties inherit THROUGH the shadow boundary, so HA's theme still tints
+   the card; everything else is scoped + can't leak into HA's frontend. */
+:host {
+  --bg: var(--card-background-color, #1d1d1d);
+  --surface: var(--ha-card-background, var(--card-background-color, #1d1d1d));
+  --surface-2: #262626;
+  --text: var(--primary-text-color, #e9eaec);
+  --muted: var(--secondary-text-color, #9a9ca1);
+  --faint: var(--divider-color, rgba(255, 255, 255, 0.1));
+  --accent: var(--primary-color, #89b3f8);
+  --warm: #fcd663;   /* soft yellow — lights / on */
+  --cool: #89b3f8;   /* soft blue — cooling / active */
+  --up: #80c994;     /* soft green — good / secure */
+  --down: #f18b82;   /* soft coral — alert */
+  --warn: #fcd663;   /* soft amber — attention */
+  --r-surface: 20px;
+  --bezel: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+  --shadow-hover: 0 5px 14px 0 rgba(0, 0, 0, 0.26);
+  --tint-bg: 12%;
+
+  display: block;
+}
+:host * { box-sizing: border-box; }
+
+/* ── The drag-to-set tile (lights / covers / fans) — the tile IS the slider ──────
+   A barely-there soft-colour wash on a round icon disc, floating on a soft shadow;
+   drag anywhere to set, tap the disc to toggle, tap the body for more-info. */
+.simui-slidertile {
+  --slider-tint: var(--warm);
+  --slider-glow: color-mix(in srgb, var(--slider-tint), #ffffff 18%);
+  position: relative; display: flex; min-height: 92px; padding: 0; overflow: hidden;
+  border-radius: var(--r-surface); background: var(--surface);
+  box-shadow: var(--bezel); cursor: pointer;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  color: var(--text);
+}
+.simui-slidertile.is-on { background: color-mix(in srgb, var(--slider-tint) var(--tint-bg), var(--surface)); }
+.simui-slidertile.is-dragging { box-shadow: var(--shadow-hover); }
+.simui-slidertile.is-unavailable { opacity: 0.4; cursor: default; touch-action: auto; }
+.simui-slidertile:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); outline-offset: 1px; }
+
+.simui-slidertile-fill {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+  background: linear-gradient(to top, color-mix(in srgb, var(--slider-glow) 70%, transparent), color-mix(in srgb, var(--slider-glow) 18%, transparent));
+  opacity: 0.06; pointer-events: none;
+  transition: height 0.04s linear, opacity 0.2s ease;
+}
+.simui-slidertile.is-on .simui-slidertile-fill { opacity: 0.09; }
+.simui-slidertile.is-dragging .simui-slidertile-fill { opacity: 0.16; }
+
+.simui-slidertile-body { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; width: 100%; padding: 12px; }
+.simui-slidertile-head { display: flex; align-items: center; gap: 8px; }
+.simui-slidertile-ic {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 34px; height: 34px; padding: 0; border: none; border-radius: 50%;
+  background: color-mix(in srgb, var(--text) 7%, transparent); color: var(--muted);
+  cursor: pointer; transition: color 0.18s ease, background 0.18s ease;
+}
+.simui-slidertile-ic.on { color: var(--slider-tint); background: color-mix(in srgb, var(--slider-tint) 20%, transparent); }
+.simui-slidertile-ic:hover { background: color-mix(in srgb, var(--slider-tint) 30%, transparent); }
+.simui-slidertile-pct { margin-left: auto; font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+.simui-slidertile:not(.is-on) .simui-slidertile-pct { font-size: 13px; font-weight: 500; color: var(--muted); }
+.simui-slidertile-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.simui-slidertile:not(.is-on) .simui-slidertile-name { color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .simui-slidertile, .simui-slidertile-fill, .simui-slidertile-ic { transition: none; }
+}
