@@ -1,73 +1,145 @@
-/* SimUI Cards — the Minimalist × Apple-Home material, ported from the simUI panel.
-   Each card renders in its own shadow root, so tokens live on :host and read HA's
-   theme variables (with UI-Lovelace-Minimalist-style fallbacks for a standalone look).
-   CSS custom properties inherit THROUGH the shadow boundary, so HA's theme still tints
-   the card; everything else is scoped + can't leak into HA's frontend. */
+/* SimUI Cards — the UI-Lovelace-Minimalist material, faithfully.
+   Each card renders in its own shadow root. Colour tokens are RGB *triplets* (not hex) so
+   a tint can be used at any alpha — `rgb(var(--warm))` for solid, `rgba(var(--warm), .2)`
+   for the icon-cell wash — exactly like ULM's `rgba(var(--color-yellow), …)`. Each token
+   inherits the user's ULM theme variable when present (so an installed Minimalist theme
+   recolours the cards for free) and falls back to ULM's own dark-mode value otherwise.
+   CSS custom properties cross the shadow boundary, so the theme still reaches us; nothing
+   we declare leaks back out. */
 :host {
-  --bg: var(--card-background-color, #1d1d1d);
   --surface: var(--ha-card-background, var(--card-background-color, #1d1d1d));
-  --surface-2: #262626;
-  --text: var(--primary-text-color, #e9eaec);
-  --muted: var(--secondary-text-color, #9a9ca1);
-  --faint: var(--divider-color, rgba(255, 255, 255, 0.1));
-  --accent: var(--primary-color, #89b3f8);
-  --warm: #fcd663;   /* soft yellow — lights / on */
-  --cool: #89b3f8;   /* soft blue — cooling / active */
-  --up: #80c994;     /* soft green — good / secure */
-  --down: #f18b82;   /* soft coral — alert */
-  --warn: #fcd663;   /* soft amber — attention */
-  --r-surface: 20px;
-  --bezel: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+  --text: var(--primary-text-color, #dddddd);
+
+  /* state colours — RGB triplets, ULM dark-mode palette */
+  --theme: var(--color-theme, 221, 221, 221);   /* the dim base: off icons / cells */
+  --warm: var(--color-yellow, 252, 214, 99);     /* lights / on */
+  --cool: var(--color-blue, 137, 179, 248);      /* cooling / active */
+  --up: var(--color-green, 128, 201, 148);       /* good / secure */
+  --down: var(--color-red, 241, 139, 130);       /* alert / unavailable */
+  --grey: var(--color-grey, 187, 187, 187);
+
+  /* ULM geometry */
+  --r-surface: var(--border-radius, 20px);
+  --bezel: var(--box-shadow, 0 2px 4px 0 rgba(0, 0, 0, 0.16));
   --shadow-hover: 0 5px 14px 0 rgba(0, 0, 0, 0.26);
-  --tint-bg: 12%;
 
   display: block;
 }
 :host * { box-sizing: border-box; }
 
-/* ── The drag-to-set tile (lights / covers / fans) — the tile IS the slider ──────
-   A barely-there soft-colour wash on a round icon disc, floating on a soft shadow;
-   drag anywhere to set, tap the disc to toggle, tap the body for more-info. */
-.simui-slidertile {
-  --slider-tint: var(--warm);
-  --slider-glow: color-mix(in srgb, var(--slider-tint), #ffffff 18%);
-  position: relative; display: flex; min-height: 92px; padding: 0; overflow: hidden;
-  border-radius: var(--r-surface); background: var(--surface);
-  box-shadow: var(--bezel); cursor: pointer;
-  touch-action: none; user-select: none; -webkit-user-select: none;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+/* ── The Minimalist entity tile ───────────────────────────────────────────────────
+   ULM's signature card: a 42px icon disc on the left, the name + a dim state line
+   stacked to its right, on a flat dark surface with a soft drop shadow. The COLOUR
+   lives in the icon disc (cell wash at .2, icon at full), not the whole card — that's
+   the read that makes it feel Minimalist rather than a tinted tile. */
+.simui-tile {
+  --tile-tint: var(--warm);
+  position: relative;
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-areas: 'ic name' 'ic state';
+  grid-template-rows: auto auto;
+  align-items: center;
+  align-content: center;
+  column-gap: 12px;
+  padding: 12px;
+  border-radius: var(--r-surface);
+  background: var(--surface);
+  box-shadow: var(--bezel);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
   font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   color: var(--text);
 }
-.simui-slidertile.is-on { background: color-mix(in srgb, var(--slider-tint) var(--tint-bg), var(--surface)); }
-.simui-slidertile.is-dragging { box-shadow: var(--shadow-hover); }
-.simui-slidertile.is-unavailable { opacity: 0.4; cursor: default; touch-action: auto; }
-.simui-slidertile:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); outline-offset: 1px; }
-
-.simui-slidertile-fill {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 0;
-  background: linear-gradient(to top, color-mix(in srgb, var(--slider-glow) 70%, transparent), color-mix(in srgb, var(--slider-glow) 18%, transparent));
-  opacity: 0.06; pointer-events: none;
-  transition: height 0.04s linear, opacity 0.2s ease;
+.simui-tile.is-dragging {
+  background: color-mix(in srgb, rgb(var(--tile-tint)) 8%, var(--surface));
+  box-shadow: var(--shadow-hover);
 }
-.simui-slidertile.is-on .simui-slidertile-fill { opacity: 0.09; }
-.simui-slidertile.is-dragging .simui-slidertile-fill { opacity: 0.16; }
-
-.simui-slidertile-body { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; width: 100%; padding: 12px; }
-.simui-slidertile-head { display: flex; align-items: center; gap: 8px; }
-.simui-slidertile-ic {
-  display: inline-flex; align-items: center; justify-content: center; flex: none;
-  width: 34px; height: 34px; padding: 0; border: none; border-radius: 50%;
-  background: color-mix(in srgb, var(--text) 7%, transparent); color: var(--muted);
-  cursor: pointer; transition: color 0.18s ease, background 0.18s ease;
+.simui-tile.is-unavailable { cursor: default; touch-action: auto; }
+.simui-tile.is-unavailable .simui-tile-name,
+.simui-tile.is-unavailable .simui-tile-state { opacity: 0.4; }
+.simui-tile:focus-visible {
+  outline: 2px solid rgba(var(--tile-tint), 0.6);
+  outline-offset: 1px;
 }
-.simui-slidertile-ic.on { color: var(--slider-tint); background: color-mix(in srgb, var(--slider-tint) 20%, transparent); }
-.simui-slidertile-ic:hover { background: color-mix(in srgb, var(--slider-tint) 30%, transparent); }
-.simui-slidertile-pct { margin-left: auto; font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-.simui-slidertile:not(.is-on) .simui-slidertile-pct { font-size: 13px; font-weight: 500; color: var(--muted); }
-.simui-slidertile-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.simui-slidertile:not(.is-on) .simui-slidertile-name { color: var(--muted); }
+
+/* the icon disc — the toggle, and where all the colour is */
+.simui-tile-ic {
+  grid-area: ic;
+  place-self: center;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--theme), 0.05);
+  color: rgba(var(--theme), 0.2);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+button.simui-tile-ic { font: inherit; }
+.simui-tile.is-on .simui-tile-ic {
+  background: rgba(var(--tile-tint), 0.2);
+  color: rgb(var(--tile-tint));
+}
+.simui-tile-ic:hover { background: rgba(var(--tile-tint), 0.28); }
+.simui-tile.is-unavailable .simui-tile-ic:hover { background: rgba(var(--theme), 0.05); }
+
+/* name (bold) + state line (dim), hugging the icon's vertical centre */
+.simui-tile-name {
+  grid-area: name;
+  align-self: end;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.simui-tile-state {
+  grid-area: state;
+  align-self: start;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text);
+  opacity: 0.4;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* our one density touch: a whisper-thin brightness underline (on + dimmable only),
+   inset clear of the rounded corners. Doubles as the slider track for the drag. */
+.simui-tile-fill {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 7px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(var(--theme), 0.08);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.simui-tile.is-on .simui-tile-fill { opacity: 1; }
+.simui-tile-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill, 0%);
+  border-radius: 999px;
+  background: rgba(var(--tile-tint), 0.85);
+  transition: width 0.05s linear;
+}
+.simui-tile.is-dragging .simui-tile-fill::after { background: rgb(var(--tile-tint)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .simui-slidertile, .simui-slidertile-fill, .simui-slidertile-ic { transition: none; }
+  .simui-tile, .simui-tile-ic, .simui-tile-fill, .simui-tile-fill::after { transition: none; }
 }

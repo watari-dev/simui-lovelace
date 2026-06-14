@@ -15,9 +15,10 @@ export interface LightCardConfig extends BaseCardConfig {
 }
 
 /**
- * SimUI light card — the Minimalist "tile is the slider": a round icon disc that
- * toggles in place, a drag anywhere to set brightness, a soft yellow wash + a faint
- * rising fill when on, and a tap on the body opens HA's native more-info dialog.
+ * SimUI light card — the UI-Lovelace-Minimalist entity tile: a round icon disc on the
+ * left (tap to toggle, it carries the state colour), the name + a dim state line stacked
+ * to its right, and a whisper-thin brightness underline when on. Drag anywhere sets
+ * brightness; tap the body / right-click opens HA's native more-info dialog.
  */
 export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const e = useEntity(config.entity);
@@ -49,21 +50,18 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   // (Rendered after every hook runs, so hook order stays stable as the entity is picked.)
   if (!config.entity) {
     return (
-      <div className="simui-slidertile is-unavailable" role="button" aria-label="Select a light" tabIndex={0}>
-        <span className="simui-slidertile-body">
-          <span className="simui-slidertile-head">
-            <span className="simui-slidertile-ic" aria-hidden="true">
-              <Lightbulb size={19} strokeWidth={2} />
-            </span>
-            <span className="simui-slidertile-pct">Set up</span>
-          </span>
-          <span className="simui-slidertile-name">Select a light</span>
+      <div className="simui-tile is-unavailable" role="button" aria-label="Select a light" tabIndex={0}>
+        <span className="simui-tile-ic" aria-hidden="true">
+          <Lightbulb size={20} strokeWidth={2} />
         </span>
+        <span className="simui-tile-name">Select a light</span>
+        <span className="simui-tile-state">Set up</span>
       </div>
     );
   }
 
   const value = dead ? 0 : drag.value;
+  const readout = dead ? 'Unavailable' : !hasBrightness ? (on ? 'On' : 'Off') : on ? `${value}%` : 'Off';
 
   const onBody = () => {
     if (drag.moved()) return; // a drag set brightness — don't also open the dialog
@@ -75,14 +73,13 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
     call('light', on ? 'turn_off' : 'turn_on', {}, { entity_id: config.entity });
   };
 
-  const fill: CSSProperties = drag.fillStyle;
   const cls =
-    `simui-slidertile${on ? ' is-on' : ''}${drag.dragging ? ' is-dragging' : ''}${dead ? ' is-unavailable' : ''}`;
+    `simui-tile${on ? ' is-on' : ''}${drag.dragging ? ' is-dragging' : ''}${dead ? ' is-unavailable' : ''}`;
 
   return (
     <div
       className={cls}
-      style={{ ['--slider-tint' as string]: tint } as CSSProperties}
+      style={{ ['--tile-tint' as string]: tint } as CSSProperties}
       role={settable ? 'slider' : 'button'}
       aria-label={settable ? `${name} brightness` : name}
       aria-valuemin={settable ? 0 : undefined}
@@ -97,24 +94,20 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
       }}
       {...(settable ? drag.handlers : {})}
     >
-      {settable && <span className="simui-slidertile-fill" style={fill} aria-hidden="true" />}
-      <span className="simui-slidertile-body">
-        <span className="simui-slidertile-head">
-          <button
-            type="button"
-            className={`simui-slidertile-ic${on ? ' on' : ''}`}
-            aria-label={on ? 'Turn off' : 'Turn on'}
-            onClick={onIcon}
-            onPointerDown={(ev) => ev.stopPropagation()}
-          >
-            <Lightbulb size={19} strokeWidth={2} {...(on ? { fill: 'currentColor', fillOpacity: 0.16 } : {})} />
-          </button>
-          <span className="simui-slidertile-pct">
-            {dead ? 'Unavailable' : !hasBrightness ? (on ? 'On' : 'Off') : on ? `${value}%` : 'Off'}
-          </span>
-        </span>
-        <span className="simui-slidertile-name" title={name}>{name}</span>
-      </span>
+      <button
+        type="button"
+        className="simui-tile-ic"
+        aria-label={on ? 'Turn off' : 'Turn on'}
+        onClick={onIcon}
+        onPointerDown={(ev) => ev.stopPropagation()}
+      >
+        <Lightbulb size={20} strokeWidth={2} {...(on ? { fill: 'currentColor', fillOpacity: 0.18 } : {})} />
+      </button>
+      <span className="simui-tile-name" title={name}>{name}</span>
+      <span className="simui-tile-state">{readout}</span>
+      {settable && on && (
+        <span className="simui-tile-fill" style={{ ['--fill' as string]: `${value}%` } as CSSProperties} aria-hidden="true" />
+      )}
     </div>
   );
 }

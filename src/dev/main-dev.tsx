@@ -56,7 +56,7 @@ function pushHass(): void {
 
 const app = document.getElementById('app')!;
 app.style.cssText =
-  'display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;padding:28px;max-width:980px;margin:0 auto;color-scheme:dark;';
+  'display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:28px;max-width:900px;margin:0 auto;color-scheme:dark;';
 
 for (const id of Object.keys(states)) {
   const el = document.createElement('simui-light-card') as CardEl;
