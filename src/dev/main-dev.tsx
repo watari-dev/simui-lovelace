@@ -7,10 +7,13 @@ import type { HassEntity, HomeAssistant, ServiceTarget } from '../core/types';
 type CardEl = HTMLElement & { hass: HomeAssistant; setConfig: (config: unknown) => void };
 
 const states: Record<string, HassEntity> = {
-  'light.ceiling': { entity_id: 'light.ceiling', state: 'on', attributes: { friendly_name: 'Living Room Ceiling', brightness: 204 } },
-  'light.kitchen': { entity_id: 'light.kitchen', state: 'on', attributes: { friendly_name: 'Kitchen Lights', brightness: 181 } },
-  'light.office': { entity_id: 'light.office', state: 'on', attributes: { friendly_name: 'Office RGBW Lights', brightness: 150 } },
-  'light.bed': { entity_id: 'light.bed', state: 'off', attributes: { friendly_name: 'Bed Light' } },
+  'light.ceiling': { entity_id: 'light.ceiling', state: 'on', attributes: { friendly_name: 'Living Room Ceiling', brightness: 204, supported_color_modes: ['brightness'] } },
+  'light.kitchen': { entity_id: 'light.kitchen', state: 'on', attributes: { friendly_name: 'Kitchen Lights', brightness: 181, color_temp_kelvin: 2700, supported_color_modes: ['color_temp'] } },
+  'light.office': { entity_id: 'light.office', state: 'on', attributes: { friendly_name: 'Office RGBW Lights', brightness: 150, rgb_color: [124, 96, 240], supported_color_modes: ['rgb'] } },
+  'light.lamp': { entity_id: 'light.lamp', state: 'on', attributes: { friendly_name: 'Desk Lamp', brightness: 120, rgb_color: [240, 138, 96], supported_color_modes: ['rgbw'] } },
+  'light.cool': { entity_id: 'light.cool', state: 'on', attributes: { friendly_name: 'Studio Daylight', brightness: 230, color_temp_kelvin: 5800, supported_color_modes: ['color_temp'] } },
+  'light.bed': { entity_id: 'light.bed', state: 'off', attributes: { friendly_name: 'Bed Light', supported_color_modes: ['brightness'] } },
+  'light.porch': { entity_id: 'light.porch', state: 'on', attributes: { friendly_name: 'Porch Light', supported_color_modes: ['onoff'] } },
   'light.garage': { entity_id: 'light.garage', state: 'unavailable', attributes: { friendly_name: 'Garage Strip' } },
 };
 
@@ -61,4 +64,11 @@ for (const id of Object.keys(states)) {
   app.appendChild(el);
   cards.push(el);
 }
+
+// An unconfigured card — the "Select a light" placeholder shown in the fresh editor.
+const placeholder = document.createElement('simui-light-card') as CardEl;
+placeholder.setConfig({ type: 'simui-light-card', entity: '' });
+app.appendChild(placeholder);
+cards.push(placeholder);
+
 pushHass();

@@ -13,7 +13,7 @@ barely-there active tint on a round icon disc.
 
 | Card | `type` | What it does |
 |------|--------|--------------|
-| Light | `custom:simui-light-card` | Tap the disc to toggle, drag anywhere to set brightness, tap the body for more-info. |
+| Light | `custom:simui-light-card` | Tap the disc to toggle, drag anywhere to set brightness, tap the body for more-info. Tints with the bulb's own colour; on/off-only lights just toggle. |
 
 _(More cards — climate, media, cover, lock, sensor/chart, status chips, energy flow —
 are on the way.)_
@@ -26,10 +26,14 @@ are on the way.)_
 
 ## Use
 
+Add it from the dashboard's **+ card** picker and configure it in the **visual editor**
+(pick a light, set a name, toggle colour tinting) — no YAML needed. Or in YAML:
+
 ```yaml
 type: custom:simui-light-card
 entity: light.living_room_ceiling
-name: Ceiling        # optional
+name: Ceiling            # optional — defaults to the light's name
+use_light_color: true    # optional — tile takes the bulb's colour (default); false ⇒ warm yellow
 ```
 
 ## Develop

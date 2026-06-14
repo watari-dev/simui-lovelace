@@ -2,6 +2,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { StrictMode, type ComponentType } from 'react';
 import { HassProvider } from './hass';
 import type { BaseCardConfig, HomeAssistant } from './types';
+import { defineCardEditor, type EditorSpec } from './card-editor';
 import styleText from '../styles.css?inline';
 
 export interface CardComponentProps<C extends BaseCardConfig = BaseCardConfig> {
@@ -9,10 +10,12 @@ export interface CardComponentProps<C extends BaseCardConfig = BaseCardConfig> {
 }
 
 interface DefineOptions<C extends BaseCardConfig> {
-  /** A starter config for the card picker preview. */
-  stubConfig?: () => Partial<C>;
+  /** A starter config for the card-picker preview (gets `hass` so it can auto-pick an entity). */
+  stubConfig?: (hass?: HomeAssistant) => Partial<C>;
   /** Throw on an invalid config (HA shows the message in the editor). */
   validate?: (config: C) => void;
+  /** A native `ha-form` visual editor (no YAML) — opened by Lovelace's "edit card". */
+  editor?: EditorSpec;
 }
 
 /**
@@ -26,6 +29,8 @@ export function defineCard<C extends BaseCardConfig>(
   Component: ComponentType<CardComponentProps<C>>,
   opts: DefineOptions<C> = {},
 ): void {
+  const editorTag = opts.editor ? defineCardEditor(tag, opts.editor) : undefined;
+
   class SimuiCard extends HTMLElement {
     private _root?: Root;
     private _hass?: HomeAssistant;
@@ -50,8 +55,12 @@ export function defineCard<C extends BaseCardConfig>(
       return 1;
     }
 
-    static getStubConfig(): Partial<C> & { type: string } {
-      return { type: tag, ...(opts.stubConfig?.() ?? {}) } as Partial<C> & { type: string };
+    static getStubConfig(hass?: HomeAssistant): Partial<C> & { type: string } {
+      return { type: tag, ...(opts.stubConfig?.(hass) ?? {}) } as Partial<C> & { type: string };
+    }
+
+    static getConfigElement(): HTMLElement | undefined {
+      return editorTag ? document.createElement(editorTag) : undefined;
     }
 
     connectedCallback(): void {

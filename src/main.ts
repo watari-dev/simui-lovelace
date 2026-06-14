@@ -3,9 +3,26 @@ import { LightCard, type LightCardConfig } from './cards/LightCard';
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
-  stubConfig: () => ({ entity: '' }),
-  validate: (c) => {
-    if (!c.entity) throw new Error('simui-light-card: "entity" is required');
+  // Auto-pick a light for the card-picker preview; the card itself shows a friendly
+  // "Select a light" placeholder until one is chosen (no throwing, graceful degradation).
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('light.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'light' } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'use_light_color', selector: { boolean: {} } },
+    ],
+    labels: {
+      entity: 'Light',
+      name: 'Name (optional)',
+      use_light_color: 'Tint with the bulb’s colour',
+    },
+    helpers: {
+      use_light_color: 'On: the tile takes the light’s live colour. Off: a calm warm yellow.',
+    },
+    defaults: { use_light_color: true },
   },
 });
 
