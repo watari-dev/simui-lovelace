@@ -9,6 +9,8 @@ The look is grounded in [UI-Lovelace-Minimalist](https://github.com/UI-Lovelace-
 soft pastel state colours, `#1d1d1d` cards floating on a soft shadow, 20px corners, a
 barely-there active tint on a round icon disc.
 
+![SimUI Cards — media, cover, lock, graph, and light tiles](docs/screenshot.png)
+
 ## Cards
 
 | Card | `type` | What it does |
