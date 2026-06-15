@@ -140,6 +140,16 @@ const app = document.getElementById('app')!;
 app.style.cssText =
   'display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:28px;max-width:900px;margin:0 auto;color-scheme:dark;';
 
+// chips card — a full-width status row at the top
+const chips = document.createElement('simui-chips-card') as CardEl;
+chips.style.gridColumn = '1 / -1';
+chips.setConfig({
+  type: 'simui-chips-card',
+  entities: ['light.ceiling', 'climate.living', 'sensor.temp', 'sensor.humidity', 'cover.living', 'lock.front', 'media_player.living', 'binary_sensor.motion', 'sensor.outdoor'],
+});
+app.appendChild(chips);
+cards.push(chips);
+
 // tag → which entities it renders, plus a trailing unconfigured placeholder.
 const layout: Array<[tag: string, entity: string]> = [
   ...Object.keys(states).filter((id) => id.startsWith('media_player.')).map((id) => ['simui-media-card', id] as [string, string]),

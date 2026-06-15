@@ -18,6 +18,9 @@ interface DefineOptions<C extends BaseCardConfig> {
   editor?: EditorSpec;
   /** Approx height in Lovelace grid units (~50px each) for masonry layout; default 1. */
   cardSize?: number;
+  /** Extra entity ids the card depends on (beyond `config.entity`) — so a multi-entity
+   *  card (chips, energy flow) re-renders when any of them change, not just config.entity. */
+  entities?: (config: C) => Array<string | undefined>;
 }
 
 /** Catches a render throw so one bad card shows an inline message instead of a permanently
@@ -75,11 +78,24 @@ export function defineCard<C extends BaseCardConfig>(
       const prev = this._hass;
       this._hass = hass;
       // HA pushes a new hass object for every state change in the home but preserves the
-      // state-object reference of entities that didn't change — so re-render only when our
-      // own entity actually changed (or on first paint), not on every unrelated push.
-      const id = this._config?.entity;
-      if (!this._root || !prev || (id != null && prev.states[id] !== hass.states[id])) {
+      // state-object reference of entities that didn't change — so re-render only when one
+      // of our watched entities actually changed (or on first paint / unknown deps).
+      if (!this._root || !prev || !this._config) {
         this._render();
+        return;
+      }
+      const ids = this._config.entity != null
+        ? [this._config.entity, ...(opts.entities?.(this._config) ?? [])]
+        : opts.entities?.(this._config) ?? [];
+      if (ids.length === 0) {
+        this._render(); // no declared deps → re-render on every push
+        return;
+      }
+      for (const id of ids) {
+        if (id && prev.states[id] !== hass.states[id]) {
+          this._render();
+          return;
+        }
       }
     }
     get hass(): HomeAssistant | undefined {

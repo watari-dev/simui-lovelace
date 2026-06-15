@@ -22,8 +22,9 @@ barely-there active tint on a round icon disc.
 | Cover | `custom:simui-cover-card` | A blinds/garage/shade tile — device-class icon, an "N% open" line, drag to set position, tap to open/close (or stop while moving). |
 | Lock | `custom:simui-lock-card` | A lock tile tinted by state (locked → green, unlocked → amber, jammed → coral). Tap to lock/unlock. |
 | Media | `custom:simui-media-card` | A media-player tile — album art (or a music disc), title + artist, and transport controls (prev / play-pause / next) gated by the player's features. |
+| Chips | `custom:simui-chips-card` | A wrapping row of compact status pills — icon + value, one per entity (lights on, temperature, locks, presence…). A glanceable status strip for the top of a dashboard. |
 
-_(More cards — status chips, energy flow — are on the way.)_
+_(More cards — energy flow — are on the way.)_
 
 ## Install (HACS)
 
@@ -82,6 +83,16 @@ name: Front Door         # optional
 type: custom:simui-media-card
 entity: media_player.living_room_speaker
 name: Speaker            # optional
+```
+
+```yaml
+type: custom:simui-chips-card
+entities:
+  - light.living_room
+  - climate.living_room
+  - sensor.outdoor_temperature
+  - lock.front_door
+  - binary_sensor.motion
 ```
 
 ## Develop

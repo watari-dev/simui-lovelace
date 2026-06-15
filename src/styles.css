@@ -280,3 +280,47 @@ button.simui-tile-ic:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0
 @media (prefers-reduced-motion: reduce) {
   .simui-media-btn { transition: none; }
 }
+
+/* ── Status chips ──────────────────────────────────────────────────────────────
+   A wrapping row of compact pills (ULM chip: 36px tall, soft shadow) — icon tinted
+   by state + a short value/state label. The card itself is transparent. */
+.simui-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+.simui-chips-empty {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.4;
+}
+.simui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px 0 10px;
+  border: none;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--bezel);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.simui-chip:hover { background: color-mix(in srgb, rgb(var(--tile-tint)) 8%, var(--surface)); }
+.simui-chip:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
+.simui-chip.is-unavailable { opacity: 0.5; }
+.simui-chip-ic { display: grid; place-items: center; flex: none; color: rgba(var(--theme), 0.45); }
+.simui-chip.is-on .simui-chip-ic { color: rgb(var(--tile-tint)); }
+.simui-chip-label { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+@media (prefers-reduced-motion: reduce) {
+  .simui-chip { transition: none; }
+}

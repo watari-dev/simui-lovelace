@@ -27,6 +27,11 @@ export function useEntity(entityId: string | undefined): HassEntity | undefined 
   return entityId ? hass.states[entityId] : undefined;
 }
 
+/** The raw hass object — for cards that read many entities (chips, energy flow). */
+export function useHass(): HomeAssistant {
+  return useCtx().hass;
+}
+
 export function useCallService() {
   const { hass } = useCtx();
   return (domain: string, service: string, data?: Record<string, unknown>, target?: ServiceTarget) =>

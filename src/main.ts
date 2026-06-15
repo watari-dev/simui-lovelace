@@ -6,6 +6,7 @@ import { GraphCard, type GraphCardConfig } from './cards/GraphCard';
 import { CoverCard, type CoverCardConfig } from './cards/CoverCard';
 import { LockCard, type LockCardConfig } from './cards/LockCard';
 import { MediaCard, type MediaCardConfig } from './cards/MediaCard';
+import { ChipsCard, type ChipsCardConfig } from './cards/ChipsCard';
 
 const COLOR_OPTIONS = [
   { value: 'warm', label: 'Amber' },
@@ -138,6 +139,19 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
   },
 });
 
+defineCard<ChipsCardConfig>('simui-chips-card', ChipsCard, {
+  stubConfig: (hass) => {
+    if (!hass) return { entities: [] };
+    const pick = (p: string) => Object.keys(hass.states).find((id) => id.startsWith(p));
+    return { entities: [pick('light.'), pick('sensor.'), pick('lock.')].filter((x): x is string => !!x) };
+  },
+  entities: (c) => c.entities ?? [],
+  editor: {
+    schema: [{ name: 'entities', selector: { entity: { multiple: true } } }],
+    labels: { entities: 'Entities' },
+  },
+});
+
 // ── Card-picker / HACS metadata ───────────────────────────────────────────────
 interface CustomCard {
   type: string;
@@ -195,6 +209,13 @@ w.customCards.push(
     type: 'simui-media-card',
     name: 'SimUI Media',
     description: 'A minimalist media tile — art, title/artist, and transport controls.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-chips-card',
+    name: 'SimUI Chips',
+    description: 'A row of compact status chips — icon + value, one per entity.',
     preview: true,
     documentationURL: 'https://github.com/watari-dev/simui-lovelace',
   },
