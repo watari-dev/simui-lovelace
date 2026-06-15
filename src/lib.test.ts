@@ -80,9 +80,15 @@ describe('climate-util', () => {
   it('readClimate heating + single setpoint is settable', () => {
     const v = readClimate(ent('heat', { hvac_action: 'heating', temperature: 21, current_temperature: 19, min_temp: 7, max_temp: 30 }), false);
     expect(v.on).toBe(true);
-    expect(v.tint).toBe('var(--down)');
+    expect(v.tint).toBe('var(--heat)'); // heating uses --heat; --down stays reserved for alert/fault
     expect(v.settable).toBe(true);
     expect(v.target).toBe(21);
+  });
+
+  it('readClimate cooling tint is --cool', () => {
+    const v = readClimate(ent('cool', { hvac_action: 'cooling', temperature: 22, current_temperature: 25 }), false);
+    expect(v.tint).toBe('var(--cool)');
+    expect(v.target).toBe(22);
   });
 
   it('readClimate dual-setpoint is not drag-settable', () => {

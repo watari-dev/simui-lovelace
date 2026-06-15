@@ -24,9 +24,9 @@ export interface EnergyFlowCardConfig extends BaseCardConfig {
  * Solar / Grid / Battery on a cross around the Home hub, each connected by a wire that
  * colours + animates only when power crosses it. Ported from the simUI panel.
  *
- * Sign conventions (Tesla idiom): solar magnitude → Home; grid >0 = importing (coral),
- * <0 = exporting (green); battery >0 = discharging (green), <0 = charging (blue). Flip
- * with grid_invert / battery_invert.
+ * Sign conventions (Tesla idiom): solar magnitude → Home; grid >0 = importing (blue, the
+ * grid's own colour — importing is routine, not a fault), <0 = exporting (green); battery
+ * >0 = discharging (green), <0 = charging (blue). Flip with grid_invert / battery_invert.
  */
 type Role = 'solar' | 'load' | 'grid' | 'battery';
 
@@ -142,7 +142,8 @@ export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConf
   if (config.grid) {
     const importing = grid.kw * gridSign > 0;
     const active = !grid.dead && Math.abs(grid.kw) >= ACTIVE_KW;
-    edges.push({ role: 'grid', dir: active ? (importing ? 'in' : 'out') : 'idle', active, accent: importing ? 'var(--down)' : 'var(--up)', dead: grid.dead });
+    // Importing is routine, not an alert: use the grid's own blue (not coral --down).
+    edges.push({ role: 'grid', dir: active ? (importing ? 'in' : 'out') : 'idle', active, accent: importing ? 'var(--cool)' : 'var(--up)', dead: grid.dead });
   }
   if (config.battery) {
     const discharging = battery.kw * batterySign > 0;

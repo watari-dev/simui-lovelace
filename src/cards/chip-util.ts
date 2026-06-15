@@ -38,7 +38,8 @@ export function chipView(entity: HassEntity | undefined, entityId: string): Chip
     case 'switch':
     case 'input_boolean': {
       const on = state === 'on';
-      return { Icon: on ? ToggleRight : Power, tint: 'var(--up)', active: on, dead, label: on ? 'On' : 'Off' };
+      // A controllable thing that's ON is amber (like lights) — keep --up for good/secure/charging.
+      return { Icon: on ? ToggleRight : Power, tint: 'var(--warm)', active: on, dead, label: on ? 'On' : 'Off' };
     }
     case 'fan': {
       const on = state === 'on';
@@ -80,7 +81,7 @@ export function chipView(entity: HassEntity | undefined, entityId: string): Chip
     default: {
       const unit = a.unit_of_measurement as string | undefined;
       const active = !dead && state !== 'off' && state !== 'closed';
-      return { Icon: sensorIcon(dc), tint: 'var(--cool)', active, dead, label: dead ? '—' : unit ? formatSensor(entity) : prettyState(state) };
+      return { Icon: sensorIcon(dc), tint: sensorTint(dc), active, dead, label: dead ? '—' : unit ? formatSensor(entity) : prettyState(state) };
     }
   }
 }

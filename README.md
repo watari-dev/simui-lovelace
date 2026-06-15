@@ -16,7 +16,7 @@ barely-there active tint on a round icon disc.
 | Card | `type` | What it does |
 |------|--------|--------------|
 | Light | `custom:simui-light-card` | Tap the disc to toggle, drag anywhere to set brightness, tap the body for more-info. Tints with the bulb's own colour; on/off-only lights just toggle. |
-| Climate | `custom:simui-climate-card` | Drag the tile to set the target temperature, tap the disc to toggle on/off. Icon + tint follow the HVAC action (heating → red, cooling → blue). Shows `current → target`. |
+| Climate | `custom:simui-climate-card` | Drag the tile to set the target temperature, tap the disc to toggle on/off. Icon + tint follow the HVAC action (heating → orange, cooling → blue). Shows `current → target`. |
 | Sensor | `custom:simui-sensor-card` | The value, big, with a device-class icon + accent (temperature, humidity, power, pressure, battery, air quality…). Tap for more-info. |
 | Graph | `custom:simui-graph-card` | A sensor history chart — thin line + soft gradient fill, gridlines, a crosshair value readout, a range toggle (1h/12h/24h/7d) and min/avg/max. Custom-rendered SVG, no chart library. |
 | Cover | `custom:simui-cover-card` | A blinds/garage/shade tile — device-class icon, an "N% open" line, drag to set position, tap to open/close (or stop while moving). |

@@ -77,10 +77,13 @@ export function HistoryChart({ points, width, height, hours, unit, fill, lineWid
     const tSpan = tMax - tMin || 1;
     let vMin = Infinity;
     let vMax = -Infinity;
+    let vSum = 0;
     for (const p of data) {
       if (p.v < vMin) vMin = p.v;
       if (p.v > vMax) vMax = p.v;
+      vSum += p.v;
     }
+    const vAvg = vSum / data.length;
     const raw = vMax - vMin;
     const pad = raw === 0 ? Math.max(1, Math.abs(vMax) * 0.1) : raw * 0.14;
     const lo = vMin - pad;
@@ -95,12 +98,12 @@ export function HistoryChart({ points, width, height, hours, unit, fill, lineWid
     const baseY = PAD_TOP + plotH;
     const area = `${line} L${xy[xy.length - 1][0].toFixed(1)} ${baseY} L${xy[0][0].toFixed(1)} ${baseY} Z`;
 
-    return { data, xy, line, area, baseY, tMin, tMax, vMin, vMax };
+    return { data, xy, line, area, baseY, tMin, tMax, vMin, vMax, vAvg, y };
   }, [points, width, height]);
 
   if (!view) return null;
 
-  const { data, xy, line, area, baseY, tMin, tMax, vMin, vMax } = view;
+  const { data, xy, line, area, baseY, tMin, tMax, vMin, vMax, vAvg, y } = view;
   const last = xy[xy.length - 1];
 
   const nearestByX = (px: number): number => {
@@ -158,18 +161,21 @@ export function HistoryChart({ points, width, height, hours, unit, fill, lineWid
           </linearGradient>
         </defs>
 
-        {[0, 0.5, 1].map((f) => {
-          const gy = PAD_TOP + f * (baseY - PAD_TOP);
-          return <line key={f} className="simui-graph-grid" x1={PAD_X} y1={gy} x2={width - PAD_X} y2={gy} />;
+        {/* gridlines coincide with the data extremes + the average, so the scale lines
+            sit on the max/avg/min readouts instead of floating at fixed plot fractions */}
+        {[vMax, vAvg, vMin].map((v, i) => {
+          const gy = y(v);
+          return <line key={i} className="simui-graph-grid" x1={PAD_X} y1={gy} x2={width - PAD_X} y2={gy} />;
         })}
 
         {fill && <path className="simui-graph-area" d={area} fill={`url(#${gradId})`} />}
         <path className="simui-graph-line" d={line} style={{ strokeWidth: lineWidth }} />
 
-        <circle className="simui-graph-end" cx={last[0]} cy={last[1]} r={2.6} />
+        <circle className="simui-graph-end" cx={last[0]} cy={last[1]} r={3} />
 
-        <text className="simui-graph-axis" x={width - PAD_X - 2} y={PAD_TOP + 3} textAnchor="end">{fmtVal(vMax, locale)}</text>
-        <text className="simui-graph-axis" x={width - PAD_X - 2} y={baseY - 2} textAnchor="end">{fmtVal(vMin, locale)}</text>
+        {/* value labels sit on their gridlines (the real max/min), not the plot edges */}
+        <text className="simui-graph-axis" x={width - PAD_X - 2} y={y(vMax) - 3} textAnchor="end">{fmtVal(vMax, locale)}</text>
+        <text className="simui-graph-axis" x={width - PAD_X - 2} y={y(vMin) + 10} textAnchor="end">{fmtVal(vMin, locale)}</text>
 
         {ticks.map((tk) => (
           <text

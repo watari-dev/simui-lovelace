@@ -68,7 +68,9 @@ export function sensorIcon(deviceClass?: string): LucideIcon {
 }
 
 export function sensorTint(deviceClass?: string): string {
-  return (deviceClass && TINTS[deviceClass]) || 'var(--cool)';
+  // Unknown device class → neutral grey, not blue: an unclassified sensor isn't "active",
+  // and a --cool fallback floods mixed dashboards and dilutes blue's "cooling/active" meaning.
+  return (deviceClass && TINTS[deviceClass]) || 'var(--grey)';
 }
 
 /** The value line — number + unit (no space before `%`/`°`), or a prettified text state.

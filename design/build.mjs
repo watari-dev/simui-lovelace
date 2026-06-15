@@ -86,11 +86,12 @@ for (const c of components) {
 
 // ── Foundations: the colour + geometry tokens every card is built from ───────
 const TOKENS = [
-  ['warm', '252, 214, 99', 'Amber', 'lights · on'],
-  ['cool', '137, 179, 248', 'Blue', 'cooling · active · covers'],
+  ['warm', '252, 214, 99', 'Amber', 'lights · switches · on'],
+  ['cool', '137, 179, 248', 'Blue', 'cooling · fan · covers · media'],
   ['up', '128, 201, 148', 'Green', 'good · secure · charging'],
-  ['down', '241, 139, 130', 'Coral', 'heating · alert · unavailable'],
-  ['grey', '187, 187, 187', 'Grey', 'neutral'],
+  ['heat', '240, 150, 90', 'Orange', 'heating'],
+  ['down', '241, 139, 130', 'Coral', 'alert · fault · unavailable'],
+  ['grey', '187, 187, 187', 'Grey', 'neutral · at-rest'],
   ['theme', '127, 127, 127', 'Theme dim', 'off icons · gridlines'],
 ];
 const SURFACES = [
@@ -119,12 +120,12 @@ const tokensBody = [
 const tokensHtml = page({
   group: 'Foundations',
   name: 'Colour & geometry',
-  subtitle: '6 state tokens · surfaces · radius',
+  subtitle: '7 state tokens · surfaces · radius',
   desc: 'The palette and geometry every card is built from. State colours are RGB triplets — used solid as rgb(var(--x)) and as a soft wash with rgba(var(--x), α), so one token serves both the full-strength icon and its 20%-alpha disc. Each token inherits the user’s UI-Lovelace-Minimalist theme variable when present, and falls back to these dark-mode values otherwise.',
   gridCss: 'grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));',
   extraCss: tokExtraCss,
   body: tokensBody,
-  afterGrid: `<p class="geo"><b>Geometry.</b> Card radius <code>20px</code> · soft bezel <code>0 2px 4px rgba(0,0,0,.16)</code> · icon disc <code>42px</code> circle (colour wash at <code>.2</code>, glyph at full) · chip <code>36px</code> pill · tabular figures for every value.</p>`,
+  afterGrid: `<p class="geo"><b>Geometry.</b> Card radius <code>20px</code> · soft bezel <code>0 2px 4px rgba(0,0,0,.16)</code> · icon disc <code>36px</code> circle (colour wash at <code>.2</code>, glyph at full) · chip <code>36px</code> pill · tabular figures for every value.</p>`,
 });
 writeFileSync(join(here, 'foundations/tokens.html'), tokensHtml);
 written.unshift({ path: 'foundations/tokens.html', name: 'Colour & geometry', group: 'Foundations' });

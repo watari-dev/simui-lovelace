@@ -21,10 +21,11 @@ function num(v: unknown): number | null {
   return typeof v === 'number' && !Number.isNaN(v) ? v : null;
 }
 
-// ULM colours the icon by hvac_action: heating → red, cooling → blue. We extend the read
-// to idle/dry/fan and fall back to the hvac_mode when the entity reports no action.
+// ULM colours the icon by hvac_action: heating → warm orange, cooling → blue. We extend the
+// read to idle/dry/fan and fall back to the hvac_mode when the entity reports no action.
+// Heating uses --heat (not --down) so coral stays reserved for alert/fault/unavailable.
 const TINTS: Record<string, string> = {
-  heating: 'var(--down)', heat: 'var(--down)',
+  heating: 'var(--heat)', heat: 'var(--heat)',
   cooling: 'var(--cool)', cool: 'var(--cool)', fan: 'var(--cool)', fan_only: 'var(--cool)',
   drying: 'var(--warm)', dry: 'var(--warm)',
   idle: 'var(--up)', auto: 'var(--up)', heat_cool: 'var(--up)',
