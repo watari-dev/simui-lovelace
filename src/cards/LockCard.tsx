@@ -1,6 +1,6 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
@@ -30,6 +30,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
 
   const dead = isUnavailable(e);
   const state = e?.state ?? 'unknown';
@@ -39,7 +40,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
   const Icon = locked || state === 'locking' || state === 'jammed' ? Lock : LockOpen;
 
   const transitioning = state === 'locking' || state === 'unlocking';
-  const open = () => config.entity && moreInfo(config.entity);
+  const open = () => config.entity && runTap(config.tap_action, config.entity);
   const onIcon = (ev: MouseEvent) => {
     ev.stopPropagation();
     if (dead || !config.entity || transitioning) return; // don't fight an in-progress lock/unlock
@@ -76,7 +77,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
       }}
       onContextMenu={(ev) => {
         ev.preventDefault();
-        open();
+        if (config.entity) moreInfo(config.entity);
       }}
     >
       <button

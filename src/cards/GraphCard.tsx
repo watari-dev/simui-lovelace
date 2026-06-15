@@ -1,5 +1,5 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useState } from 'react';
-import { useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
+import { useActions, useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
 import { useSize } from '../hooks/useSize';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
@@ -27,6 +27,7 @@ const rangeLabel = (h: number): string => (h < 48 ? `${h}h` : h % 24 === 0 ? `${
 export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   const e = useEntity(config.entity);
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
   const locale = useLanguage();
   const dead = isUnavailable(e);
 
@@ -75,7 +76,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
     ? `${name} history, last ${rangeLabel(hours)}, ${fmt(stats.min)} to ${fmt(stats.max)}${unit ? ` ${unit}` : ''}`
     : `${name} history`;
 
-  const open = () => config.entity && moreInfo(config.entity);
+  const open = () => config.entity && runTap(config.tap_action, config.entity);
 
   return (
     <div className="simui-graph" style={{ ['--tile-tint' as string]: tint } as CSSProperties}>
@@ -93,7 +94,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
         }}
         onContextMenu={(ev) => {
           ev.preventDefault();
-          open();
+          if (config.entity) moreInfo(config.entity);
         }}
       >
         <span className="simui-graph-ic" aria-hidden="true">

@@ -1,6 +1,6 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
 import { Music, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, prettyState, supportsFeature } from '../util';
@@ -21,6 +21,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
 
   const dead = isUnavailable(e);
   const name = config.name ?? (e ? friendly(e) : config.entity);
@@ -42,7 +43,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
     if (config.entity) call('media_player', service, {}, { entity_id: config.entity });
   };
   const stopKey = (ev: ReactKeyboardEvent) => ev.stopPropagation();
-  const open = () => config.entity && moreInfo(config.entity);
+  const open = () => config.entity && runTap(config.tap_action, config.entity);
 
   const cls = `simui-media${v.active ? ' is-on' : ''}${dead || !config.entity ? ' is-unavailable' : ''}`;
 
@@ -62,7 +63,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
       }}
       onContextMenu={(ev) => {
         ev.preventDefault();
-        open();
+        if (config.entity) moreInfo(config.entity);
       }}
     >
       <span

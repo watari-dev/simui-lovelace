@@ -194,6 +194,12 @@ iconOverride.setConfig({ type: 'simui-light-card', entity: 'light.kitchen', name
 app.appendChild(iconOverride);
 cards.push(iconOverride);
 
+// a card whose tap_action toggles a different entity (verifies the action system)
+const tapTest = document.createElement('simui-sensor-card') as CardEl;
+tapTest.setConfig({ type: 'simui-sensor-card', entity: 'sensor.power', name: 'Tap → toggle Bed', tap_action: { action: 'toggle', entity: 'light.bed' } });
+app.appendChild(tapTest);
+cards.push(tapTest);
+
 // tag → which entities it renders, plus a trailing unconfigured placeholder.
 const layout: Array<[tag: string, entity: string]> = [
   ...Object.keys(states).filter((id) => id.startsWith('media_player.')).map((id) => ['simui-media-card', id] as [string, string]),

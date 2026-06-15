@@ -1,6 +1,6 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
 import { Lightbulb } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
@@ -25,6 +25,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
 
   const dead = isUnavailable(e);
   const on = !!e && e.state === 'on';
@@ -65,8 +66,8 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const readout = dead ? 'Unavailable' : !hasBrightness ? (on ? 'On' : 'Off') : on ? `${value}%` : 'Off';
 
   const onBody = () => {
-    if (drag.moved()) return; // a drag set brightness — don't also open the dialog
-    moreInfo(config.entity);
+    if (drag.moved()) return; // a drag set brightness — don't also fire the tap action
+    runTap(config.tap_action, config.entity);
   };
   const onIcon = (ev: MouseEvent) => {
     ev.stopPropagation();

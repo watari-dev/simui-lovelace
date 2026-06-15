@@ -45,8 +45,18 @@ use_light_color: true    # optional — tile takes the bulb's colour (default); 
 ```
 
 > Every tile card (light, climate, sensor, graph, cover, lock, media) accepts an optional
-> `icon:` (an `mdi:…` name) to override the automatic device-class icon, and an `icon` field
-> in its visual editor.
+> `icon:` (an `mdi:…` name) to override the automatic device-class icon, and a `tap_action:`
+> to configure what tapping the body does (`more-info` default, or `toggle` / `navigate` /
+> `url` / `perform-action` / `none`). Both are in the visual editor; right-click always opens
+> more-info. The icon disc keeps its own toggle, and drag still sets brightness/temperature/position.
+>
+> ```yaml
+> type: custom:simui-sensor-card
+> entity: sensor.washing_machine
+> tap_action:
+>   action: navigate
+>   navigation_path: /lovelace/laundry
+> ```
 
 ```yaml
 type: custom:simui-climate-card

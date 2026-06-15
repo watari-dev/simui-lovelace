@@ -26,12 +26,14 @@ export interface HomeAssistant {
 }
 
 /** Base config shared by every SimUI card. `icon` overrides the device-class default
- *  (an `mdi:…` name, rendered via HA's <ha-icon>); omit to keep the automatic icon. */
+ *  (an `mdi:…` name, rendered via HA's <ha-icon>); omit to keep the automatic icon.
+ *  `tap_action` configures what tapping the card body does (default: more-info). */
 export interface BaseCardConfig {
   type: string;
   entity?: string;
   name?: string;
   icon?: string;
+  tap_action?: import('./actions').ActionConfig;
 }
 
 /** The Lovelace custom-card contract (the subset SimUI cards implement). */

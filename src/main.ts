@@ -29,11 +29,12 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'light' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'use_light_color', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
-      name: 'Name (optional)', icon: 'Icon (optional)',
+      name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
       use_light_color: 'Tint with the bulb’s colour',
     },
     helpers: {
@@ -52,8 +53,9 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'climate' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
   },
 });
 
@@ -66,9 +68,10 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
       { name: 'entity', required: true, selector: { entity: { domain: ['sensor', 'binary_sensor'] } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
     ],
-    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', color: 'Accent colour' },
+    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour' },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
   },
 });
@@ -86,6 +89,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'sensor' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
       { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
       { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.5, mode: 'slider' } } },
@@ -93,7 +97,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
     ],
     labels: {
       entity: 'Sensor',
-      name: 'Name (optional)', icon: 'Icon (optional)',
+      name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
       color: 'Accent colour',
       hours: 'Default range (hours)',
       line_width: 'Line width',
@@ -114,8 +118,9 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'cover' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
   },
 });
 
@@ -128,8 +133,9 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'lock' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
     ],
-    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)' },
+    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
   },
 });
 
@@ -142,8 +148,9 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'media_player' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
     ],
-    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)' },
+    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
   },
 });
 

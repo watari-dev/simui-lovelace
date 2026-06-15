@@ -1,5 +1,5 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { domainOf, friendly, isActivateKey, isUnavailable } from '../util';
@@ -20,6 +20,7 @@ export interface SensorCardConfig extends BaseCardConfig {
 export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const e = useEntity(config.entity);
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
 
   const dead = isUnavailable(e);
   const dc = e?.attributes.device_class as string | undefined;
@@ -32,7 +33,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   // (so an `off` motion/contact sensor isn't tinted as if it were tripped).
   const binary = !!e && domainOf(e.entity_id) === 'binary_sensor';
   const active = !dead && !!e && (!binary || e.state === 'on');
-  const open = () => config.entity && moreInfo(config.entity);
+  const open = () => config.entity && runTap(config.tap_action, config.entity);
 
   const cls = `simui-tile${active ? ' is-on' : ''}${dead ? ' is-unavailable' : ''}`;
 

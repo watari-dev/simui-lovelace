@@ -1,6 +1,6 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
 import { Blinds } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
@@ -22,6 +22,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
 
   const dead = isUnavailable(e);
   const v = readCover(e, dead);
@@ -54,7 +55,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
 
   const onBody = () => {
     if (drag.moved()) return;
-    moreInfo(config.entity);
+    runTap(config.tap_action, config.entity);
   };
   const closed = v.position != null ? v.position === 0 : e?.state === 'closed';
   const onIcon = (ev: MouseEvent) => {

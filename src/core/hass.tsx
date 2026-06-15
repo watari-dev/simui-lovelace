@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { HomeAssistant, HassEntity, ServiceTarget } from './types';
+import { runAction, type ActionConfig } from './actions';
 
 interface HassCtxValue {
   hass: HomeAssistant;
@@ -47,6 +48,13 @@ export function useLanguage(): string | undefined {
 export function useMoreInfo() {
   const { host } = useCtx();
   return (entityId: string) => fireEvent(host, 'hass-more-info', { entityId });
+}
+
+/** Run a configured tap/hold action (more-info / toggle / navigate / url / service / none),
+ *  bound to this card's host + hass. */
+export function useActions() {
+  const { hass, host } = useCtx();
+  return (action: ActionConfig | undefined, defaultEntity?: string) => runAction(host, hass, action, defaultEntity);
 }
 
 export function fireEvent(node: HTMLElement, type: string, detail: unknown): void {
