@@ -131,6 +131,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
         aria-label={v.on ? 'Turn off' : 'Turn on'}
         onClick={onIcon}
         onPointerDown={(ev) => ev.stopPropagation()}
+        onKeyDown={(ev) => ev.stopPropagation()}
       >
         <Icon size={20} strokeWidth={2} />
       </button>

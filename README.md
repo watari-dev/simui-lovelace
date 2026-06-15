@@ -17,8 +17,11 @@ barely-there active tint on a round icon disc.
 | Climate | `custom:simui-climate-card` | Drag the tile to set the target temperature, tap the disc to toggle on/off. Icon + tint follow the HVAC action (heating → red, cooling → blue). Shows `current → target`. |
 | Sensor | `custom:simui-sensor-card` | The value, big, with a device-class icon + accent (temperature, humidity, power, pressure, battery, air quality…). Tap for more-info. |
 | Graph | `custom:simui-graph-card` | A sensor history chart — thin line + soft gradient fill, gridlines, a crosshair value readout, a range toggle (1h/12h/24h/7d) and min/avg/max. Custom-rendered SVG, no chart library. |
+| Cover | `custom:simui-cover-card` | A blinds/garage/shade tile — device-class icon, an "N% open" line, drag to set position, tap to open/close (or stop while moving). |
+| Lock | `custom:simui-lock-card` | A lock tile tinted by state (locked → green, unlocked → amber, jammed → coral). Tap to lock/unlock. |
+| Media | `custom:simui-media-card` | A media-player tile — album art (or a music disc), title + artist, and transport controls (prev / play-pause / next) gated by the player's features. |
 
-_(More cards — media, cover, lock, status chips, energy flow — are on the way.)_
+_(More cards — status chips, energy flow — are on the way.)_
 
 ## Install (HACS)
 
@@ -59,6 +62,24 @@ hours: 24                # optional — default range (default 24)
 ranges: [1, 12, 24, 168] # optional — range-toggle options in hours; [] hides the toggle
 fill: true               # optional — area fill under the line (default true)
 color: warm              # optional — warm | cool | up | down | grey (default: from device class)
+```
+
+```yaml
+type: custom:simui-cover-card
+entity: cover.living_room_blinds
+name: Blinds             # optional
+```
+
+```yaml
+type: custom:simui-lock-card
+entity: lock.front_door
+name: Front Door         # optional
+```
+
+```yaml
+type: custom:simui-media-card
+entity: media_player.living_room_speaker
+name: Speaker            # optional
 ```
 
 ## Develop

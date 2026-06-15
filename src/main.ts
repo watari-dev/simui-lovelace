@@ -3,6 +3,9 @@ import { LightCard, type LightCardConfig } from './cards/LightCard';
 import { ClimateCard, type ClimateCardConfig } from './cards/ClimateCard';
 import { SensorCard, type SensorCardConfig } from './cards/SensorCard';
 import { GraphCard, type GraphCardConfig } from './cards/GraphCard';
+import { CoverCard, type CoverCardConfig } from './cards/CoverCard';
+import { LockCard, type LockCardConfig } from './cards/LockCard';
+import { MediaCard, type MediaCardConfig } from './cards/MediaCard';
 
 const COLOR_OPTIONS = [
   { value: 'warm', label: 'Amber' },
@@ -93,6 +96,45 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
   },
 });
 
+defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('cover.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'cover' } } },
+      { name: 'name', selector: { text: {} } },
+    ],
+    labels: { entity: 'Cover', name: 'Name (optional)' },
+  },
+});
+
+defineCard<LockCardConfig>('simui-lock-card', LockCard, {
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('lock.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'lock' } } },
+      { name: 'name', selector: { text: {} } },
+    ],
+    labels: { entity: 'Lock', name: 'Name (optional)' },
+  },
+});
+
+defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('media_player.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'media_player' } } },
+      { name: 'name', selector: { text: {} } },
+    ],
+    labels: { entity: 'Media player', name: 'Name (optional)' },
+  },
+});
+
 // ── Card-picker / HACS metadata ───────────────────────────────────────────────
 interface CustomCard {
   type: string;
@@ -129,6 +171,27 @@ w.customCards.push(
     type: 'simui-graph-card',
     name: 'SimUI Graph',
     description: 'A sensor history chart — thin line, soft fill, crosshair readout, range toggle.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-cover-card',
+    name: 'SimUI Cover',
+    description: 'A minimalist cover tile — drag to set position, tap to open/close/stop.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-lock-card',
+    name: 'SimUI Lock',
+    description: 'A minimalist lock tile — tap to lock/unlock, tinted by state.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-media-card',
+    name: 'SimUI Media',
+    description: 'A minimalist media tile — art, title/artist, and transport controls.',
     preview: true,
     documentationURL: 'https://github.com/watari-dev/simui-lovelace',
   },

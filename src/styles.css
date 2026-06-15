@@ -212,3 +212,64 @@ button.simui-tile-ic { font: inherit; }
 .simui-graph-range.on { opacity: 1; background: rgba(var(--tile-tint), 0.16); color: rgb(var(--tile-tint)); }
 .simui-graph-stats { display: flex; gap: 11px; font-size: 11px; opacity: 0.55; font-variant-numeric: tabular-nums; }
 .simui-graph-stats b { font-weight: 700; }
+
+/* ── Media player card ─────────────────────────────────────────────────────────
+   ULM material: album art (or a music disc) + title/artist + transport controls. */
+.simui-media {
+  display: grid;
+  grid-template-columns: min-content minmax(0, 1fr) auto;
+  grid-template-areas: 'art body ctrl';
+  align-items: center;
+  column-gap: 12px;
+  padding: 12px;
+  border-radius: var(--r-surface);
+  background: var(--surface);
+  box-shadow: var(--bezel);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+.simui-media:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 1px; }
+.simui-media.is-unavailable .simui-media-title,
+.simui-media.is-unavailable .simui-media-sub { opacity: 0.4; }
+
+.simui-media-art {
+  grid-area: art;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(var(--theme), 0.05);
+  color: rgba(var(--theme), 0.2);
+}
+.simui-media.is-on .simui-media-art { background-color: rgba(var(--tile-tint), 0.2); color: rgb(var(--tile-tint)); }
+
+.simui-media-body { grid-area: body; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.simui-media-title { font-size: 14px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.simui-media-sub { font-size: 12px; font-weight: 600; opacity: 0.5; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.simui-media-ctrl { grid-area: ctrl; display: flex; align-items: center; gap: 1px; }
+.simui-media-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+.simui-media-btn:hover { opacity: 1; background: rgba(var(--theme), 0.08); }
+.simui-media-btn.primary { color: rgb(var(--tile-tint)); opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .simui-media-btn { transition: none; }
+}

@@ -116,6 +116,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
         aria-label={on ? 'Turn off' : 'Turn on'}
         onClick={onIcon}
         onPointerDown={(ev) => ev.stopPropagation()}
+        onKeyDown={(ev) => ev.stopPropagation()}
       >
         <Lightbulb size={20} strokeWidth={2} {...(on ? { fill: 'currentColor', fillOpacity: 0.18 } : {})} />
       </button>

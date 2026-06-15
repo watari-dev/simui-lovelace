@@ -35,6 +35,22 @@ const states: Record<string, HassEntity> = {
   'sensor.battery': { entity_id: 'sensor.battery', state: '87', attributes: { friendly_name: 'Front Door Battery', device_class: 'battery', unit_of_measurement: '%' } },
   'sensor.co2': { entity_id: 'sensor.co2', state: '612', attributes: { friendly_name: 'CO₂', device_class: 'carbon_dioxide', unit_of_measurement: 'ppm' } },
   'sensor.outdoor': { entity_id: 'sensor.outdoor', state: 'unavailable', attributes: { friendly_name: 'Outdoor Temperature', device_class: 'temperature', unit_of_measurement: '°C' } },
+
+  // covers (supported_features: open|close|set_position|stop = 1|2|4|8 = 15; garage has no set_position = 11)
+  'cover.living': { entity_id: 'cover.living', state: 'open', attributes: { friendly_name: 'Living Room Blinds', device_class: 'blind', current_position: 60, supported_features: 15 } },
+  'cover.bedroom': { entity_id: 'cover.bedroom', state: 'opening', attributes: { friendly_name: 'Bedroom Shade', device_class: 'shade', current_position: 40, supported_features: 15 } },
+  'cover.garage': { entity_id: 'cover.garage', state: 'closed', attributes: { friendly_name: 'Garage Door', device_class: 'garage', current_position: 0, supported_features: 11 } },
+  'cover.awning': { entity_id: 'cover.awning', state: 'open', attributes: { friendly_name: 'Patio Awning', device_class: 'awning', current_position: 50, supported_features: 4 } },
+
+  // locks
+  'lock.front': { entity_id: 'lock.front', state: 'locked', attributes: { friendly_name: 'Front Door' } },
+  'lock.back': { entity_id: 'lock.back', state: 'unlocked', attributes: { friendly_name: 'Back Door' } },
+  'lock.side': { entity_id: 'lock.side', state: 'jammed', attributes: { friendly_name: 'Side Gate' } },
+
+  // media players (supported_features: pause|prev|next|play = 1|16|32|16384 = 16433)
+  'media_player.living': { entity_id: 'media_player.living', state: 'playing', attributes: { friendly_name: 'Living Room Speaker', media_title: 'Redbone', media_artist: 'Childish Gambino', supported_features: 16433 } },
+  'media_player.kitchen': { entity_id: 'media_player.kitchen', state: 'paused', attributes: { friendly_name: 'Kitchen Display', media_title: 'The Daily', media_artist: 'The New York Times', supported_features: 16433 } },
+  'media_player.bedroom': { entity_id: 'media_player.bedroom', state: 'off', attributes: { friendly_name: 'Bedroom TV', supported_features: 16433 } },
 };
 
 const cards: CardEl[] = [];
@@ -96,6 +112,18 @@ function makeHass(): HomeAssistant {
         } else if (service === 'set_hvac_mode') {
           const mode = (data?.hvac_mode as string) ?? 'off';
           states[id] = { ...e, state: mode, attributes: { ...e.attributes, hvac_action: ACTION_FOR_MODE[mode] ?? 'idle' } };
+        } else if (service === 'lock' || service === 'unlock') {
+          states[id] = { ...e, state: service === 'lock' ? 'locked' : 'unlocked' };
+        } else if (service === 'open_cover' || service === 'close_cover') {
+          const opened = service === 'open_cover';
+          states[id] = { ...e, state: opened ? 'open' : 'closed', attributes: { ...e.attributes, current_position: opened ? 100 : 0 } };
+        } else if (service === 'stop_cover') {
+          states[id] = { ...e, state: ((e.attributes.current_position as number) ?? 0) > 0 ? 'open' : 'closed' };
+        } else if (service === 'set_cover_position') {
+          const p = (data?.position as number) ?? 0;
+          states[id] = { ...e, state: p === 0 ? 'closed' : 'open', attributes: { ...e.attributes, current_position: p } };
+        } else if (service === 'media_play_pause') {
+          states[id] = { ...e, state: e.state === 'playing' ? 'paused' : 'playing' };
         }
       }
       pushHass();
@@ -114,6 +142,12 @@ app.style.cssText =
 
 // tag → which entities it renders, plus a trailing unconfigured placeholder.
 const layout: Array<[tag: string, entity: string]> = [
+  ...Object.keys(states).filter((id) => id.startsWith('media_player.')).map((id) => ['simui-media-card', id] as [string, string]),
+  ['simui-media-card', ''],
+  ...Object.keys(states).filter((id) => id.startsWith('cover.')).map((id) => ['simui-cover-card', id] as [string, string]),
+  ['simui-cover-card', ''],
+  ...Object.keys(states).filter((id) => id.startsWith('lock.')).map((id) => ['simui-lock-card', id] as [string, string]),
+  ['simui-lock-card', ''],
   ['simui-graph-card', 'sensor.temp'],
   ['simui-graph-card', 'sensor.power'],
   ['simui-graph-card', ''],
