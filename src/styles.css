@@ -206,7 +206,7 @@ button.simui-tile-ic:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0
   white-space: nowrap;
   z-index: 2;
 }
-.simui-graph-tip-v { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.simui-graph-tip-v { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
 .simui-graph-tip-u { font-size: 11px; opacity: 0.6; margin-left: 1px; }
 .simui-graph-tip-t { font-size: 10px; opacity: 0.6; }
 
