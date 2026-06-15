@@ -1,10 +1,10 @@
-import { type CSSProperties, type MouseEvent } from 'react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isUnavailable } from '../util';
+import { friendly, isActivateKey, isUnavailable, stepKey } from '../util';
 import { lightHasBrightness, lightTint } from './light-color';
 
 export interface LightCardConfig extends BaseCardConfig {
@@ -72,6 +72,21 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
     if (dead) return;
     call('light', on ? 'turn_off' : 'turn_on', {}, { entity_id: config.entity });
   };
+  const onKeyDown = (ev: ReactKeyboardEvent) => {
+    if (settable) {
+      const next = stepKey(ev.key, value, 5, 0, 100); // 5% keyboard steps
+      if (next != null) {
+        ev.preventDefault();
+        if (next === 0) call('light', 'turn_off', {}, { entity_id: config.entity });
+        else call('light', 'turn_on', { brightness_pct: next }, { entity_id: config.entity });
+        return;
+      }
+    }
+    if (isActivateKey(ev.key)) {
+      ev.preventDefault();
+      moreInfo(config.entity);
+    }
+  };
 
   const cls =
     `simui-tile${on ? ' is-on' : ''}${drag.dragging ? ' is-dragging' : ''}${dead ? ' is-unavailable' : ''}`;
@@ -88,6 +103,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
       aria-valuetext={settable ? `${value}%` : undefined}
       tabIndex={0}
       onClick={onBody}
+      onKeyDown={onKeyDown}
       onContextMenu={(ev) => {
         ev.preventDefault();
         moreInfo(config.entity);

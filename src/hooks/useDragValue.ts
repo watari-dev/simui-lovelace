@@ -3,9 +3,10 @@ import { clamp } from '../util';
 
 /**
  * "The tile IS the slider." A pointer drag — horizontal OR vertical — anywhere over
- * the host maps to a 0–100 value with optimistic local state and a debounced commit.
- * Returns `{ value, dragging, moved, handlers, fillStyle }`. (Ported verbatim from the
- * simUI panel — it has no Home Assistant coupling.)
+ * the host maps to a value in [min, max] (default 0–100) with optimistic local state and
+ * a debounced commit. Returns `{ value, dragging, moved, handlers, fillStyle }`. (Ported
+ * from the simUI panel — no Home Assistant coupling; min/max added for non-percent ranges
+ * like a thermostat's target temperature.)
  */
 export interface DragValueOptions {
   value: number;
@@ -13,6 +14,9 @@ export interface DragValueOptions {
   axis?: 'vertical' | 'horizontal' | 'auto';
   commitMs?: number;
   step?: number;
+  /** Range the drag maps across. Defaults to a 0–100 percentage. */
+  min?: number;
+  max?: number;
   disabled?: boolean;
   threshold?: number;
 }
@@ -25,15 +29,15 @@ export interface DragValueResult {
   fillStyle: CSSProperties;
 }
 
-function snap(v: number, step: number): number {
-  if (step <= 0) return clamp(Math.round(v), 0, 100);
-  return clamp(Math.round(v / step) * step, 0, 100);
+function snap(v: number, step: number, min: number, max: number): number {
+  if (step <= 0) return clamp(Math.round(v), min, max);
+  return clamp(Math.round((v - min) / step) * step + min, min, max);
 }
 
 export function useDragValue(opts: DragValueOptions): DragValueResult {
-  const { value: external, onCommit, axis = 'auto', commitMs = 120, step = 1, disabled, threshold = 4 } = opts;
+  const { value: external, onCommit, axis = 'auto', commitMs = 120, step = 1, min = 0, max = 100, disabled, threshold = 4 } = opts;
 
-  const [value, setValue] = useState(() => snap(external, step));
+  const [value, setValue] = useState(() => snap(external, step, min, max));
   const [dragging, setDragging] = useState(false);
   const [lockedAxis, setLockedAxis] = useState<'vertical' | 'horizontal'>(axis === 'auto' ? 'vertical' : axis);
 
@@ -48,6 +52,7 @@ export function useDragValue(opts: DragValueOptions): DragValueResult {
   const pendingRef = useRef<number | null>(null);
 
   const lastCommitRef = useRef(0);
+  const committedRef = useRef<number | null>(null);
   const commitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
@@ -61,6 +66,7 @@ export function useDragValue(opts: DragValueOptions): DragValueResult {
       const v = pendingRef.current;
       pendingRef.current = null;
       lastCommitRef.current = Date.now();
+      committedRef.current = v;
       onCommitRef.current(v);
     }
   }, []);
@@ -78,10 +84,10 @@ export function useDragValue(opts: DragValueOptions): DragValueResult {
 
   useEffect(() => {
     if (draggingRef.current || pendingRef.current != null) return;
-    const next = snap(external, step);
+    const next = snap(external, step, min, max);
     valueRef.current = next;
     setValue(next);
-  }, [external, step]);
+  }, [external, step, min, max]);
 
   const apply = useCallback(() => {
     rafRef.current = null;
@@ -102,17 +108,17 @@ export function useDragValue(opts: DragValueOptions): DragValueResult {
 
     let raw: number;
     if (active === 'vertical') {
-      raw = rect.height > 0 ? ((rect.bottom - pt.y) / rect.height) * 100 : 0;
+      raw = rect.height > 0 ? min + ((rect.bottom - pt.y) / rect.height) * (max - min) : min;
     } else {
-      raw = rect.width > 0 ? ((pt.x - rect.left) / rect.width) * 100 : 0;
+      raw = rect.width > 0 ? min + ((pt.x - rect.left) / rect.width) * (max - min) : min;
     }
-    const next = snap(raw, step);
+    const next = snap(raw, step, min, max);
     if (next !== valueRef.current) {
       valueRef.current = next;
       setValue(next);
       scheduleCommit(next);
     }
-  }, [step, threshold, scheduleCommit]);
+  }, [step, min, max, threshold, scheduleCommit]);
 
   useEffect(() => {
     if (!dragging) return;
@@ -137,7 +143,12 @@ export function useDragValue(opts: DragValueOptions): DragValueResult {
         rafRef.current = null;
       }
       if (movedRef.current) {
-        if (pendingRef.current == null) pendingRef.current = valueRef.current;
+        apply(); // capture the release position synchronously (rAF may be throttled/coalesced)
+        // Only re-arm if there's an un-committed value — avoids a duplicate commit when the
+        // mid-drag debounce already sent the final value and the pointer didn't move since.
+        if (pendingRef.current == null && valueRef.current !== committedRef.current) {
+          pendingRef.current = valueRef.current;
+        }
         flushCommit();
       }
     };
@@ -176,7 +187,8 @@ export function useDragValue(opts: DragValueOptions): DragValueResult {
     [disabled, axis],
   );
 
-  const fillStyle: CSSProperties = lockedAxis === 'horizontal' ? { width: `${value}%` } : { height: `${value}%` };
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+  const fillStyle: CSSProperties = lockedAxis === 'horizontal' ? { width: `${pct}%` } : { height: `${pct}%` };
   const moved = useCallback(() => movedRef.current, []);
 
   return { value, dragging, moved, handlers: { onPointerDown }, fillStyle };

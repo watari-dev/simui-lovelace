@@ -102,6 +102,8 @@ button.simui-tile-ic { font: inherit; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* sensor cards put the value in the name slot — give it tabular figures */
+.simui-tile-value { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
 .simui-tile-state {
   grid-area: state;
   align-self: start;

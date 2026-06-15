@@ -14,9 +14,10 @@ barely-there active tint on a round icon disc.
 | Card | `type` | What it does |
 |------|--------|--------------|
 | Light | `custom:simui-light-card` | Tap the disc to toggle, drag anywhere to set brightness, tap the body for more-info. Tints with the bulb's own colour; on/off-only lights just toggle. |
+| Climate | `custom:simui-climate-card` | Drag the tile to set the target temperature, tap the disc to toggle on/off. Icon + tint follow the HVAC action (heating → red, cooling → blue). Shows `current → target`. |
+| Sensor | `custom:simui-sensor-card` | The value, big, with a device-class icon + accent (temperature, humidity, power, pressure, battery, air quality…). Tap for more-info. |
 
-_(More cards — climate, media, cover, lock, sensor/chart, status chips, energy flow —
-are on the way.)_
+_(More cards — media, cover, lock, chart, status chips, energy flow — are on the way.)_
 
 ## Install (HACS)
 
@@ -34,6 +35,19 @@ type: custom:simui-light-card
 entity: light.living_room_ceiling
 name: Ceiling            # optional — defaults to the light's name
 use_light_color: true    # optional — tile takes the bulb's colour (default); false ⇒ warm yellow
+```
+
+```yaml
+type: custom:simui-climate-card
+entity: climate.living_room
+name: Living Room        # optional
+```
+
+```yaml
+type: custom:simui-sensor-card
+entity: sensor.living_room_temperature
+name: Temperature        # optional
+color: warm              # optional — warm | cool | up | down | grey (default: from device class)
 ```
 
 ## Develop

@@ -1,5 +1,7 @@
 import { defineCard } from './core/react-card';
 import { LightCard, type LightCardConfig } from './cards/LightCard';
+import { ClimateCard, type ClimateCardConfig } from './cards/ClimateCard';
+import { SensorCard, type SensorCardConfig } from './cards/SensorCard';
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
@@ -26,6 +28,48 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
   },
 });
 
+defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('climate.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'climate' } } },
+      { name: 'name', selector: { text: {} } },
+    ],
+    labels: { entity: 'Thermostat', name: 'Name (optional)' },
+  },
+});
+
+defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('sensor.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: ['sensor', 'binary_sensor'] } } },
+      { name: 'name', selector: { text: {} } },
+      {
+        name: 'color',
+        selector: {
+          select: {
+            mode: 'dropdown',
+            options: [
+              { value: 'warm', label: 'Amber' },
+              { value: 'cool', label: 'Blue' },
+              { value: 'up', label: 'Green' },
+              { value: 'down', label: 'Coral' },
+              { value: 'grey', label: 'Grey' },
+            ],
+          },
+        },
+      },
+    ],
+    labels: { entity: 'Sensor', name: 'Name (optional)', color: 'Accent colour' },
+    helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
+  },
+});
+
 // ── Card-picker / HACS metadata ───────────────────────────────────────────────
 interface CustomCard {
   type: string;
@@ -36,13 +80,29 @@ interface CustomCard {
 }
 const w = window as unknown as { customCards?: CustomCard[] };
 w.customCards = w.customCards ?? [];
-w.customCards.push({
-  type: 'simui-light-card',
-  name: 'SimUI Light',
-  description: 'A minimalist light tile — tap to toggle, drag to set brightness.',
-  preview: true,
-  documentationURL: 'https://github.com/watari-dev/simui-lovelace',
-});
+w.customCards.push(
+  {
+    type: 'simui-light-card',
+    name: 'SimUI Light',
+    description: 'A minimalist light tile — tap to toggle, drag to set brightness.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-climate-card',
+    name: 'SimUI Climate',
+    description: 'A minimalist thermostat tile — drag to set temperature, tap to toggle.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-sensor-card',
+    name: 'SimUI Sensor',
+    description: 'A minimalist sensor tile — the value, big, with a device-class icon.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+);
 
 // eslint-disable-next-line no-console
 console.info(
