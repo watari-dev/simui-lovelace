@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { HomeAssistant, HassEntity, ServiceTarget } from './types';
 
 interface HassCtxValue {
@@ -40,4 +40,89 @@ export function useMoreInfo() {
 
 export function fireEvent(node: HTMLElement, type: string, detail: unknown): void {
   node.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true, cancelable: false }));
+}
+
+export interface HistoryPoint {
+  t: number; // epoch ms
+  v: number;
+}
+
+interface HistoryState {
+  points: HistoryPoint[];
+  loading: boolean;
+  error: string | null;
+}
+
+// HA's `history/history_during_period` returns, per entity, an array of state objects. With
+// minimal_response the first is full and the rest are compact: { s: state, lu: epoch-seconds }.
+function parseHistory(raw: unknown): HistoryPoint[] {
+  if (!Array.isArray(raw)) return [];
+  const out: HistoryPoint[] = [];
+  for (const e of raw as Record<string, unknown>[]) {
+    const s = (e.s ?? e.state) as string | number | undefined;
+    const lu = (e.lu ?? e.last_updated ?? e.last_changed) as string | number | undefined;
+    const v = Number(s);
+    if (lu == null || Number.isNaN(v)) continue;
+    const t = typeof lu === 'number' ? lu * 1000 : Date.parse(lu);
+    if (!Number.isNaN(t)) out.push({ t, v });
+  }
+  // The recorder is usually ascending, but DST/restart/overlap can reorder rows — and the
+  // chart derives its time domain from the first/last element, so guarantee the order.
+  out.sort((a, b) => a.t - b.t);
+  return out;
+}
+
+/**
+ * Fetch a numeric entity's recorder history over the last `hours`. Refetches when the
+ * entity or range changes and refreshes every 2 min; does NOT refetch on every state push
+ * (the card appends the live value itself for a current right edge). Returns mock-friendly
+ * loading/error so the card can degrade gracefully when no recorder/callWS is present.
+ */
+export function useHistory(entityId: string | undefined, hours: number): HistoryState {
+  const { hass } = useCtx();
+  const hassRef = useRef(hass);
+  hassRef.current = hass;
+  const [state, setState] = useState<HistoryState>({ points: [], loading: true, error: null });
+
+  useEffect(() => {
+    if (!entityId) {
+      setState({ points: [], loading: false, error: null });
+      return;
+    }
+    let cancelled = false;
+    const load = () => {
+      const callWS = hassRef.current.callWS;
+      if (!callWS) {
+        setState({ points: [], loading: false, error: 'History unavailable' });
+        return;
+      }
+      const end = new Date();
+      const start = new Date(end.getTime() - hours * 3_600_000);
+      setState((s) => ({ ...s, loading: s.points.length === 0 }));
+      callWS<Record<string, unknown>>({
+        type: 'history/history_during_period',
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        entity_ids: [entityId],
+        minimal_response: true,
+        no_attributes: true,
+      })
+        .then((res) => {
+          if (cancelled) return;
+          setState({ points: parseHistory(res?.[entityId]), loading: false, error: null });
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          setState({ points: [], loading: false, error: err instanceof Error ? err.message : String(err) });
+        });
+    };
+    load();
+    const id = setInterval(load, 120_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [entityId, hours]);
+
+  return state;
 }

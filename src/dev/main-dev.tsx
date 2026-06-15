@@ -46,9 +46,36 @@ function ids(target?: ServiceTarget): string[] {
 
 const ACTION_FOR_MODE: Record<string, string> = { off: 'off', heat: 'heating', cool: 'cooling' };
 
+// Deterministic synthetic history (a smooth wave around the entity's current value) so the
+// graph card renders with no recorder. Same (id, t) → same value, so refetches don't jump.
+function synthHistory(id: string, start: number, end: number): Array<{ s: string; lu: number }> {
+  const base = Number(states[id]?.state) || 20;
+  const seed = [...id].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const n = 160;
+  const out: Array<{ s: string; lu: number }> = [];
+  for (let i = 0; i < n; i++) {
+    const t = start + ((end - start) * i) / (n - 1);
+    const h = t / 3_600_000;
+    const amp = Math.max(1, Math.abs(base) * 0.12);
+    const v = base + Math.sin(h * 0.5 + seed) * amp + Math.sin(h * 2.7 + seed * 1.3) * amp * 0.4;
+    out.push({ s: (Math.round(v * 10) / 10).toString(), lu: t / 1000 });
+  }
+  return out;
+}
+
 function makeHass(): HomeAssistant {
   return {
     states: { ...states },
+    callWS: async (msg) => {
+      if (msg.type === 'history/history_during_period') {
+        const start = Date.parse(msg.start_time as string);
+        const end = Date.parse(msg.end_time as string);
+        const out: Record<string, unknown> = {};
+        for (const id of (msg.entity_ids as string[]) ?? []) out[id] = synthHistory(id, start, end);
+        return out as never;
+      }
+      return {} as never;
+    },
     callService: (_domain, service, data, target) => {
       for (const id of ids(target)) {
         const e = states[id];
@@ -87,6 +114,9 @@ app.style.cssText =
 
 // tag → which entities it renders, plus a trailing unconfigured placeholder.
 const layout: Array<[tag: string, entity: string]> = [
+  ['simui-graph-card', 'sensor.temp'],
+  ['simui-graph-card', 'sensor.power'],
+  ['simui-graph-card', ''],
   ...Object.keys(states).filter((id) => id.startsWith('light.')).map((id) => ['simui-light-card', id] as [string, string]),
   ['simui-light-card', ''],
   ...Object.keys(states).filter((id) => id.startsWith('climate.')).map((id) => ['simui-climate-card', id] as [string, string]),

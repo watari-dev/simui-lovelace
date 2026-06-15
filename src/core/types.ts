@@ -18,6 +18,8 @@ export interface HomeAssistant {
     data?: Record<string, unknown>,
     target?: ServiceTarget,
   ) => Promise<unknown> | void;
+  /** WebSocket command — used for recorder history (`history/history_during_period`). */
+  callWS?: <T = unknown>(msg: { type: string } & Record<string, unknown>) => Promise<T>;
   themes?: unknown;
   language?: string;
   locale?: unknown;

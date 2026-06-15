@@ -2,6 +2,15 @@ import { defineCard } from './core/react-card';
 import { LightCard, type LightCardConfig } from './cards/LightCard';
 import { ClimateCard, type ClimateCardConfig } from './cards/ClimateCard';
 import { SensorCard, type SensorCardConfig } from './cards/SensorCard';
+import { GraphCard, type GraphCardConfig } from './cards/GraphCard';
+
+const COLOR_OPTIONS = [
+  { value: 'warm', label: 'Amber' },
+  { value: 'cool', label: 'Blue' },
+  { value: 'up', label: 'Green' },
+  { value: 'down', label: 'Coral' },
+  { value: 'grey', label: 'Grey' },
+];
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
@@ -49,24 +58,38 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: ['sensor', 'binary_sensor'] } } },
       { name: 'name', selector: { text: {} } },
-      {
-        name: 'color',
-        selector: {
-          select: {
-            mode: 'dropdown',
-            options: [
-              { value: 'warm', label: 'Amber' },
-              { value: 'cool', label: 'Blue' },
-              { value: 'up', label: 'Green' },
-              { value: 'down', label: 'Coral' },
-              { value: 'grey', label: 'Grey' },
-            ],
-          },
-        },
-      },
+      { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
     ],
     labels: { entity: 'Sensor', name: 'Name (optional)', color: 'Accent colour' },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
+  },
+});
+
+defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
+  stubConfig: (hass) => ({
+    entity: hass
+      ? Object.keys(hass.states).find(
+          (id) => id.startsWith('sensor.') && hass.states[id].attributes.unit_of_measurement != null,
+        ) ?? ''
+      : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'sensor' } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
+      { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
+      { name: 'fill', selector: { boolean: {} } },
+    ],
+    labels: {
+      entity: 'Sensor',
+      name: 'Name (optional)',
+      color: 'Accent colour',
+      hours: 'Default range (hours)',
+      fill: 'Fill under the line',
+    },
+    helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
+    defaults: { fill: true, hours: 24 },
   },
 });
 
@@ -99,6 +122,13 @@ w.customCards.push(
     type: 'simui-sensor-card',
     name: 'SimUI Sensor',
     description: 'A minimalist sensor tile — the value, big, with a device-class icon.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-graph-card',
+    name: 'SimUI Graph',
+    description: 'A sensor history chart — thin line, soft fill, crosshair readout, range toggle.',
     preview: true,
     documentationURL: 'https://github.com/watari-dev/simui-lovelace',
   },
