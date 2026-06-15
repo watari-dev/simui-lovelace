@@ -7,6 +7,7 @@ import { CoverCard, type CoverCardConfig } from './cards/CoverCard';
 import { LockCard, type LockCardConfig } from './cards/LockCard';
 import { MediaCard, type MediaCardConfig } from './cards/MediaCard';
 import { ChipsCard, type ChipsCardConfig } from './cards/ChipsCard';
+import { EnergyFlowCard, type EnergyFlowCardConfig } from './cards/EnergyFlowCard';
 
 const COLOR_OPTIONS = [
   { value: 'warm', label: 'Amber' },
@@ -152,6 +153,37 @@ defineCard<ChipsCardConfig>('simui-chips-card', ChipsCard, {
   },
 });
 
+defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
+  stubConfig: (hass) => {
+    if (!hass) return {};
+    const find = (rx: RegExp) => Object.keys(hass.states).find((id) => id.startsWith('sensor.') && rx.test(id));
+    return { solar: find(/solar|pv/i), grid: find(/grid|mains/i), battery: find(/battery_power|powerwall/i), battery_soc: find(/soc|state_of_charge|battery_level/i) };
+  },
+  entities: (c) => [c.solar, c.grid, c.battery, c.battery_soc, c.home],
+  cardSize: 5,
+  editor: {
+    schema: [
+      { name: 'solar', selector: { entity: { domain: 'sensor' } } },
+      { name: 'grid', selector: { entity: { domain: 'sensor' } } },
+      { name: 'battery', selector: { entity: { domain: 'sensor' } } },
+      { name: 'battery_soc', selector: { entity: { domain: 'sensor' } } },
+      { name: 'home', selector: { entity: { domain: 'sensor' } } },
+      { name: 'grid_invert', selector: { boolean: {} } },
+      { name: 'battery_invert', selector: { boolean: {} } },
+    ],
+    labels: {
+      solar: 'Solar power',
+      grid: 'Grid power',
+      battery: 'Battery power',
+      battery_soc: 'Battery charge %',
+      home: 'Home / load power',
+      grid_invert: 'Invert grid sign',
+      battery_invert: 'Invert battery sign',
+    },
+    helpers: { grid: 'Signed: + importing, − exporting', battery: 'Signed: + discharging, − charging' },
+  },
+});
+
 // ── Card-picker / HACS metadata ───────────────────────────────────────────────
 interface CustomCard {
   type: string;
@@ -216,6 +248,13 @@ w.customCards.push(
     type: 'simui-chips-card',
     name: 'SimUI Chips',
     description: 'A row of compact status chips — icon + value, one per entity.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-energy-flow-card',
+    name: 'SimUI Energy Flow',
+    description: 'A Powerwall-style power-flow diagram — solar, grid, battery, home.',
     preview: true,
     documentationURL: 'https://github.com/watari-dev/simui-lovelace',
   },

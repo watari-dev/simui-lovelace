@@ -23,8 +23,7 @@ barely-there active tint on a round icon disc.
 | Lock | `custom:simui-lock-card` | A lock tile tinted by state (locked → green, unlocked → amber, jammed → coral). Tap to lock/unlock. |
 | Media | `custom:simui-media-card` | A media-player tile — album art (or a music disc), title + artist, and transport controls (prev / play-pause / next) gated by the player's features. |
 | Chips | `custom:simui-chips-card` | A wrapping row of compact status pills — icon + value, one per entity (lights on, temperature, locks, presence…). A glanceable status strip for the top of a dashboard. |
-
-_(More cards — energy flow — are on the way.)_
+| Energy flow | `custom:simui-energy-flow-card` | A Powerwall-style power-flow diagram — solar, grid, battery (with charge %), and home, with wires that colour + animate in the live direction of flow. |
 
 ## Install (HACS)
 
@@ -93,6 +92,17 @@ entities:
   - sensor.outdoor_temperature
   - lock.front_door
   - binary_sensor.motion
+```
+
+```yaml
+type: custom:simui-energy-flow-card
+solar: sensor.solar_power
+grid: sensor.grid_power          # signed: + importing, − exporting
+battery: sensor.battery_power    # signed: + discharging, − charging
+battery_soc: sensor.battery_charge
+home: sensor.home_power          # optional
+# grid_invert: true              # if your grid sensor's sign is reversed
+# battery_invert: true           # if your battery sensor's sign is reversed
 ```
 
 ## Develop

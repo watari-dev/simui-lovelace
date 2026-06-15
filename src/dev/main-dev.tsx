@@ -36,6 +36,13 @@ const states: Record<string, HassEntity> = {
   'sensor.co2': { entity_id: 'sensor.co2', state: '612', attributes: { friendly_name: 'CO₂', device_class: 'carbon_dioxide', unit_of_measurement: 'ppm' } },
   'sensor.outdoor': { entity_id: 'sensor.outdoor', state: 'unavailable', attributes: { friendly_name: 'Outdoor Temperature', device_class: 'temperature', unit_of_measurement: '°C' } },
 
+  // energy-flow power sensors (sunny surplus: solar exports + charges the battery)
+  'sensor.solar_power': { entity_id: 'sensor.solar_power', state: '3200', attributes: { friendly_name: 'Solar Power', device_class: 'power', unit_of_measurement: 'W' } },
+  'sensor.grid_power': { entity_id: 'sensor.grid_power', state: '-850', attributes: { friendly_name: 'Grid Power', device_class: 'power', unit_of_measurement: 'W' } },
+  'sensor.battery_power': { entity_id: 'sensor.battery_power', state: '-800', attributes: { friendly_name: 'Battery Power', device_class: 'power', unit_of_measurement: 'W' } },
+  'sensor.battery_soc': { entity_id: 'sensor.battery_soc', state: '78', attributes: { friendly_name: 'Battery Charge', device_class: 'battery', unit_of_measurement: '%' } },
+  'sensor.home_power': { entity_id: 'sensor.home_power', state: '1550', attributes: { friendly_name: 'Home Power', device_class: 'power', unit_of_measurement: 'W' } },
+
   // covers (supported_features: open|close|set_position|stop = 1|2|4|8 = 15; garage has no set_position = 11)
   'cover.living': { entity_id: 'cover.living', state: 'open', attributes: { friendly_name: 'Living Room Blinds', device_class: 'blind', current_position: 60, supported_features: 15 } },
   'cover.bedroom': { entity_id: 'cover.bedroom', state: 'opening', attributes: { friendly_name: 'Bedroom Shade', device_class: 'shade', current_position: 40, supported_features: 15 } },
@@ -149,6 +156,20 @@ chips.setConfig({
 });
 app.appendChild(chips);
 cards.push(chips);
+
+// energy-flow card
+const eflow = document.createElement('simui-energy-flow-card') as CardEl;
+eflow.style.gridColumn = 'span 2';
+eflow.setConfig({
+  type: 'simui-energy-flow-card',
+  solar: 'sensor.solar_power',
+  grid: 'sensor.grid_power',
+  battery: 'sensor.battery_power',
+  battery_soc: 'sensor.battery_soc',
+  home: 'sensor.home_power',
+});
+app.appendChild(eflow);
+cards.push(eflow);
 
 // tag → which entities it renders, plus a trailing unconfigured placeholder.
 const layout: Array<[tag: string, entity: string]> = [
