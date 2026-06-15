@@ -114,32 +114,6 @@ button.simui-tile-ic { font: inherit; }
   font-feature-settings: 'tnum';
 }
 
-/* our one density touch: a whisper-thin brightness underline (on + dimmable only),
-   inset clear of the rounded corners. Doubles as the slider track for the drag. */
-.simui-tile-fill {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 7px;
-  height: 3px;
-  border-radius: 999px;
-  background: rgba(var(--theme), 0.08);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.simui-tile.is-on .simui-tile-fill { opacity: 1; }
-.simui-tile-fill::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--fill, 0%);
-  border-radius: 999px;
-  background: rgba(var(--tile-tint), 0.85);
-  transition: width 0.05s linear;
-}
-.simui-tile.is-dragging .simui-tile-fill::after { background: rgb(var(--tile-tint)); }
-
 @media (prefers-reduced-motion: reduce) {
-  .simui-tile, .simui-tile-ic, .simui-tile-fill, .simui-tile-fill::after { transition: none; }
+  .simui-tile, .simui-tile-ic { transition: none; }
 }

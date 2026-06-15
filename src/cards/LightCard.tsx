@@ -105,9 +105,6 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
       </button>
       <span className="simui-tile-name" title={name}>{name}</span>
       <span className="simui-tile-state">{readout}</span>
-      {settable && on && (
-        <span className="simui-tile-fill" style={{ ['--fill' as string]: `${value}%` } as CSSProperties} aria-hidden="true" />
-      )}
     </div>
   );
 }
