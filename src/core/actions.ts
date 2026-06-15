@@ -1,4 +1,3 @@
-import { domainOf } from '../util';
 import type { HomeAssistant, ServiceTarget } from './types';
 
 // Inlined (not imported from ./hass) to avoid a circular import — same semantics as fireEvent.
@@ -39,7 +38,8 @@ export function runAction(
       if (entity) fire(host, 'hass-more-info', { entityId: entity });
       return;
     case 'toggle':
-      if (entity) hass.callService(domainOf(entity), 'toggle', {}, { entity_id: entity });
+      // homeassistant.toggle is universal; <domain>.toggle doesn't exist for climate/cover/etc.
+      if (entity) hass.callService('homeassistant', 'toggle', {}, { entity_id: entity });
       return;
     case 'navigate':
       if (a.navigation_path) {
@@ -48,7 +48,10 @@ export function runAction(
       }
       return;
     case 'url':
-      if (a.url_path) window.open(a.url_path, a.url_path.startsWith('/') ? '_self' : '_blank');
+      // Only http(s) or a root-relative path — never javascript:/data: (script-in-origin).
+      if (a.url_path && /^(https?:\/\/|\/)/.test(a.url_path)) {
+        window.open(a.url_path, a.url_path.startsWith('/') ? '_self' : '_blank');
+      }
       return;
     case 'perform-action':
     case 'call-service': {

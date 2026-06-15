@@ -99,7 +99,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
     }
     if (isActivateKey(ev.key)) {
       ev.preventDefault();
-      moreInfo(config.entity);
+      runTap(config.tap_action, config.entity); // parity with the body click
     }
   };
 
