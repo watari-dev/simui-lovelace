@@ -1,6 +1,23 @@
 import '../main';
 import type { HassEntity, HomeAssistant, ServiceTarget } from '../core/types';
 
+// Minimal <ha-icon> stub (real HA provides it) so the harness can show the icon-override path.
+if (!customElements.get('ha-icon')) {
+  customElements.define(
+    'ha-icon',
+    class extends HTMLElement {
+      static get observedAttributes() { return ['icon']; }
+      connectedCallback() { this.render(); }
+      attributeChangedCallback() { this.render(); }
+      render() {
+        this.style.cssText = 'display:inline-grid;place-items:center;font-size:17px;line-height:1';
+        this.textContent = '▣';
+        this.title = this.getAttribute('icon') ?? '';
+      }
+    },
+  );
+}
+
 // A tiny mock Home Assistant so the cards can be developed + screenshotted with no
 // running HA: callService mutates the in-memory states and re-pushes `hass` to every
 // mounted card (exactly how real HA pushes updates).
@@ -170,6 +187,12 @@ eflow.setConfig({
 });
 app.appendChild(eflow);
 cards.push(eflow);
+
+// a card with a custom icon override (renders via the ha-icon stub)
+const iconOverride = document.createElement('simui-light-card') as CardEl;
+iconOverride.setConfig({ type: 'simui-light-card', entity: 'light.kitchen', name: 'Custom Icon', icon: 'mdi:floor-lamp' });
+app.appendChild(iconOverride);
+cards.push(iconOverride);
 
 // tag → which entities it renders, plus a trailing unconfigured placeholder.
 const layout: Array<[tag: string, entity: string]> = [

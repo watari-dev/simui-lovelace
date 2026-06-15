@@ -28,11 +28,12 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'light' } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
       { name: 'use_light_color', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
-      name: 'Name (optional)',
+      name: 'Name (optional)', icon: 'Icon (optional)',
       use_light_color: 'Tint with the bulb’s colour',
     },
     helpers: {
@@ -50,8 +51,9 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'climate' } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)' },
   },
 });
 
@@ -63,9 +65,10 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: ['sensor', 'binary_sensor'] } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
     ],
-    labels: { entity: 'Sensor', name: 'Name (optional)', color: 'Accent colour' },
+    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', color: 'Accent colour' },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
   },
 });
@@ -82,6 +85,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'sensor' } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
       { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
       { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.5, mode: 'slider' } } },
@@ -89,7 +93,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
     ],
     labels: {
       entity: 'Sensor',
-      name: 'Name (optional)',
+      name: 'Name (optional)', icon: 'Icon (optional)',
       color: 'Accent colour',
       hours: 'Default range (hours)',
       line_width: 'Line width',
@@ -109,8 +113,9 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'cover' } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)' },
   },
 });
 
@@ -122,8 +127,9 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'lock' } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
     ],
-    labels: { entity: 'Lock', name: 'Name (optional)' },
+    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)' },
   },
 });
 
@@ -135,8 +141,9 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'media_player' } } },
       { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
     ],
-    labels: { entity: 'Media player', name: 'Name (optional)' },
+    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)' },
   },
 });
 

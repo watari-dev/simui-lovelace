@@ -40,8 +40,13 @@ Add it from the dashboard's **+ card** picker and configure it in the **visual e
 type: custom:simui-light-card
 entity: light.living_room_ceiling
 name: Ceiling            # optional — defaults to the light's name
+icon: mdi:floor-lamp     # optional — overrides the device-class icon (any mdi:… name)
 use_light_color: true    # optional — tile takes the bulb's colour (default); false ⇒ warm yellow
 ```
+
+> Every tile card (light, climate, sensor, graph, cover, lock, media) accepts an optional
+> `icon:` (an `mdi:…` name) to override the automatic device-class icon, and an `icon` field
+> in its visual editor.
 
 ```yaml
 type: custom:simui-climate-card

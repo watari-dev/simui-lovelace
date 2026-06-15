@@ -4,6 +4,7 @@ import { useCallService, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
+import { renderIcon } from '../core/icon';
 
 export interface LockCardConfig extends BaseCardConfig {
   entity: string;
@@ -87,7 +88,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
         onPointerDown={(ev) => ev.stopPropagation()}
         onKeyDown={(ev) => ev.stopPropagation()}
       >
-        <Icon size={20} strokeWidth={2} />
+        {renderIcon(config.icon, 20, <Icon size={20} strokeWidth={2} />)}
       </button>
       <span className="simui-tile-name" title={name}>{name}</span>
       <span className="simui-tile-state">{dead ? 'Unavailable' : prettyState(state)}</span>

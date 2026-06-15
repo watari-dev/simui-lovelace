@@ -3,6 +3,7 @@ import { useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { domainOf, friendly, isActivateKey, isUnavailable } from '../util';
+import { renderIcon } from '../core/icon';
 import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 
 export interface SensorCardConfig extends BaseCardConfig {
@@ -55,7 +56,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
       }}
     >
       <span className="simui-tile-ic" aria-hidden="true">
-        <Icon size={20} strokeWidth={2} />
+        {renderIcon(config.icon, 20, <Icon size={20} strokeWidth={2} />)}
       </span>
       <span className="simui-tile-name simui-tile-value" title={value}>{value}</span>
       <span className="simui-tile-state" title={name}>{config.entity ? name : 'Select a sensor'}</span>

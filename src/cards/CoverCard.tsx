@@ -5,6 +5,7 @@ import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, stepKey } from '../util';
+import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
 
 export interface CoverCardConfig extends BaseCardConfig {
@@ -124,7 +125,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
         onPointerDown={(ev) => ev.stopPropagation()}
         onKeyDown={(ev) => ev.stopPropagation()}
       >
-        <Icon size={20} strokeWidth={2} />
+        {renderIcon(config.icon, 20, <Icon size={20} strokeWidth={2} />)}
       </button>
       <span className="simui-tile-name" title={name}>{name}</span>
       <span className="simui-tile-state">{dead ? 'Unavailable' : label}</span>

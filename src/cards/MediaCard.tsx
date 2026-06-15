@@ -4,6 +4,7 @@ import { useCallService, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, prettyState, supportsFeature } from '../util';
+import { renderIcon } from '../core/icon';
 import { MEDIA_NEXT, MEDIA_PAUSE, MEDIA_PLAY, MEDIA_PREVIOUS, readMedia } from './media-util';
 
 export interface MediaCardConfig extends BaseCardConfig {
@@ -69,7 +70,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
         style={v.art ? { backgroundImage: `url("${v.art}")` } : undefined}
         aria-hidden="true"
       >
-        {!v.art && <Music size={20} strokeWidth={2} />}
+        {!v.art && renderIcon(config.icon, 20, <Music size={20} strokeWidth={2} />)}
       </span>
 
       <span className="simui-media-body">

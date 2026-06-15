@@ -5,6 +5,7 @@ import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, stepKey } from '../util';
+import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
 
 export interface LightCardConfig extends BaseCardConfig {
@@ -118,7 +119,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
         onPointerDown={(ev) => ev.stopPropagation()}
         onKeyDown={(ev) => ev.stopPropagation()}
       >
-        <Lightbulb size={20} strokeWidth={2} {...(on ? { fill: 'currentColor', fillOpacity: 0.18 } : {})} />
+        {renderIcon(config.icon, 20, <Lightbulb size={20} strokeWidth={2} {...(on ? { fill: 'currentColor', fillOpacity: 0.18 } : {})} />)}
       </button>
       <span className="simui-tile-name" title={name}>{name}</span>
       <span className="simui-tile-state">{readout}</span>

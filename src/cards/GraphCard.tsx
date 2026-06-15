@@ -4,6 +4,7 @@ import { useSize } from '../hooks/useSize';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable } from '../util';
+import { renderIcon } from '../core/icon';
 import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { HistoryChart } from './HistoryChart';
 
@@ -96,7 +97,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
         }}
       >
         <span className="simui-graph-ic" aria-hidden="true">
-          <Icon size={18} strokeWidth={2} />
+          {renderIcon(config.icon, 18, <Icon size={18} strokeWidth={2} />)}
         </span>
         <span className="simui-graph-title" title={name}>{config.entity ? name : 'Select a sensor'}</span>
         <span className="simui-graph-value">{valueText}</span>

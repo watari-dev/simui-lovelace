@@ -25,12 +25,13 @@ export interface HomeAssistant {
   locale?: unknown;
 }
 
-/** Base config shared by every SimUI card. (Icons are derived from the entity's device
- *  class, so there is no `icon` override here.) */
+/** Base config shared by every SimUI card. `icon` overrides the device-class default
+ *  (an `mdi:…` name, rendered via HA's <ha-icon>); omit to keep the automatic icon. */
 export interface BaseCardConfig {
   type: string;
   entity?: string;
   name?: string;
+  icon?: string;
 }
 
 /** The Lovelace custom-card contract (the subset SimUI cards implement). */
