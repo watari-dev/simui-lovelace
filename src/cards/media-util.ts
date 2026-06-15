@@ -18,9 +18,15 @@ export interface MediaView {
 
 const INACTIVE = new Set(['off', 'idle', 'standby', 'unavailable', 'unknown']);
 
+// entity_picture is interpolated into a CSS url("…"); only accept an http(s) or root-relative
+// path with no quotes/parens/whitespace, so a crafted attribute can't break out of the url()
+// and trigger an attacker-chosen fetch.
+const SAFE_ART = /^(https?:\/\/|\/)[^"'()\s]+$/;
+
 export function readMedia(e: HassEntity | undefined, dead: boolean): MediaView {
   const a = e?.attributes ?? {};
   const state = e?.state ?? 'off';
+  const rawArt = a.entity_picture as string | undefined;
   return {
     state,
     playing: state === 'playing' || state === 'buffering',
@@ -32,7 +38,7 @@ export function readMedia(e: HassEntity | undefined, dead: boolean): MediaView {
       (a.media_album_name as string) ||
       (a.app_name as string) ||
       '',
-    art: (a.entity_picture as string) || null,
+    art: rawArt && SAFE_ART.test(rawArt) ? rawArt : null,
     tint: 'var(--cool)',
   };
 }

@@ -11,7 +11,10 @@
   --text: var(--primary-text-color, #dddddd);
 
   /* state colours — RGB triplets, ULM dark-mode palette */
-  --theme: var(--color-theme, 221, 221, 221);   /* the dim base: off icons / cells */
+  /* The dim base (off icons / cells / gridlines). Inherit ULM's --color-theme; else HA's
+     per-theme text triplet (dark on a light theme, light on a dark theme) so it stays
+     visible without ULM; else a mid-grey that reads on both light and dark surfaces. */
+  --theme: var(--color-theme, var(--rgb-primary-text-color, 127, 127, 127));
   --warm: var(--color-yellow, 252, 214, 99);     /* lights / on */
   --cool: var(--color-blue, 137, 179, 248);      /* cooling / active */
   --up: var(--color-green, 128, 201, 148);       /* good / secure */
@@ -55,6 +58,7 @@
   color: var(--text);
 }
 .simui-tile.is-dragging {
+  background: rgba(var(--tile-tint), 0.1); /* fallback for browsers without color-mix (iOS < 16.2) */
   background: color-mix(in srgb, rgb(var(--tile-tint)) 8%, var(--surface));
   box-shadow: var(--shadow-hover);
 }
@@ -89,6 +93,7 @@ button.simui-tile-ic { font: inherit; }
 }
 .simui-tile-ic:hover { background: rgba(var(--tile-tint), 0.28); }
 .simui-tile.is-unavailable .simui-tile-ic:hover { background: rgba(var(--theme), 0.05); }
+button.simui-tile-ic:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
 
 /* name (bold) + state line (dim), hugging the icon's vertical centre */
 .simui-tile-name {
@@ -183,6 +188,7 @@ button.simui-tile-ic { font: inherit; }
   gap: 1px;
   padding: 4px 7px;
   border-radius: 8px;
+  background: var(--surface); /* fallback for browsers without color-mix (iOS < 16.2) */
   background: color-mix(in srgb, var(--surface) 84%, #000);
   box-shadow: var(--bezel);
   white-space: nowrap;
@@ -268,6 +274,7 @@ button.simui-tile-ic { font: inherit; }
   transition: opacity 0.15s ease, background 0.15s ease;
 }
 .simui-media-btn:hover { opacity: 1; background: rgba(var(--theme), 0.08); }
+.simui-media-btn:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
 .simui-media-btn.primary { color: rgb(var(--tile-tint)); opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {

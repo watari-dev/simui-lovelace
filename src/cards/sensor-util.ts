@@ -60,6 +60,9 @@ const TINTS: Record<string, string> = {
   monetary: 'var(--up)',
 };
 
+/** The accent-colour tokens a `color:` config option accepts (shared by sensor + graph). */
+export const VALID_COLORS = new Set(['warm', 'cool', 'up', 'down', 'grey']);
+
 export function sensorIcon(deviceClass?: string): LucideIcon {
   return (deviceClass && ICONS[deviceClass]) || Activity;
 }

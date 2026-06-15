@@ -1,13 +1,11 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useState } from 'react';
-import { useEntity, useHistory, useMoreInfo } from '../core/hass';
+import { useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
 import { useSize } from '../hooks/useSize';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable } from '../util';
-import { formatSensor, sensorIcon, sensorTint } from './sensor-util';
+import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { HistoryChart } from './HistoryChart';
-
-const COLORS = new Set(['warm', 'cool', 'up', 'down', 'grey']);
 
 export interface GraphCardConfig extends BaseCardConfig {
   entity: string;
@@ -28,6 +26,7 @@ const rangeLabel = (h: number): string => (h < 48 ? `${h}h` : h % 24 === 0 ? `${
 export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   const e = useEntity(config.entity);
   const moreInfo = useMoreInfo();
+  const locale = useLanguage();
   const dead = isUnavailable(e);
 
   const ranges = config.ranges ?? [1, 12, 24, 168];
@@ -39,7 +38,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
 
   const dc = e?.attributes.device_class as string | undefined;
   const Icon = sensorIcon(dc);
-  const tint = config.color && COLORS.has(config.color) ? `var(--${config.color})` : sensorTint(dc);
+  const tint = config.color && VALID_COLORS.has(config.color) ? `var(--${config.color})` : sensorTint(dc);
   const unit = (e?.attributes.unit_of_measurement as string | undefined) ?? '';
   const name = config.name ?? (e ? friendly(e) : config.entity);
 
@@ -69,7 +68,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   }, [points]);
 
   const fmt = (v: number) =>
-    Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : (Math.round(v * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
+    Math.abs(v) >= 100 ? Math.round(v).toLocaleString(locale) : (Math.round(v * 10) / 10).toLocaleString(locale, { maximumFractionDigits: 1 });
   const valueText = !config.entity ? '—' : dead ? 'Unavailable' : e ? formatSensor(e) : 'Unknown';
   const chartLabel = stats
     ? `${name} history, last ${rangeLabel(hours)}, ${fmt(stats.min)} to ${fmt(stats.max)}${unit ? ` ${unit}` : ''}`
@@ -91,6 +90,10 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
             open();
           }
         }}
+        onContextMenu={(ev) => {
+          ev.preventDefault();
+          open();
+        }}
       >
         <span className="simui-graph-ic" aria-hidden="true">
           <Icon size={18} strokeWidth={2} />
@@ -110,6 +113,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
             fill={config.fill !== false}
             lineWidth={config.line_width ?? 2}
             ariaLabel={chartLabel}
+            locale={locale}
           />
         ) : (
           <span className="simui-graph-empty">

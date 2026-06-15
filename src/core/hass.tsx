@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { HomeAssistant, HassEntity, ServiceTarget } from './types';
 
 interface HassCtxValue {
@@ -10,7 +10,8 @@ interface HassCtxValue {
 const HassCtx = createContext<HassCtxValue | null>(null);
 
 export function HassProvider({ hass, host, children }: { hass: HomeAssistant; host: HTMLElement; children: ReactNode }) {
-  return <HassCtx.Provider value={{ hass, host }}>{children}</HassCtx.Provider>;
+  const value = useMemo(() => ({ hass, host }), [hass, host]);
+  return <HassCtx.Provider value={value}>{children}</HassCtx.Provider>;
 }
 
 function useCtx(): HassCtxValue {
@@ -30,6 +31,11 @@ export function useCallService() {
   const { hass } = useCtx();
   return (domain: string, service: string, data?: Record<string, unknown>, target?: ServiceTarget) =>
     hass.callService(domain, service, data, target);
+}
+
+/** The HA user's language tag (e.g. "en", "fr") for locale-aware number/date formatting. */
+export function useLanguage(): string | undefined {
+  return useCtx().hass.language;
 }
 
 /** Open Home Assistant's own more-info dialog for an entity (its native detail sheet). */

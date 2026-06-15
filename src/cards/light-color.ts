@@ -25,7 +25,7 @@ function hsvToRgb(h: number, s: number, v: number): RGB {
   const c = v * s;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = v - c;
-  let r = 0, g = 0, b = 0;
+  let r: number, g: number, b: number;
   if (h < 60) [r, g, b] = [c, x, 0];
   else if (h < 120) [r, g, b] = [x, c, 0];
   else if (h < 180) [r, g, b] = [0, c, x];

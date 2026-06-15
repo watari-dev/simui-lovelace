@@ -3,9 +3,7 @@ import { useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { domainOf, friendly, isActivateKey, isUnavailable } from '../util';
-import { formatSensor, sensorIcon, sensorTint } from './sensor-util';
-
-const COLORS = new Set(['warm', 'cool', 'up', 'down', 'grey']);
+import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 
 export interface SensorCardConfig extends BaseCardConfig {
   entity: string;
@@ -25,7 +23,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const dead = isUnavailable(e);
   const dc = e?.attributes.device_class as string | undefined;
   const Icon = sensorIcon(dc);
-  const tint = config.color && COLORS.has(config.color) ? `var(--${config.color})` : sensorTint(dc);
+  const tint = config.color && VALID_COLORS.has(config.color) ? `var(--${config.color})` : sensorTint(dc);
   const name = config.name ?? (e ? friendly(e) : config.entity);
   const value = !config.entity ? '—' : dead ? 'Unavailable' : e ? formatSensor(e) : 'Unknown';
 

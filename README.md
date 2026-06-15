@@ -86,9 +86,15 @@ name: Speaker            # optional
 
 ```bash
 npm install
-npm run dev      # mock-hass harness at http://localhost:5174
-npm run build    # → dist/simui-lovelace.js
+npm run dev        # mock-hass harness at http://localhost:5174
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint
+npm test           # vitest (pure util/parse logic)
+npm run build      # → dist/simui-lovelace.js
 ```
+
+Releases are cut from a `v*` git tag: CI builds `simui-lovelace.js` and attaches it to a
+GitHub release, which is the artifact HACS downloads.
 
 The cards are React rendered inside a shadow-DOM custom element; they read the live
 `hass` object HA injects and open HA's own more-info dialog for details.

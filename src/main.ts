@@ -82,6 +82,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
       { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
+      { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.5, mode: 'slider' } } },
       { name: 'fill', selector: { boolean: {} } },
     ],
     labels: {
@@ -89,11 +90,13 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       name: 'Name (optional)',
       color: 'Accent colour',
       hours: 'Default range (hours)',
+      line_width: 'Line width',
       fill: 'Fill under the line',
     },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
-    defaults: { fill: true, hours: 24 },
+    defaults: { fill: true, hours: 24, line_width: 2 },
   },
+  cardSize: 4,
 });
 
 defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
@@ -197,9 +200,8 @@ w.customCards.push(
   },
 );
 
-// eslint-disable-next-line no-console
 console.info(
-  '%c SimUI Cards %c 0.1.0 ',
+  `%c SimUI Cards %c ${__SIMUI_VERSION__} `,
   'background:#fcd663;color:#1d1d1d;font-weight:600;border-radius:4px 0 0 4px;padding:2px 6px',
   'background:#1d1d1d;color:#fcd663;border-radius:0 4px 4px 0;padding:2px 6px',
 );
