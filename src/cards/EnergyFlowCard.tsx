@@ -63,12 +63,15 @@ interface Num {
   kw: number;
   dead: boolean;
 }
+/** Read a POWER entity as kW. `isFinite` rejects NaN/±Infinity; a unitless power sensor
+ *  is assumed to be watts (HA's default for device_class power). Not for the SOC slot. */
 function numVal(e: HassEntity | undefined): Num {
   if (isUnavailable(e) || !e) return { kw: 0, dead: true };
   const n = Number(e.state);
-  if (Number.isNaN(n)) return { kw: 0, dead: true };
+  if (!Number.isFinite(n)) return { kw: 0, dead: true };
   const unit = e.attributes.unit_of_measurement as string | undefined;
-  return { kw: unit === 'W' ? n / 1000 : n, dead: false };
+  const kw = unit === 'kW' ? n : unit === 'MW' ? n * 1000 : n / 1000; // W / unitless → watts
+  return { kw, dead: false };
 }
 function fmt(kw: number): string {
   const a = Math.abs(kw);
@@ -111,7 +114,9 @@ export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConf
   const load = numVal(loadE);
   const grid = numVal(gridE);
   const battery = numVal(batteryE);
-  const soc = numVal(socE);
+  // SOC is a plain 0–100 percent — read directly, not through the kW power conversion.
+  const socRaw = socE && !isUnavailable(socE) ? Number(socE.state) : NaN;
+  const socPct = Number.isFinite(socRaw) ? Math.min(100, Math.max(0, socRaw)) : undefined;
 
   const nodes: NodeView[] = [];
   if (config.solar) nodes.push({ role: 'solar', icon: Sun, label: 'Solar', accent: 'var(--warm)', value: Math.abs(solar.kw), dead: solar.dead, entityId: config.solar });
@@ -126,7 +131,7 @@ export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConf
       value: Math.abs(battery.kw),
       dead: config.battery ? battery.dead : true,
       entityId: config.battery ?? config.battery_soc,
-      soc: !soc.dead && Number.isFinite(soc.kw) ? Math.min(100, Math.max(0, soc.kw)) : undefined,
+      soc: socPct,
     });
 
   const edges: EdgeView[] = [];

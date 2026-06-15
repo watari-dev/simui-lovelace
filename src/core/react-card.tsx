@@ -84,15 +84,15 @@ export function defineCard<C extends BaseCardConfig>(
         this._render();
         return;
       }
-      const ids = this._config.entity != null
-        ? [this._config.entity, ...(opts.entities?.(this._config) ?? [])]
-        : opts.entities?.(this._config) ?? [];
+      const ids = [this._config.entity, ...(opts.entities?.(this._config) ?? [])].filter(
+        (id): id is string => !!id,
+      );
       if (ids.length === 0) {
-        this._render(); // no declared deps → re-render on every push
+        this._render(); // no resolved deps (e.g. unconfigured card) → re-render on every push
         return;
       }
       for (const id of ids) {
-        if (id && prev.states[id] !== hass.states[id]) {
+        if (prev.states[id] !== hass.states[id]) {
           this._render();
           return;
         }
