@@ -4,6 +4,7 @@ import { useActions, useEntity, useHistory, useLanguage, useMoreInfo } from '../
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly } from '../util';
+import { renderIcon } from '../core/icon';
 import { sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { discIcon } from './luminous';
 
@@ -124,7 +125,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
     >
       <div className="ghead">
         <div className="glabel">
-          <div className="disc">{discIcon(Icon, 21)}</div>
+          <div className="disc">{renderIcon(config.icon, 21, discIcon(Icon, 21))}</div>
           <div><div className="gtitle" title={name}>{name}</div><div className="gsub">{sub}{config.secondary ? ` · ${rangeLabel(hours)}` : ''}</div></div>
         </div>
         <div className="gval">

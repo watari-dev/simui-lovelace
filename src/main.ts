@@ -31,11 +31,12 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'use_light_color', selector: { boolean: {} } },
+      { name: 'compact', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
       name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
-      use_light_color: 'Tint with the bulb’s colour',
+      use_light_color: 'Tint with the bulb’s colour', compact: 'Compact (dense)',
     },
     helpers: {
       use_light_color: 'On: the tile takes the light’s live colour. Off: a calm warm yellow.',
@@ -54,8 +55,9 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
+      { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', compact: 'Compact (dense)' },
   },
 });
 
@@ -70,8 +72,9 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
+      { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour' },
+    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour', compact: 'Compact (dense)' },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
   },
 });
@@ -87,24 +90,25 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
   editor: {
     schema: [
       { name: 'entity', required: true, selector: { entity: { domain: 'sensor' } } },
+      { name: 'secondary', selector: { entity: { domain: 'sensor' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
       { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
-      { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.5, mode: 'slider' } } },
-      { name: 'fill', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Sensor',
+      secondary: 'Second series (optional)',
       name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
       color: 'Accent colour',
       hours: 'Default range (hours)',
-      line_width: 'Line width',
-      fill: 'Fill under the line',
     },
-    helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
-    defaults: { fill: true, hours: 24, line_width: 2 },
+    helpers: {
+      color: 'Overrides the automatic colour picked from the sensor’s device class.',
+      secondary: 'A second sensor overlaid on the same chart (e.g. humidity over temperature).',
+    },
+    defaults: { hours: 24 },
   },
   cardSize: 4,
 });
@@ -119,8 +123,9 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
+      { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', compact: 'Compact (dense)' },
   },
 });
 
@@ -134,8 +139,9 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
+      { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
+    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', compact: 'Compact (dense)' },
   },
 });
 
