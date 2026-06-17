@@ -24,7 +24,7 @@ const states: Record<string, HassEntity> = {
   'sensor.humidity': { entity_id: 'sensor.humidity', state: '48', attributes: { friendly_name: 'Living Room Humidity', device_class: 'humidity', unit_of_measurement: '%' } },
   'sensor.power': { entity_id: 'sensor.power', state: '3100', attributes: { friendly_name: 'Home Power', device_class: 'power', unit_of_measurement: 'W' } },
   // media
-  'media_player.living': { entity_id: 'media_player.living', state: 'playing', attributes: { friendly_name: 'Living Room', media_title: 'Midnight City', media_artist: 'M83 · Hurry Up, We’re Dreaming', media_position: 131, media_duration: 243, supported_features: 16433 } },
+  'media_player.living': { entity_id: 'media_player.living', state: 'playing', attributes: { friendly_name: 'Living Room', media_title: 'Midnight City', media_artist: 'M83 · Hurry Up, We’re Dreaming', media_position: 131, media_duration: 243, media_position_updated_at: new Date().toISOString(), supported_features: 16433 } },
   'media_player.kitchen': { entity_id: 'media_player.kitchen', state: 'paused', attributes: { friendly_name: 'Kitchen Display', media_title: 'The Daily', media_artist: 'The New York Times', supported_features: 16433 } },
   // energy
   'sensor.solar_power': { entity_id: 'sensor.solar_power', state: '3200', attributes: { friendly_name: 'Solar Power', device_class: 'power', unit_of_measurement: 'W' } },

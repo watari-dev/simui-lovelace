@@ -1,4 +1,4 @@
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from 'react';
 import { Music, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
@@ -35,9 +35,22 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const sub = !config.entity ? 'Set up' : dead ? 'Unavailable' : hasTrack ? v.mediaSub || name : prettyState(v.state);
   const eyebrow = v.active ? `Now Playing · ${name}` : name;
 
-  const position = e?.attributes.media_position as number | undefined;
-  const duration = e?.attributes.media_duration as number | undefined;
-  const pct = duration && duration > 0 && position != null ? Math.max(0, Math.min(100, (position / duration) * 100)) : 0;
+  // Live scrubber: HA samples media_position once (at positionUpdatedAt), so during playback we
+  // advance it locally on a 1s tick instead of letting it sit frozen between HA state pushes.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!v.playing || v.positionUpdatedAt == null || v.position == null) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [v.playing, v.positionUpdatedAt, v.position]);
+  const livePos =
+    v.position == null
+      ? null
+      : v.playing && v.positionUpdatedAt != null
+        ? Math.min(v.duration ?? Infinity, v.position + (now - v.positionUpdatedAt) / 1000)
+        : v.position;
+  const pct = v.duration && livePos != null ? Math.max(0, Math.min(100, (livePos / v.duration) * 100)) : 0;
 
   const supports = (bit: number) => !!e && supportsFeature(e, bit);
   const ctl = (service: string) => (ev: MouseEvent) => { ev.stopPropagation(); if (config.entity) call('media_player', service, {}, { entity_id: config.entity }); };
@@ -68,10 +81,10 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
         <div className="meye" title={eyebrow}>{eyebrow}</div>
         <div className="mtitle" title={title}>{title}</div>
         <div className="martist" title={sub}>{sub}</div>
-        {v.active && duration ? (
+        {v.active && v.duration ? (
           <>
             <div className="scrub"><i style={{ width: `${pct}%` }} /></div>
-            <div className="mtime"><span>{mmss(position ?? 0)}</span><span>{mmss(duration)}</span></div>
+            <div className="mtime"><span>{mmss(livePos ?? 0)}</span><span>{mmss(v.duration)}</span></div>
           </>
         ) : null}
         {config.entity && !dead && (v.active || supports(MEDIA_PLAY) || supports(MEDIA_PAUSE)) && (

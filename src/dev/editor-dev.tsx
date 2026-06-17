@@ -87,7 +87,7 @@ const states: Record<string, HassEntity> = {
   'sensor.temp': { entity_id: 'sensor.temp', state: '21.5', attributes: { friendly_name: 'Temperature', device_class: 'temperature', unit_of_measurement: '°C' } },
   'sensor.humidity': { entity_id: 'sensor.humidity', state: '48', attributes: { friendly_name: 'Humidity', device_class: 'humidity', unit_of_measurement: '%' } },
   'sensor.power': { entity_id: 'sensor.power', state: '3100', attributes: { friendly_name: 'Home Power', device_class: 'power', unit_of_measurement: 'W' } },
-  'media_player.living': { entity_id: 'media_player.living', state: 'playing', attributes: { friendly_name: 'Living Room', media_title: 'Midnight City', media_artist: 'M83', media_position: 131, media_duration: 243, supported_features: 16433 } },
+  'media_player.living': { entity_id: 'media_player.living', state: 'playing', attributes: { friendly_name: 'Living Room', media_title: 'Midnight City', media_artist: 'M83', media_position: 131, media_duration: 243, media_position_updated_at: new Date().toISOString(), supported_features: 16433 } },
   'sensor.solar_power': { entity_id: 'sensor.solar_power', state: '3200', attributes: { friendly_name: 'Solar', device_class: 'power', unit_of_measurement: 'W' } },
   'sensor.grid_power': { entity_id: 'sensor.grid_power', state: '-850', attributes: { friendly_name: 'Grid', device_class: 'power', unit_of_measurement: 'W' } },
   'sensor.battery_power': { entity_id: 'sensor.battery_power', state: '-800', attributes: { friendly_name: 'Battery', device_class: 'power', unit_of_measurement: 'W' } },
