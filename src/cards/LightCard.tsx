@@ -1,14 +1,31 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Lightbulb } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
+import type { ActionConfig } from '../core/actions';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
 import { DotBar, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
+
+/** One configurable preset chip — applies a lighting scene to this light, or runs an action. */
+export interface LightChip {
+  name?: string;
+  icon?: string;
+  /** Apply a colour temperature (kelvin). */
+  kelvin?: number;
+  /** Apply a brightness (0–100 %). */
+  brightness?: number;
+  /** Apply an RGB colour. */
+  rgb?: [number, number, number];
+  /** Apply a light effect by name. */
+  effect?: string;
+  /** Run an arbitrary action instead of the shortcuts above. */
+  tap_action?: ActionConfig;
+}
 
 export interface LightCardConfig extends BaseCardConfig {
   entity: string;
@@ -21,13 +38,16 @@ export interface LightCardConfig extends BaseCardConfig {
   slider?: SliderStyle | 'none';
   /** What the slider sets: brightness (default) or color_temp (warm↔cool). */
   slider_target?: 'brightness' | 'color_temp';
-  /** Show the Warm / Cool / Scene colour-temperature controls (default true). */
+  /** Show the preset-chip row (default true). */
   show_color_controls?: boolean;
+  /** The preset chips. Omit for the default Warm / Cool / Scene on colour-temp lights. */
+  color_controls?: LightChip[];
   /** Glanceable footprint for dense dashboards. */
   compact?: boolean;
 }
 
 const kelvinLabel = (k: number): string => `${k < 3500 ? 'Warm' : k > 5000 ? 'Cool' : 'Neutral'} · ${k}K`;
+const DEFAULT_CHIPS: LightChip[] = [{ name: 'Warm', kelvin: 2700 }, { name: 'Cool', kelvin: 5000 }, { name: 'Scene' }];
 
 /**
  * SimUI light card — the Luminous tile: a glowing accent disc (tap to toggle) over a big
@@ -39,6 +59,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runChip = useActions();
   const compact = config.compact === true;
 
   const dead = isUnavailable(e);
@@ -90,16 +111,19 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
     ev.stopPropagation();
     if (!dead) call('light', on ? 'turn_off' : 'turn_on', {}, { entity_id: config.entity });
   };
-  const setTemp = (k: number) => (ev: MouseEvent) => {
+  const applyChip = (c: LightChip) => (ev: MouseEvent) => {
     ev.stopPropagation();
-    call('light', 'turn_on', { color_temp_kelvin: k }, { entity_id: config.entity });
+    if (c.tap_action) { runChip(c.tap_action, config.entity); return; }
+    const data: Record<string, unknown> = {};
+    if (c.kelvin != null) data.color_temp_kelvin = c.kelvin;
+    if (c.brightness != null) data.brightness_pct = c.brightness;
+    if (c.rgb) data.rgb_color = c.rgb;
+    if (c.effect) data.effect = c.effect;
+    if (Object.keys(data).length) call('light', 'turn_on', data, { entity_id: config.entity });
+    else moreInfo(config.entity);
   };
-  const openMore = (ev: MouseEvent) => {
-    ev.stopPropagation();
-    moreInfo(config.entity);
-  };
-  const warmActive = on && kelvin != null && kelvin < 3500;
-  const coolActive = on && kelvin != null && kelvin >= 3500;
+  const chips = config.color_controls ?? (hasColorTemp ? DEFAULT_CHIPS : []);
+  const showChips = !compact && config.show_color_controls !== false && chips.length > 0;
 
   const valueNode = !settable ? (on ? 'On' : 'Off') : tempMode ? (
     <>{liveKelvin}<span className="u">K</span></>
@@ -152,11 +176,16 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
             variant={config.slider ?? 'dots'}
           />
         )}
-        {!compact && hasColorTemp && config.show_color_controls !== false && (
+        {showChips && (
           <div className="chips">
-            <button type="button" className={warmActive ? 'on' : ''} onClick={setTemp(2700)} onPointerDown={(ev) => ev.stopPropagation()}>Warm</button>
-            <button type="button" className={coolActive ? 'on' : ''} onClick={setTemp(5000)} onPointerDown={(ev) => ev.stopPropagation()}>Cool</button>
-            <button type="button" onClick={openMore} onPointerDown={(ev) => ev.stopPropagation()}>Scene</button>
+            {chips.map((c, i) => {
+              const active = on && c.kelvin != null && kelvin != null && Math.abs(kelvin - c.kelvin) < 120;
+              return (
+                <button key={i} type="button" className={active ? 'on' : ''} onClick={applyChip(c)} onPointerDown={(ev) => ev.stopPropagation()}>
+                  {c.icon ? <span className="chip-ic">{renderIcon(c.icon, 15, null)}</span> : null}{c.name ?? ''}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

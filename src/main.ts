@@ -51,18 +51,37 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       SLIDER_FIELD,
       { name: 'slider_target', selector: { select: { mode: 'dropdown', options: [{ value: 'brightness', label: 'Brightness' }, { value: 'color_temp', label: 'Colour temperature' }] } } },
       { name: 'show_color_controls', selector: { boolean: {} } },
+      {
+        name: 'color_controls',
+        selector: {
+          object: {
+            multiple: true,
+            label_field: 'name',
+            translation_key: 'preset',
+            fields: {
+              name: { required: true, selector: { text: {} } },
+              icon: { selector: { icon: {} } },
+              kelvin: { selector: { number: { min: 1500, max: 8000, step: 50, mode: 'box', unit_of_measurement: 'K' } } },
+              brightness: { selector: { number: { min: 1, max: 100, step: 1, mode: 'slider', unit_of_measurement: '%' } } },
+              effect: { selector: { text: {} } },
+            },
+          },
+        },
+      },
       { name: 'compact', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
       name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS,
       use_light_color: 'Tint with the bulb’s colour', color: 'Accent colour (override)',
-      slider: 'Brightness slider style', slider_target: 'Slider controls', show_color_controls: 'Warm / Cool / Scene controls', compact: 'Compact (dense)',
+      slider: 'Brightness slider style', slider_target: 'Slider controls',
+      show_color_controls: 'Show preset chips', color_controls: 'Preset chips', compact: 'Compact (dense)',
     },
     helpers: {
       use_light_color: 'On: the tile takes the light’s live colour. Off: a calm warm yellow.',
       slider: 'Dots, a solid bar, a thin line, or hidden.',
       slider_target: 'Drag to set brightness, or the colour temperature (warm ↔ cool).',
+      color_controls: 'Add / name / reorder chips, each applying a colour-temp + brightness preset. Empty ⇒ Warm / Cool / Scene.',
     },
     defaults: { use_light_color: true, slider: 'dots', slider_target: 'brightness', show_color_controls: true },
   },
