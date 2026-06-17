@@ -12,6 +12,9 @@ import { FanCard, type FanCardConfig } from './cards/FanCard';
 import { ButtonCard, type ButtonCardConfig } from './cards/ButtonCard';
 import { GaugeCard, type GaugeCardConfig } from './cards/GaugeCard';
 import { AlarmCard, type AlarmCardConfig } from './cards/AlarmCard';
+import { VacuumCard, type VacuumCardConfig } from './cards/VacuumCard';
+import { WeatherCard, type WeatherCardConfig } from './cards/WeatherCard';
+import { SelectCard, type SelectCardConfig } from './cards/SelectCard';
 
 const COLOR_OPTIONS = [
   { value: 'warm', label: 'Amber' },
@@ -497,6 +500,98 @@ defineCard<AlarmCardConfig>('simui-alarm-card', AlarmCard, {
   },
 });
 
+defineCard<VacuumCardConfig>('simui-vacuum-card', VacuumCard, {
+  gridOptions: TILE_GRID,
+  stubConfig: (hass) => ({ entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('vacuum.')) ?? '' : '' }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'vacuum' } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      {
+        name: 'actions',
+        selector: { select: { multiple: true, mode: 'list', options: [{ value: 'start', label: 'Clean / Resume' }, { value: 'pause', label: 'Pause' }, { value: 'stop', label: 'Stop' }, { value: 'return_to_base', label: 'Dock' }, { value: 'locate', label: 'Locate' }] } },
+      },
+      { name: 'show_fan_speed', selector: { boolean: {} } },
+      { name: 'show_battery', selector: { boolean: {} } },
+      { name: 'show_status', selector: { boolean: {} } },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Vacuum', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', actions: 'Action buttons', show_fan_speed: 'Show fan-speed chips', show_battery: 'Show battery %', show_status: 'Show status line', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: {
+      actions: 'Which controls to offer, in order. Empty ⇒ auto from what the vacuum supports (Clean / Pause / Stop / Dock / Locate).',
+      color: 'Overrides the automatic state colour (blue cleaning · green docked · amber paused · grey idle · red error).',
+      show_fan_speed: 'Show suction-power chips from the vacuum’s fan_speed_list. Hidden when unsupported.',
+      buttons: BUTTONS_HELP,
+    },
+    defaults: { show_fan_speed: true, show_battery: true, show_status: true },
+  },
+});
+
+defineCard<WeatherCardConfig>('simui-weather-card', WeatherCard, {
+  gridOptions: WIDE_GRID,
+  cardSize: 4,
+  stubConfig: (hass) => ({ entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('weather.')) ?? '' : '' }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'weather' } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      { name: 'forecast_type', selector: { select: { mode: 'dropdown', options: [{ value: 'daily', label: 'Daily' }, { value: 'hourly', label: 'Hourly' }, { value: 'twice_daily', label: 'Twice daily' }, { value: 'none', label: 'Hidden' }] } } },
+      { name: 'forecast_slots', selector: { number: { min: 1, max: 10, step: 1, mode: 'slider' } } },
+      { name: 'show_details', selector: { boolean: {} } },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Weather', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', forecast_type: 'Forecast', forecast_slots: 'Forecast days / hours', show_details: 'Detail row (feels-like · humidity · wind)', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: {
+      color: 'Overrides the automatic colour picked from the current condition.',
+      forecast_type: 'Daily, hourly, or twice-daily — gated by what the integration provides. “Hidden” drops the strip.',
+      forecast_slots: 'How many forecast cells to show (default 5).',
+      buttons: BUTTONS_HELP,
+    },
+    defaults: { forecast_type: 'daily', forecast_slots: 5, show_details: true },
+  },
+});
+
+defineCard<SelectCardConfig>('simui-select-card', SelectCard, {
+  gridOptions: TILE_GRID,
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('select.')) ?? Object.keys(hass.states).find((id) => id.startsWith('input_select.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: ['select', 'input_select'] } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      { name: 'mode', selector: { select: { mode: 'dropdown', options: [{ value: 'auto', label: 'Auto (chips or dropdown)' }, { value: 'chips', label: 'Chips' }, { value: 'dropdown', label: 'Dropdown' }, { value: 'cycle', label: 'Cycle (tap to advance)' }] } } },
+      { name: 'chip_threshold', selector: { number: { min: 2, max: 12, step: 1, mode: 'box' } } },
+      { name: 'show_control', selector: { boolean: {} } },
+      {
+        name: 'options',
+        selector: { object: { multiple: true, label_field: 'option', translation_key: 'select_option', fields: { option: { required: true, selector: { text: {} } }, name: { selector: { text: {} } }, icon: { selector: { icon: {} } } } } },
+      },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Select entity', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', mode: 'Picker style', chip_threshold: 'Max chips before dropdown', show_control: 'Show the picker', options: 'Option labels', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: {
+      mode: 'Auto shows chips for a few options and a dropdown for many. Cycle hides the picker and advances on tap.',
+      chip_threshold: 'In Auto mode, option lists longer than this become a dropdown. Default 5.',
+      options: 'Rename or icon individual options. Add an entry whose “option” exactly matches a value the entity offers — others fall back to the raw name.',
+      buttons: BUTTONS_HELP,
+    },
+    defaults: { mode: 'auto', chip_threshold: 5, show_control: true },
+  },
+});
+
 // ── Card-picker / HACS metadata ───────────────────────────────────────────────
 interface CustomCard {
   type: string;
@@ -596,6 +691,27 @@ w.customCards.push(
     type: 'simui-alarm-card',
     name: 'SimUI Alarm',
     description: 'A minimalist alarm panel tile — armed state big, one-tap arm / disarm, tinted by state.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-vacuum-card',
+    name: 'SimUI Vacuum',
+    description: 'A minimalist robot-vacuum tile — state big, battery %, and Clean / Pause / Stop / Dock / Locate controls.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-weather-card',
+    name: 'SimUI Weather',
+    description: 'A minimalist weather card — condition, big temperature, feels-like / humidity / wind, and a forecast strip.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-select-card',
+    name: 'SimUI Select',
+    description: 'A minimalist option-picker tile — the current choice big, chips for a few options or a dropdown for many.',
     preview: true,
     documentationURL: 'https://github.com/watari-dev/simui-lovelace',
   },

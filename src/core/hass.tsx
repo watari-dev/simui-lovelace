@@ -145,3 +145,49 @@ export function useHistory(entityId: string | undefined, hours: number): History
 
   return state;
 }
+
+export interface ForecastItem {
+  datetime: string;
+  condition?: string;
+  temperature?: number;
+  templow?: number;
+  precipitation?: number;
+  precipitation_probability?: number;
+  wind_speed?: number;
+  wind_bearing?: number;
+  humidity?: number;
+  is_daytime?: boolean;
+}
+
+/** Subscribe to a weather entity's forecast (`weather/subscribe_forecast`, HA 2026.x — the
+ *  legacy `forecast` attribute is gone). Degrades to an empty/unsupported result when there's
+ *  no live `connection` (the standalone dev harness) or the integration rejects the type. */
+export function useForecast(
+  entityId: string | undefined,
+  forecastType: 'daily' | 'hourly' | 'twice_daily' | 'none',
+): { forecast: ForecastItem[]; supported: boolean } {
+  const { hass } = useCtx();
+  const hassRef = useRef(hass);
+  hassRef.current = hass;
+  const [state, setState] = useState<{ forecast: ForecastItem[]; supported: boolean }>({ forecast: [], supported: false });
+
+  useEffect(() => {
+    const conn = hassRef.current.connection;
+    if (!entityId || forecastType === 'none' || !conn?.subscribeMessage) {
+      setState({ forecast: [], supported: false });
+      return;
+    }
+    let unsub: (() => void) | undefined;
+    let cancelled = false;
+    conn
+      .subscribeMessage<{ type: string; forecast: ForecastItem[] | null }>(
+        (evt) => { if (!cancelled) setState({ forecast: evt.forecast ?? [], supported: true }); },
+        { type: 'weather/subscribe_forecast', entity_id: entityId, forecast_type: forecastType },
+      )
+      .then((u) => { if (cancelled) u(); else unsub = u; })
+      .catch(() => { if (!cancelled) setState({ forecast: [], supported: false }); });
+    return () => { cancelled = true; unsub?.(); };
+  }, [entityId, forecastType]);
+
+  return state;
+}

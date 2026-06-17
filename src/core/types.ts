@@ -20,6 +20,11 @@ export interface HomeAssistant {
   ) => Promise<unknown> | void;
   /** WebSocket command — used for recorder history (`history/history_during_period`). */
   callWS?: <T = unknown>(msg: { type: string } & Record<string, unknown>) => Promise<T>;
+  /** The home-assistant-js-websocket Connection (subset) — used for the weather forecast
+   *  subscription (`weather/subscribe_forecast`). Absent in the standalone dev harness. */
+  connection?: {
+    subscribeMessage: <T = unknown>(callback: (event: T) => void, msg: { type: string } & Record<string, unknown>) => Promise<() => void>;
+  };
   themes?: unknown;
   language?: string;
   locale?: unknown;
