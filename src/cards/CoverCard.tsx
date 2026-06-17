@@ -8,13 +8,17 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
-import { DotBar, accentVar, discIcon, sliderKeys } from './luminous';
+import { DotBar, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
 
 export interface CoverCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
   /** Force an accent colour (overrides the default cover tint). */
   color?: string;
+  /** Position slider style: dots (default) · bar · line · none (hidden). */
+  slider?: SliderStyle | 'none';
+  /** Show the Open / Stop / Close buttons (default true). */
+  show_buttons?: boolean;
   compact?: boolean;
 }
 
@@ -90,7 +94,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
         )}
       </div>
       <div className="ctl">
-        {hasPos && (
+        {hasPos && config.slider !== 'none' && (
           <DotBar
             value={position ?? 0}
             segments={compact ? 12 : 14}
@@ -98,9 +102,10 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
             handlers={drag.handlers}
             ariaLabel={`${name} position`}
             onKeyDown={sliderKeys(position ?? 0, setPosition)}
+            variant={config.slider ?? 'dots'}
           />
         )}
-        {!compact && (
+        {!compact && config.show_buttons !== false && (
           <div className="chips">
             <button type="button" disabled={!onOpen || (fullyOpen && !v.moving)} onClick={onOpen} onPointerDown={(ev) => ev.stopPropagation()}>▲ Open</button>
             <button type="button" className={v.moving ? 'on' : ''} disabled={!onStop} onClick={onStop} onPointerDown={(ev) => ev.stopPropagation()}>Stop</button>

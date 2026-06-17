@@ -128,6 +128,13 @@ svg.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: ro
 .compact .dots i { height: 6px; }
 .dots i.on { background: var(--acc); box-shadow: 0 0 9px -1px color-mix(in srgb, var(--acc) 75%, transparent); }
 .dots:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 70%, transparent); outline-offset: 4px; border-radius: 4px; }
+/* slider style variants — a solid bar or a thin line in place of the dots (22px touch area kept) */
+.dots.st-bar .track, .dots.st-line .track { flex: 1; position: relative; background: var(--dot-off); border-radius: 6px; overflow: hidden; }
+.dots.st-bar .track { height: 10px; }
+.dots.st-line .track { height: 4px; border-radius: 3px; }
+.compact .dots.st-bar .track { height: 8px; }
+.compact .dots.st-line .track { height: 3px; }
+.dots .track .fill { position: absolute; inset: 0 auto 0 0; background: var(--acc); border-radius: inherit; box-shadow: 0 0 9px -1px color-mix(in srgb, var(--acc) 75%, transparent); transition: width .12s var(--ease); }
 
 /* climate temperature track */
 .track { position: relative; height: 34px; cursor: ew-resize; touch-action: none; display: flex; align-items: center; }

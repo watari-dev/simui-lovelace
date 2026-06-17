@@ -25,6 +25,13 @@ const ACTION_FIELDS = [
   { name: 'double_tap_action', selector: { ui_action: {} } },
 ];
 const ACTION_LABELS = { tap_action: 'Tap action', hold_action: 'Hold action', double_tap_action: 'Double-tap action' };
+const SLIDER_OPTIONS = [
+  { value: 'dots', label: 'Dots' },
+  { value: 'bar', label: 'Bar' },
+  { value: 'line', label: 'Line' },
+  { value: 'none', label: 'Hidden' },
+];
+const SLIDER_FIELD = { name: 'slider', selector: { select: { mode: 'dropdown', options: SLIDER_OPTIONS } } };
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
@@ -41,17 +48,21 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       ...ACTION_FIELDS,
       { name: 'use_light_color', selector: { boolean: {} } },
       COLOR_FIELD,
+      SLIDER_FIELD,
+      { name: 'show_color_controls', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
       name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS,
-      use_light_color: 'Tint with the bulb’s colour', color: 'Accent colour (override)', compact: 'Compact (dense)',
+      use_light_color: 'Tint with the bulb’s colour', color: 'Accent colour (override)',
+      slider: 'Brightness slider style', show_color_controls: 'Warm / Cool / Scene controls', compact: 'Compact (dense)',
     },
     helpers: {
       use_light_color: 'On: the tile takes the light’s live colour. Off: a calm warm yellow.',
+      slider: 'Dots, a solid bar, a thin line, or hidden.',
     },
-    defaults: { use_light_color: true },
+    defaults: { use_light_color: true, slider: 'dots', show_color_controls: true },
   },
 });
 
@@ -66,9 +77,12 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
       { name: 'icon', selector: { icon: {} } },
       ...ACTION_FIELDS,
       COLOR_FIELD,
+      { name: 'show_track', selector: { boolean: {} } },
+      { name: 'show_modes', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', compact: 'Compact (dense)' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', show_track: 'Temperature track', show_modes: 'Heat / Auto / Cool chips', compact: 'Compact (dense)' },
+    defaults: { show_track: true, show_modes: true },
   },
 });
 
@@ -142,9 +156,12 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       { name: 'icon', selector: { icon: {} } },
       ...ACTION_FIELDS,
       COLOR_FIELD,
+      SLIDER_FIELD,
+      { name: 'show_buttons', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', compact: 'Compact (dense)' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', slider: 'Position slider style', show_buttons: 'Open / Stop / Close buttons', compact: 'Compact (dense)' },
+    defaults: { slider: 'dots', show_buttons: true },
   },
 });
 

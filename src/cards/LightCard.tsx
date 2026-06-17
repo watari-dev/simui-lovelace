@@ -8,7 +8,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
-import { DotBar, accentVar, discIcon, sliderKeys } from './luminous';
+import { DotBar, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
 
 export interface LightCardConfig extends BaseCardConfig {
   entity: string;
@@ -17,6 +17,10 @@ export interface LightCardConfig extends BaseCardConfig {
   use_light_color?: boolean;
   /** Force an accent colour: warm | cool | up | down | grey | heat (overrides use_light_color). */
   color?: string;
+  /** Brightness slider style: dots (default) · bar · line · none (hidden). */
+  slider?: SliderStyle | 'none';
+  /** Show the Warm / Cool / Scene colour-temperature controls (default true). */
+  show_color_controls?: boolean;
   /** Glanceable footprint for dense dashboards. */
   compact?: boolean;
 }
@@ -125,15 +129,18 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
         )}
       </div>
       <div className="ctl">
-        <DotBar
-          value={pct}
-          segments={compact ? 12 : 14}
-          settable={settable}
-          handlers={drag.handlers}
-          ariaLabel={`${name} brightness`}
-          onKeyDown={sliderKeys(pct, setBrightness)}
-        />
-        {!compact && hasColorTemp && (
+        {config.slider !== 'none' && (
+          <DotBar
+            value={pct}
+            segments={compact ? 12 : 14}
+            settable={settable}
+            handlers={drag.handlers}
+            ariaLabel={`${name} brightness`}
+            onKeyDown={sliderKeys(pct, setBrightness)}
+            variant={config.slider ?? 'dots'}
+          />
+        )}
+        {!compact && hasColorTemp && config.show_color_controls !== false && (
           <div className="chips">
             <button type="button" className={warmActive ? 'on' : ''} onClick={setTemp(2700)} onPointerDown={(ev) => ev.stopPropagation()}>Warm</button>
             <button type="button" className={coolActive ? 'on' : ''} onClick={setTemp(5000)} onPointerDown={(ev) => ev.stopPropagation()}>Cool</button>

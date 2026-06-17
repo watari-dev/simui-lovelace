@@ -15,6 +15,10 @@ export interface ClimateCardConfig extends BaseCardConfig {
   name?: string;
   /** Force an accent colour (overrides the automatic hvac-action tint). */
   color?: string;
+  /** Show the draggable temperature track (default true). */
+  show_track?: boolean;
+  /** Show the Heat / Auto / Cool mode chips (default true). */
+  show_modes?: boolean;
   compact?: boolean;
 }
 
@@ -135,6 +139,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
         )}
       </div>
       <div className="ctl">
+        {config.show_track !== false && (
         <TempTrack
           knobPct={knobPct}
           tickPct={compact ? null : tickPct}
@@ -157,7 +162,8 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
             }
           }}
         />
-        {!compact && modeChips.length > 0 && (
+        )}
+        {!compact && modeChips.length > 0 && config.show_modes !== false && (
           <div className="chips">
             {modeChips.map((c) => (
               <button key={c.label} type="button" className={v.on && e?.state === c.mode ? 'on' : ''} onClick={setMode(c.mode)} onPointerDown={(ev) => ev.stopPropagation()}>{c.label}</button>

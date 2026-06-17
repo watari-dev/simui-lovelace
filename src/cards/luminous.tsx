@@ -28,6 +28,8 @@ const ACCENTS = new Set(['warm', 'cool', 'up', 'down', 'grey', 'heat']);
 export const accentVar = (name?: string): string | undefined => (name && ACCENTS.has(name) ? `var(--${name})` : undefined);
 
 // ── Dot bar (brightness / position) ───────────────────────────────────────────
+export type SliderStyle = 'dots' | 'bar' | 'line';
+
 export function DotBar({
   value,
   segments,
@@ -35,6 +37,7 @@ export function DotBar({
   handlers,
   ariaLabel,
   onKeyDown,
+  variant = 'dots',
 }: {
   value: number; // 0–100
   segments: number;
@@ -42,24 +45,29 @@ export function DotBar({
   handlers?: DragHandlers;
   ariaLabel: string;
   onKeyDown?: (e: ReactKeyboardEvent) => void;
+  /** Visual style: segmented dots (default), a solid bar, or a thin line. */
+  variant?: SliderStyle;
 }): ReactNode {
-  const filled = Math.round((Math.max(0, Math.min(100, value)) / 100) * segments);
+  const v = Math.max(0, Math.min(100, value));
+  const filled = Math.round((v / 100) * segments);
   return (
     <div
-      className="dots"
+      className={`dots st-${variant}`}
       role="slider"
       aria-label={ariaLabel}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={Math.round(value)}
-      aria-valuetext={`${Math.round(value)}%`}
+      aria-valuenow={Math.round(v)}
+      aria-valuetext={`${Math.round(v)}%`}
       tabIndex={settable ? 0 : -1}
       onKeyDown={settable ? onKeyDown : undefined}
       {...swallow(settable ? handlers : undefined)}
     >
-      {Array.from({ length: segments }, (_, i) => (
-        <i key={i} className={i < filled ? 'on' : ''} />
-      ))}
+      {variant === 'dots' ? (
+        Array.from({ length: segments }, (_, i) => <i key={i} className={i < filled ? 'on' : ''} />)
+      ) : (
+        <span className="track"><span className="fill" style={{ width: `${v}%` }} /></span>
+      )}
     </div>
   );
 }
