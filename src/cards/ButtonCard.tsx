@@ -7,7 +7,7 @@ import type { ActionConfig } from '../core/actions';
 import type { BaseCardConfig } from '../core/types';
 import { domainOf, friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
-import { ChipRow, accentVar, discIcon, type ActionChip } from './luminous';
+import { ChipRow, TileHead, accentVar, discIcon, type ActionChip } from './luminous';
 
 export interface ButtonCardConfig extends BaseCardConfig {
   /** A scene.* or script.* entity. Omit for a pure-action button (tap_action only). */
@@ -107,8 +107,6 @@ export function ButtonCard({ config }: CardComponentProps<ButtonCardConfig>) {
   };
 
   const verb = isScene ? 'Activate' : 'Run';
-  const badge = flash ? 'Activated' : running ? 'Running' : 'Run';
-
   return (
     <div
       className={`tile${compact ? ' compact' : ''}${flash ? ' fired' : ''}${running ? ' running' : ''}${dead ? ' is-unavailable' : ''}`}
@@ -120,19 +118,19 @@ export function ButtonCard({ config }: CardComponentProps<ButtonCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); if (config.entity) moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={`Run ${name}`} onClick={activate} onPointerDown={(ev) => ev.stopPropagation()}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}
-          </button>
-          {compact ? <div className="num" style={{ fontSize: '22px' }}>{verb}</div> : <div className="badge"><span className="pt" />{badge}</div>}
-        </div>
         {compact ? (
-          <div className="cname" title={name}>{name}</div>
+          <>
+            <div className="thead">
+              <button type="button" className="disc" aria-label={`Run ${name}`} onClick={activate} onPointerDown={(ev) => ev.stopPropagation()}>{renderIcon(config.icon, 18, discIcon(Icon, 18))}</button>
+              <div className="num" style={{ fontSize: '22px' }}>{verb}</div>
+            </div>
+            <div className="cname" title={name}>{name}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num" style={{ fontSize: '30px' }}>{verb}</div></div>
-          </div>
+          <>
+            <TileHead disc={<button type="button" className="disc" aria-label={`Run ${name}`} onClick={activate} onPointerDown={(ev) => ev.stopPropagation()}>{renderIcon(config.icon, 21, discIcon(Icon, 21))}</button>} name={name} active={running || flash} />
+            <div className="valrow"><div className="numwrap"><div className="num" style={{ fontSize: '30px' }}>{verb}</div></div></div>
+          </>
         )}
       </div>
       <div className="ctl">

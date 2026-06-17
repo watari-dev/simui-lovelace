@@ -6,7 +6,7 @@ import type { BaseCardConfig } from '../core/types';
 import { domainOf, friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
-import { ChipRow, Sparkline, discIcon, type ActionChip } from './luminous';
+import { ChipRow, Sec, Sparkline, TileHead, discIcon, type ActionChip } from './luminous';
 
 export interface SensorCardConfig extends BaseCardConfig {
   entity: string;
@@ -76,10 +76,6 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const delta = stats && Number.isFinite(cur) ? cur - stats.first : null;
   const deltaUnit = numeric && unit ? unit : '';
   const showDelta = config.show_delta !== false && delta != null && Math.abs(delta) >= 0.05;
-  const deltaNode = showDelta ? (
-    <div className="badge" style={{ ['--acc']: delta >= 0 ? 'var(--up)' : 'var(--down)' } as CSSProperties}>{delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit} · 24h</div>
-  ) : null;
-
   const sparkH = compact ? 30 : 46;
   const valueNode = <>{bigVal}{numeric && unit && <span className="u">{unit}</span>}</>;
 
@@ -94,17 +90,19 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <span className="disc" aria-hidden="true">{renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}</span>
-          {compact ? <div className="num tnum">{valueNode}</div> : (deltaNode ?? <span />)}
-        </div>
         {compact ? (
-          <div className="cname" title={name}>{name}{showDelta && delta != null && <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)', fontWeight: 600 }}> {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit}</span>}</div>
+          <>
+            <div className="thead"><span className="disc" aria-hidden="true">{renderIcon(config.icon, 18, discIcon(Icon, 18))}</span><div className="num tnum">{valueNode}</div></div>
+            <div className="cname" title={name}>{name}{showDelta && delta != null && <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)', fontWeight: 600 }}> {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit}</span>}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num tnum">{valueNode}</div><div className="nsub">Now</div></div>
-          </div>
+          <>
+            <TileHead disc={<span className="disc" aria-hidden="true">{renderIcon(config.icon, 21, discIcon(Icon, 21))}</span>} name={name} active={!dead} />
+            <div className="valrow">
+              <div className="numwrap"><div className="num tnum">{valueNode}</div><div className="nsub">Now</div></div>
+              <Sec stats={showDelta && delta != null ? [{ l: '24h', v: <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)' }}>{delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit}</span> }] : undefined} />
+            </div>
+          </>
         )}
       </div>
       <div className="ctl">

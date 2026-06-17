@@ -3,13 +3,13 @@ import { Thermometer } from 'lucide-react';
 import { useActions, useCallService, useEntity, useHass, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
-import { clamp, friendly, isUnavailable, prettyState } from '../util';
+import { clamp, friendly, isUnavailable } from '../util';
 import type { CardComponentProps } from '../core/react-card';
 import type { ActionConfig } from '../core/actions';
 import type { BaseCardConfig } from '../core/types';
 import { renderIcon } from '../core/icon';
 import { readClimate } from './climate-util';
-import { TempTrack, accentVar, discIcon } from './luminous';
+import { Seg2, Sec, TempTrack, TileHead, accentVar, discIcon, type SecStat } from './luminous';
 
 /** One configurable mode chip — sets an HVAC mode, preset, temperature, or runs an action. */
 export interface ClimateChip {
@@ -100,7 +100,6 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
           ? fmt(target)
           : '—';
   const showUnit = !dead && !(v.dual && v.low != null);
-  const badge = dead ? 'Off' : !v.on ? 'Off' : prettyState(v.action);
   const sub = !v.on ? 'Off' : v.dual ? 'Range' : target != null ? <>Target <b style={{ color: 'var(--text)', fontWeight: 650 }} className="tnum">{target.toFixed(1)}°</b></> : '';
 
   const toggle = (ev: MouseEvent) => {
@@ -129,6 +128,14 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   const modeActive = (c: ClimateChip): boolean =>
     c.mode != null ? v.on && e?.state === c.mode : c.preset != null ? (e?.attributes.preset_mode as string | undefined) === c.preset : false;
 
+  const humidity = e?.attributes.current_humidity as number | undefined;
+  const secStats: SecStat[] | undefined = typeof humidity === 'number' ? [{ l: 'Humidity', v: <>{Math.round(humidity)}<span className="u">%</span></> }] : undefined;
+  const discBtn = (
+    <button type="button" className="disc" aria-label={v.on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
+      {renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}
+    </button>
+  );
+
   return (
     <div
       className={`tile${compact ? ' compact' : ''}${dead ? ' is-unavailable' : ''}`}
@@ -140,29 +147,20 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={v.on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}
-          </button>
-          {compact ? (
-            <div className="num tnum">{bigVal}{showUnit && <span className="u">°</span>}</div>
-          ) : (
-            <div className="badge"><span className="pt" />{badge}</div>
-          )}
-        </div>
         {compact ? (
           <>
+            <div className="thead">{discBtn}<div className="num tnum">{bigVal}{showUnit && <span className="u">°</span>}</div></div>
             <div className="cname" title={name}>{name}</div>
             <div className="csub">{sub}</div>
           </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap">
-              <div className="num tnum">{bigVal}{showUnit && <span className="u">{unit}</span>}</div>
-              <div className="nsub">{sub}</div>
+          <>
+            <TileHead disc={discBtn} name={name} active={v.on} />
+            <div className="valrow">
+              <div className="numwrap"><div className="num tnum">{bigVal}{showUnit && <span className="u">{unit}</span>}</div><div className="nsub">{sub}</div></div>
+              <Sec stats={secStats} />
             </div>
-          </div>
+          </>
         )}
       </div>
       <div className="ctl">
@@ -191,13 +189,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
         />
         )}
         {!compact && modeChips.length > 0 && config.show_modes !== false && (
-          <div className="chips">
-            {modeChips.map((c, i) => (
-              <button key={i} type="button" className={modeActive(c) ? 'on' : ''} onClick={applyMode(c)} onPointerDown={(ev) => ev.stopPropagation()}>
-                {c.icon ? <span className="chip-ic">{renderIcon(c.icon, 15, null)}</span> : null}{c.name ?? ''}
-              </button>
-            ))}
-          </div>
+          <Seg2 items={modeChips.map((c, i) => ({ key: String(i), label: c.name, icon: c.icon, active: modeActive(c), onClick: applyMode(c) }))} />
         )}
       </div>
     </div>

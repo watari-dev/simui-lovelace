@@ -7,7 +7,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { labelOption, readSelect, type SelectOption } from './select-util';
-import { ChipRow, accentVar, discIcon, type ActionChip } from './luminous';
+import { ChipRow, Seg2, TileHead, accentVar, discIcon, type ActionChip } from './luminous';
 
 export interface SelectCardConfig extends BaseCardConfig {
   entity: string;
@@ -90,19 +90,19 @@ export function SelectCard({ config }: CardComponentProps<SelectCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label="Options" onClick={discTap} onPointerDown={stop}>
-            {renderIcon(config.icon ?? v.entityIcon, compact ? 18 : 21, discIcon(ListChecks, compact ? 18 : 21))}
-          </button>
-          {compact ? <div className="num selval" style={{ fontSize: '18px' }}>{currentLabel}</div> : <div className="badge"><span className="pt" />{dead ? 'Off' : `${v.count} options`}</div>}
-        </div>
         {compact ? (
-          <div className="cname" title={name}>{name}</div>
+          <>
+            <div className="thead">
+              <button type="button" className="disc" aria-label="Options" onClick={discTap} onPointerDown={stop}>{renderIcon(config.icon ?? v.entityIcon, 18, discIcon(ListChecks, 18))}</button>
+              <div className="num selval" style={{ fontSize: '18px' }}>{currentLabel}</div>
+            </div>
+            <div className="cname" title={name}>{name}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num selval" style={{ fontSize: sz }}>{currentLabel}</div></div>
-          </div>
+          <>
+            <TileHead disc={<button type="button" className="disc" aria-label="Options" onClick={discTap} onPointerDown={stop}>{renderIcon(config.icon ?? v.entityIcon, 21, discIcon(ListChecks, 21))}</button>} name={name} active={!dead} />
+            <div className="valrow"><div className="numwrap"><div className="num selval" style={{ fontSize: sz }}>{currentLabel}</div></div></div>
+          </>
         )}
       </div>
       <div className="ctl">
@@ -118,16 +118,7 @@ export function SelectCard({ config }: CardComponentProps<SelectCardConfig>) {
               <button type="button" disabled={dead || v.count < 2} onClick={(ev) => { stop(ev); if (v.next) setOption(v.next); }} onPointerDown={stop}>Next ›</button>
             </div>
           ) : resolved === 'chips' ? (
-            <div className="chips selchips">
-              {v.options.slice(0, HARD_CAP).map((o) => {
-                const ov = config.options?.find((x) => x.option === o);
-                return (
-                  <button key={o} type="button" className={o === v.current ? 'on' : ''} disabled={dead} onClick={(ev) => { stop(ev); setOption(o); }} onPointerDown={stop}>
-                    {ov?.icon ? <span className="chip-ic">{renderIcon(ov.icon, 15, null)}</span> : null}{labelOption(o, config.options)}
-                  </button>
-                );
-              })}
-            </div>
+            <Seg2 items={v.options.slice(0, HARD_CAP).map((o) => ({ key: o, label: labelOption(o, config.options), icon: config.options?.find((x) => x.option === o)?.icon, active: o === v.current, disabled: dead, onClick: () => setOption(o) }))} />
           ) : null
         )}
         {!compact && <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />}

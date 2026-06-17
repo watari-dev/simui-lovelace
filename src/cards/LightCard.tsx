@@ -9,7 +9,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
-import { DotBar, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
+import { DotBar, Seg2, Sec, TileHead, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
 
 /** One configurable preset chip — applies a lighting scene to this light, or runs an action. */
 export interface LightChip {
@@ -131,6 +131,12 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
     <>{pct}<span className="u">%</span></>
   );
 
+  const discBtn = (
+    <button type="button" className="disc" aria-label={on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
+      {renderIcon(config.icon, compact ? 18 : 21, discIcon(Lightbulb, compact ? 18 : 21))}
+    </button>
+  );
+
   return (
     <div
       className={`tile${compact ? ' compact' : ''}${dead ? ' is-unavailable' : ''}`}
@@ -142,26 +148,19 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(Lightbulb, compact ? 18 : 21))}
-          </button>
-          {compact ? (
-            <div className="num tnum">{valueNode}</div>
-          ) : (
-            <div className="badge"><span className="pt" />{on ? 'On' : 'Off'}</div>
-          )}
-        </div>
         {compact ? (
-          <div className="cname" title={name}>{name}</div>
+          <>
+            <div className="thead">{discBtn}<div className="num tnum">{valueNode}</div></div>
+            <div className="cname" title={name}>{name}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap">
-              <div className="num tnum">{valueNode}</div>
-              {sub && <div className="nsub">{sub}</div>}
+          <>
+            <TileHead disc={discBtn} name={name} active={on} />
+            <div className="valrow">
+              <div className="numwrap"><div className="num tnum">{valueNode}</div>{sub && <div className="nsub">{sub}</div>}</div>
+              <Sec swatch={on ? acc : undefined} />
             </div>
-          </div>
+          </>
         )}
       </div>
       <div className="ctl">
@@ -176,18 +175,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
             variant={config.slider ?? 'dots'}
           />
         )}
-        {showChips && (
-          <div className="chips">
-            {chips.map((c, i) => {
-              const active = on && c.kelvin != null && kelvin != null && Math.abs(kelvin - c.kelvin) < 120;
-              return (
-                <button key={i} type="button" className={active ? 'on' : ''} onClick={applyChip(c)} onPointerDown={(ev) => ev.stopPropagation()}>
-                  {c.icon ? <span className="chip-ic">{renderIcon(c.icon, 15, null)}</span> : null}{c.name ?? ''}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {showChips && <Seg2 items={chips.map((c, i) => ({ key: String(i), label: c.name, icon: c.icon, active: on && c.kelvin != null && kelvin != null && Math.abs(kelvin - c.kelvin) < 120, onClick: applyChip(c) }))} />}
       </div>
     </div>
   );

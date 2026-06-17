@@ -1,4 +1,4 @@
-import { createElement, useId, useMemo, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { createElement, useId, useMemo, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { renderIcon } from '../core/icon';
 import type { ActionConfig } from '../core/actions';
 
@@ -56,6 +56,54 @@ export function ChipRow({ chips, run }: { chips?: ActionChip[]; run: (a: ActionC
           onPointerDown={(e) => e.stopPropagation()}
         >
           {c.icon ? <span className="chip-ic">{renderIcon(c.icon, 15, null)}</span> : null}{c.name ?? ''}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── v4 tile patterns: header (disc + name + status dot), secondary readout, segmented control ──
+/** The tight inline header: the glowing disc, the entity name (wraps to 2 lines), and a glowing
+ *  status dot (accent when active, dim when not). Replaces the old disc + text-badge header. */
+export function TileHead({ disc, name, sub, active }: { disc: ReactNode; name: string; sub?: ReactNode; active?: boolean }): ReactNode {
+  return (
+    <div className="hdr">
+      {disc}
+      <div className="hname"><div className="nm" title={name}>{name}</div>{sub != null && sub !== '' ? <div className="st">{sub}</div> : null}</div>
+      <span className={`statusdot${active ? '' : ' off'}`} aria-hidden="true" />
+    </div>
+  );
+}
+
+export interface SecStat { l: string; v: ReactNode; }
+/** The right-aligned secondary readout in the value row — one or two compact stats (label over
+ *  value) and/or a colour swatch, filling the space beside the big numeral. */
+export function Sec({ stats, swatch }: { stats?: SecStat[]; swatch?: string }): ReactNode {
+  const list = stats ?? [];
+  if (!swatch && list.length === 0) return null;
+  return (
+    <div className="sec">
+      {swatch ? <span className="swatch" style={{ ['--swc']: swatch } as CSSProperties} aria-hidden="true" /> : null}
+      {list.map((s, i) => <div key={i} className="secstat"><div className="l">{s.l}</div><div className="v tnum">{s.v}</div></div>)}
+    </div>
+  );
+}
+
+export interface Seg2Item { key: string; label?: string; icon?: string; active?: boolean; disabled?: boolean; onClick: (e: ReactMouseEvent) => void; }
+/** A connected segmented control with a sliding accent thumb — the v4 replacement for the tile
+ *  mode-chip rows. The thumb slides to the active segment (hidden when none is active). Renders
+ *  whatever chip list the card supplies, so the rows stay fully configurable. */
+export function Seg2({ items }: { items: Seg2Item[] }): ReactNode {
+  if (items.length === 0) return null;
+  const activeIndex = items.findIndex((it) => it.active);
+  const n = items.length;
+  const thumb: CSSProperties = { width: `calc((100% - 6px) / ${n})`, transform: `translateX(${Math.max(0, activeIndex) * 100}%)`, opacity: activeIndex >= 0 ? 1 : 0 };
+  return (
+    <div className="seg2">
+      <span className="thumb" style={thumb} aria-hidden="true" />
+      {items.map((it) => (
+        <button key={it.key} type="button" className={it.active ? 'on' : ''} disabled={it.disabled} onClick={(e) => { e.stopPropagation(); it.onClick(e); }} onPointerDown={(e) => e.stopPropagation()}>
+          {it.icon ? <span className="chip-ic">{renderIcon(it.icon, 14, null)}</span> : null}{it.label}
         </button>
       ))}
     </div>

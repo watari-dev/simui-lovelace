@@ -7,7 +7,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { readGauge } from './gauge-util';
-import { ChipRow, GaugeArc, discIcon, type ActionChip } from './luminous';
+import { ChipRow, GaugeArc, TileHead, discIcon, type ActionChip } from './luminous';
 
 /** One severity band: starts at `from`, runs to the next band (or max). `color` is an accent token. */
 export interface GaugeSeverity {
@@ -83,11 +83,14 @@ export function GaugeCard({ config }: CardComponentProps<GaugeCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <span className="disc" aria-hidden="true">{renderIcon(config.icon, compact ? 18 : 21, discIcon(v.Icon, compact ? 18 : 21))}</span>
-          {compact ? <div className="num tnum">{value}</div> : <span />}
-        </div>
-        {compact ? <div className="cname" title={name}>{name}</div> : <div className="eye" title={name}>{name}</div>}
+        {compact ? (
+          <>
+            <div className="thead"><span className="disc" aria-hidden="true">{renderIcon(config.icon, 18, discIcon(v.Icon, 18))}</span><div className="num tnum">{value}</div></div>
+            <div className="cname" title={name}>{name}</div>
+          </>
+        ) : (
+          <TileHead disc={<span className="disc" aria-hidden="true">{renderIcon(config.icon, 21, discIcon(v.Icon, 21))}</span>} name={name} active={!dead} />
+        )}
       </div>
       <div className="ctl">
         {compact ? (

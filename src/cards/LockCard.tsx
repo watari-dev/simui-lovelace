@@ -6,7 +6,7 @@ import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
-import { ChipRow, accentVar, discIcon, type ActionChip } from './luminous';
+import { ChipRow, Sec, TileHead, accentVar, discIcon, type ActionChip, type SecStat } from './luminous';
 
 export interface LockCardConfig extends BaseCardConfig {
   entity: string;
@@ -66,6 +66,10 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
 
   const time = e?.last_changed ? new Date(e.last_changed).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : null;
   const caption = dead ? 'Unavailable' : `${prettyState(state)}${time ? ` · ${time}` : ''}`;
+  const changedBy = e?.attributes.changed_by as string | undefined;
+  const lockStats: SecStat[] = [];
+  if (!dead && changedBy) lockStats.push({ l: 'By', v: changedBy });
+  if (!dead && time) lockStats.push({ l: 'At', v: time });
 
   const toggle = (ev: MouseEvent) => {
     ev.stopPropagation();
@@ -84,23 +88,32 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={locked ? 'Unlock' : 'Lock'} disabled={transitioning} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}
-          </button>
-          {compact ? (
-            <button type="button" className="sw" aria-label={locked ? 'Unlock' : 'Lock'} aria-pressed={locked} disabled={transitioning} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()} />
-          ) : (
-            <div className="badge"><span className="pt" />{dead ? 'Off' : locked ? 'Locked' : prettyState(state)}</div>
-          )}
-        </div>
         {compact ? (
-          <div className="cname">{word}</div>
+          <>
+            <div className="thead">
+              <button type="button" className="disc" aria-label={locked ? 'Unlock' : 'Lock'} disabled={transitioning} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
+                {renderIcon(config.icon, 18, discIcon(Icon, 18))}
+              </button>
+              <button type="button" className="sw" aria-label={locked ? 'Unlock' : 'Lock'} aria-pressed={locked} disabled={transitioning} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()} />
+            </div>
+            <div className="cname">{word}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num" style={{ fontSize: '32px' }}>{word}</div></div>
-          </div>
+          <>
+            <TileHead
+              disc={(
+                <button type="button" className="disc" aria-label={locked ? 'Unlock' : 'Lock'} disabled={transitioning} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
+                  {renderIcon(config.icon, 21, discIcon(Icon, 21))}
+                </button>
+              )}
+              name={name}
+              active={!dead}
+            />
+            <div className="valrow">
+              <div className="numwrap"><div className="num" style={{ fontSize: '32px' }}>{word}</div></div>
+              <Sec stats={lockStats} />
+            </div>
+          </>
         )}
       </div>
       <div className="ctl">

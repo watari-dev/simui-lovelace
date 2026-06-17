@@ -8,7 +8,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { readFan } from './fan-util';
-import { ChipRow, DotBar, accentVar, discIcon, sliderKeys, type ActionChip, type SliderStyle } from './luminous';
+import { ChipRow, DotBar, TileHead, accentVar, discIcon, sliderKeys, type ActionChip, type SliderStyle } from './luminous';
 
 export interface FanCardConfig extends BaseCardConfig {
   entity: string;
@@ -90,22 +90,19 @@ export function FanCard({ config }: CardComponentProps<FanCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={v.on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(Fan, compact ? 18 : 21))}
-          </button>
-          {compact ? <div className="num tnum">{valueNode}</div> : <div className="badge"><span className="pt" />{v.on ? 'On' : 'Off'}</div>}
-        </div>
         {compact ? (
-          <div className="cname" title={name}>{name}</div>
-        ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap">
+          <>
+            <div className="thead">
+              <button type="button" className="disc" aria-label={v.on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>{renderIcon(config.icon, 18, discIcon(Fan, 18))}</button>
               <div className="num tnum">{valueNode}</div>
-              {v.label && <div className="nsub">{v.label}</div>}
             </div>
-          </div>
+            <div className="cname" title={name}>{name}</div>
+          </>
+        ) : (
+          <>
+            <TileHead disc={<button type="button" className="disc" aria-label={v.on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>{renderIcon(config.icon, 21, discIcon(Fan, 21))}</button>} name={name} active={v.on} />
+            <div className="valrow"><div className="numwrap"><div className="num tnum">{valueNode}</div>{v.label && <div className="nsub">{v.label}</div>}</div></div>
+          </>
         )}
       </div>
       <div className="ctl">

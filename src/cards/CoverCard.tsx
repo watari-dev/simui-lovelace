@@ -6,10 +6,10 @@ import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { ActionConfig } from '../core/actions';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isUnavailable, prettyState } from '../util';
+import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
-import { DotBar, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
+import { DotBar, Seg2, Sec, TileHead, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
 
 /** One configurable cover button — a service, a position/tilt preset, or an action. */
 export interface CoverButton {
@@ -83,7 +83,6 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
 
   const Icon = v.Icon;
   const hasSlider = tiltMode ? v.tilt != null : v.position != null;
-  const badge = dead ? 'Off' : v.moving ? prettyState(e?.state ?? '') : v.open ? 'Open' : 'Closed';
   const fullyOpen = v.position != null ? v.position === 100 : v.open;
   const fullyClosed = v.position != null ? v.position === 0 : !v.open;
 
@@ -115,17 +114,19 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <span className="disc" aria-hidden="true">{renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}</span>
-          {compact ? <div className="num tnum">{valueNode}</div> : <div className="badge"><span className="pt" />{badge}</div>}
-        </div>
         {compact ? (
-          <div className="cname" title={name}>{name}</div>
+          <>
+            <div className="thead"><span className="disc" aria-hidden="true">{renderIcon(config.icon, 18, discIcon(Icon, 18))}</span><div className="num tnum">{valueNode}</div></div>
+            <div className="cname" title={name}>{name}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num tnum">{valueNode}</div><div className="nsub">{tiltMode ? 'Tilt' : 'Position'}</div></div>
-          </div>
+          <>
+            <TileHead disc={<span className="disc" aria-hidden="true">{renderIcon(config.icon, 21, discIcon(Icon, 21))}</span>} name={name} active={v.open} />
+            <div className="valrow">
+              <div className="numwrap"><div className="num tnum">{valueNode}</div><div className="nsub">{tiltMode ? 'Tilt' : 'Position'}</div></div>
+              <Sec stats={!tiltMode && v.canTilt && v.tilt != null ? [{ l: 'Tilt', v: <>{v.tilt}<span className="u">°</span></> }] : undefined} />
+            </div>
+          </>
         )}
       </div>
       <div className="ctl">
@@ -141,16 +142,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
           />
         )}
         {!compact && config.show_buttons !== false && buttons.length > 0 && (
-          <div className="chips">
-            {buttons.map((b, i) => {
-              const { run, disabled, active } = resolveButton(b);
-              return (
-                <button key={i} type="button" className={active ? 'on' : ''} disabled={disabled} onClick={(ev) => { ev.stopPropagation(); run?.(); }} onPointerDown={(ev) => ev.stopPropagation()}>
-                  {b.icon ? <span className="chip-ic">{renderIcon(b.icon, 15, null)}</span> : null}{b.name ?? ''}
-                </button>
-              );
-            })}
-          </div>
+          <Seg2 items={buttons.map((b, i) => { const { run, disabled, active } = resolveButton(b); return { key: String(i), label: b.name, icon: b.icon, active, disabled, onClick: () => run?.() }; })} />
         )}
       </div>
     </div>

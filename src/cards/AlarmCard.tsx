@@ -7,7 +7,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { ARM_LABEL, ARM_STATE, readAlarm, type AlarmAction } from './alarm-util';
-import { ChipRow, accentVar, discIcon, type ActionChip } from './luminous';
+import { ChipRow, Sec, Seg2, TileHead, accentVar, discIcon, type ActionChip, type SecStat, type Seg2Item } from './luminous';
 
 export interface AlarmCardConfig extends BaseCardConfig {
   entity: string;
@@ -71,9 +71,14 @@ export function AlarmCard({ config }: CardComponentProps<AlarmCardConfig>) {
   };
 
   const armChips = (config.arm_actions ?? v.available).filter((a) => v.available.includes(a));
-  const stop = (ev: MouseEvent) => ev.stopPropagation();
   const word = dead ? 'Unavailable' : v.word;
   const twoWord = word.includes(' ');
+  const changedBy = e?.attributes.changed_by as string | undefined;
+  const armSecStats: SecStat[] | undefined = !dead && changedBy ? [{ l: 'By', v: changedBy }] : undefined;
+  const armItems: Seg2Item[] = [];
+  if (v.armed) armItems.push({ key: 'disarm', label: 'Disarm', active: v.state === 'disarmed', disabled: dead || v.pending, onClick: () => disarm() });
+  armChips.forEach((a) => armItems.push({ key: a, label: ARM_LABEL[a], active: v.state === ARM_STATE[a], disabled: dead || v.pending, onClick: () => arm(a) }));
+  if (armItems.length === 0) armItems.push({ key: 'open', label: 'Open', onClick: () => moreInfo(config.entity) });
 
   return (
     <div
@@ -86,19 +91,22 @@ export function AlarmCard({ config }: CardComponentProps<AlarmCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={v.armed ? 'Disarm' : 'Arm'} disabled={dead || v.pending} onClick={discTap} onPointerDown={(ev) => ev.stopPropagation()}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(v.Icon, compact ? 18 : 21))}
-          </button>
-          {compact ? <span /> : <div className="badge"><span className="pt" />{v.short}</div>}
-        </div>
         {compact ? (
-          <div className="cname">{word}</div>
+          <>
+            <div className="thead">
+              <button type="button" className="disc" aria-label={v.armed ? 'Disarm' : 'Arm'} disabled={dead || v.pending} onClick={discTap} onPointerDown={(ev) => ev.stopPropagation()}>{renderIcon(config.icon, 18, discIcon(v.Icon, 18))}</button>
+              <span />
+            </div>
+            <div className="cname">{word}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num" style={{ fontSize: twoWord ? '26px' : '32px' }}>{word}</div></div>
-          </div>
+          <>
+            <TileHead disc={<button type="button" className="disc" aria-label={v.armed ? 'Disarm' : 'Arm'} disabled={dead || v.pending} onClick={discTap} onPointerDown={(ev) => ev.stopPropagation()}>{renderIcon(config.icon, 21, discIcon(v.Icon, 21))}</button>} name={name} active={!dead} />
+            <div className="valrow">
+              <div className="numwrap"><div className="num" style={{ fontSize: twoWord ? '26px' : '32px' }}>{word}</div></div>
+              <Sec stats={armSecStats} />
+            </div>
+          </>
         )}
       </div>
       <div className="ctl">
@@ -108,19 +116,7 @@ export function AlarmCard({ config }: CardComponentProps<AlarmCardConfig>) {
           <>
             <div className="hr" />
             {config.show_status !== false && <div className="ltxt" style={{ fontSize: '12px', color: 'var(--muted)' }}>{v.caption}</div>}
-            {(armChips.length > 0 || v.armed) && (
-              <div className="chips">
-                {v.armed && (
-                  <button type="button" className={v.state === 'disarmed' ? 'on' : ''} disabled={dead || v.pending} onClick={(ev) => { stop(ev); disarm(); }} onPointerDown={stop}>Disarm</button>
-                )}
-                {armChips.map((a) => (
-                  <button key={a} type="button" className={v.state === ARM_STATE[a] ? 'on' : ''} disabled={dead || v.pending} onClick={(ev) => { stop(ev); arm(a); }} onPointerDown={stop}>{ARM_LABEL[a]}</button>
-                ))}
-              </div>
-            )}
-            {armChips.length === 0 && !v.armed && (
-              <div className="chips"><button type="button" onClick={(ev) => { stop(ev); moreInfo(config.entity); }} onPointerDown={stop}>Open</button></div>
-            )}
+            <Seg2 items={armItems} />
             <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />
           </>
         )}

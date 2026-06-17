@@ -7,7 +7,7 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { ACTION_LABEL, readVacuum, type VacuumAction } from './vacuum-util';
-import { ChipRow, DotBar, accentVar, discIcon, type ActionChip } from './luminous';
+import { ChipRow, DotBar, Sec, Seg2, TileHead, accentVar, discIcon, type ActionChip } from './luminous';
 
 export interface VacuumCardConfig extends BaseCardConfig {
   entity: string;
@@ -93,19 +93,22 @@ export function VacuumCard({ config }: CardComponentProps<VacuumCardConfig>) {
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
-        <div className="thead">
-          <button type="button" className="disc" aria-label={v.cleaning ? 'Pause' : 'Start'} disabled={dead} onClick={discTap} onPointerDown={stop}>
-            {renderIcon(config.icon, compact ? 18 : 21, discIcon(v.Icon, compact ? 18 : 21))}
-          </button>
-          {compact ? <span /> : <div className="badge"><span className="pt" />{v.short}</div>}
-        </div>
         {compact ? (
-          <div className="cname">{word}{showBattery && <span style={{ color: 'var(--muted)', fontWeight: 600 }}> · {v.battery}%</span>}</div>
+          <>
+            <div className="thead">
+              <button type="button" className="disc" aria-label={v.cleaning ? 'Pause' : 'Start'} disabled={dead} onClick={discTap} onPointerDown={stop}>{renderIcon(config.icon, 18, discIcon(v.Icon, 18))}</button>
+              <span />
+            </div>
+            <div className="cname">{word}{showBattery && <span style={{ color: 'var(--muted)', fontWeight: 600 }}> · {v.battery}%</span>}</div>
+          </>
         ) : (
-          <div>
-            <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num" style={{ fontSize: '32px' }}>{word}</div>{showBattery && <div className="nsub">{v.battery}% battery</div>}</div>
-          </div>
+          <>
+            <TileHead disc={<button type="button" className="disc" aria-label={v.cleaning ? 'Pause' : 'Start'} disabled={dead} onClick={discTap} onPointerDown={stop}>{renderIcon(config.icon, 21, discIcon(v.Icon, 21))}</button>} name={name} active={!dead} />
+            <div className="valrow">
+              <div className="numwrap"><div className="num" style={{ fontSize: '32px' }}>{word}</div></div>
+              <Sec stats={showBattery ? [{ l: 'Battery', v: <>{v.battery}<span className="u">%</span></> }] : undefined} />
+            </div>
+          </>
         )}
       </div>
       <div className="ctl">
@@ -116,20 +119,8 @@ export function VacuumCard({ config }: CardComponentProps<VacuumCardConfig>) {
           <>
             <div className="hr" />
             {config.show_status !== false && <div className="ltxt" style={{ fontSize: '12px', color: 'var(--muted)' }}>{caption}</div>}
-            {chosen.length > 0 && (
-              <div className="chips">
-                {chosen.map((a) => (
-                  <button key={a} type="button" className={chipActive(a) ? 'on' : ''} disabled={chipDisabled(a)} onClick={(ev) => { stop(ev); runAction(a); }} onPointerDown={stop}>{chipLabel(a)}</button>
-                ))}
-              </div>
-            )}
-            {config.show_fan_speed !== false && v.hasFanSpeed && (
-              <div className="chips">
-                {v.fanSpeedList.map((s) => (
-                  <button key={s} type="button" className={v.fanSpeed === s ? 'on' : ''} disabled={dead} onClick={(ev) => { stop(ev); svc('set_fan_speed', { fan_speed: s })(); }} onPointerDown={stop}>{s}</button>
-                ))}
-              </div>
-            )}
+            {chosen.length > 0 && <Seg2 items={chosen.map((a) => ({ key: a, label: chipLabel(a), active: chipActive(a), disabled: chipDisabled(a), onClick: () => runAction(a) }))} />}
+            {config.show_fan_speed !== false && v.hasFanSpeed && <Seg2 items={v.fanSpeedList.map((s) => ({ key: s, label: s, active: v.fanSpeed === s, disabled: dead, onClick: () => svc('set_fan_speed', { fan_speed: s })() }))} />}
             <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />
           </>
         )}
