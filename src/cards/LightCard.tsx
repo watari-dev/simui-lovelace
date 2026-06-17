@@ -47,11 +47,7 @@ export interface LightCardConfig extends BaseCardConfig {
 }
 
 const kelvinLabel = (k: number): string => `${k < 3500 ? 'Warm' : k > 5000 ? 'Cool' : 'Neutral'} · ${k}K`;
-const DEFAULT_CHIPS: LightChip[] = [
-  { name: 'Warm', kelvin: 2700, icon: 'mdi:white-balance-sunny' },
-  { name: 'Cool', kelvin: 5000, icon: 'mdi:snowflake' },
-  { name: 'Scene', icon: 'mdi:palette' },
-];
+const DEFAULT_CHIPS: LightChip[] = [{ name: 'Warm', kelvin: 2700 }, { name: 'Cool', kelvin: 5000 }, { name: 'Scene' }];
 
 /**
  * SimUI light card — the Luminous tile: a glowing accent disc (tap to toggle) over a big

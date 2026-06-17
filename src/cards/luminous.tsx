@@ -90,13 +90,17 @@ export function Sec({ stats, swatch }: { stats?: SecStat[]; swatch?: string }): 
 }
 
 export interface Seg2Item { key: string; label?: string; icon?: string; active?: boolean; disabled?: boolean; onClick: (e: ReactMouseEvent) => void; }
-/** A connected segmented control for the tile mode-chip rows: a translucent, hairline-divided
- *  track of cells (so it reads as buttons even with nothing active), the active one a filled
- *  accent cell. Renders whatever chip list the card supplies, so the rows stay configurable. */
+/** A connected segmented control for the tile mode-chip rows: a translucent track with a sliding
+ *  accent thumb on the active segment (hidden when none is active). Renders whatever chip list the
+ *  card supplies, so the rows stay configurable. */
 export function Seg2({ items }: { items: Seg2Item[] }): ReactNode {
   if (items.length === 0) return null;
+  const activeIndex = items.findIndex((it) => it.active);
+  const n = items.length;
+  const thumb: CSSProperties = { width: `calc((100% - 6px) / ${n})`, transform: `translateX(${Math.max(0, activeIndex) * 100}%)`, opacity: activeIndex >= 0 ? 1 : 0 };
   return (
     <div className="seg2">
+      <span className="thumb" style={thumb} aria-hidden="true" />
       {items.map((it) => (
         <button key={it.key} type="button" className={it.active ? 'on' : ''} disabled={it.disabled} onClick={(e) => { e.stopPropagation(); it.onClick(e); }} onPointerDown={(e) => e.stopPropagation()}>
           {it.icon ? <span className="chip-ic">{renderIcon(it.icon, 14, null)}</span> : null}{it.label}
