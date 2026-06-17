@@ -1,0 +1,38 @@
+{
+  "projectId": "ec1e1c65-a84c-4732-b4b1-753a76728d12",
+  "pkg": "simui-lovelace",
+  "globalName": "SimUI",
+  "shape": "package",
+  "buildCmd": "node .design-sync/gen-styles.mjs",
+  "cssEntry": ".design-sync/ds-styles.css",
+  "provider": { "component": "SimuiProvider" },
+  "docsDir": ".design-sync/docs",
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "ChipsCard": { "cardMode": "column" },
+    "GraphCard": { "cardMode": "column" },
+    "EnergyFlowCard": { "cardMode": "column" }
+  },
+  "componentSrcMap": {
+    "LightCard": "src/cards/LightCard.tsx",
+    "ClimateCard": "src/cards/ClimateCard.tsx",
+    "SensorCard": "src/cards/SensorCard.tsx",
+    "GraphCard": "src/cards/GraphCard.tsx",
+    "CoverCard": "src/cards/CoverCard.tsx",
+    "LockCard": "src/cards/LockCard.tsx",
+    "MediaCard": "src/cards/MediaCard.tsx",
+    "ChipsCard": "src/cards/ChipsCard.tsx",
+    "EnergyFlowCard": "src/cards/EnergyFlowCard.tsx"
+  },
+  "dtsPropsFor": {
+    "LightCard": "config: { entity: string; name?: string; icon?: string; use_light_color?: boolean; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "ClimateCard": "config: { entity: string; name?: string; icon?: string; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "SensorCard": "config: { entity: string; name?: string; icon?: string; color?: \"warm\" | \"cool\" | \"up\" | \"down\" | \"grey\"; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "GraphCard": "config: { entity: string; name?: string; icon?: string; color?: \"warm\" | \"cool\" | \"up\" | \"down\" | \"grey\"; hours?: number; ranges?: number[]; fill?: boolean; line_width?: number; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "CoverCard": "config: { entity: string; name?: string; icon?: string; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "LockCard": "config: { entity: string; name?: string; icon?: string; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "MediaCard": "config: { entity: string; name?: string; icon?: string; tap_action?: { action: \"more-info\" | \"toggle\" | \"navigate\" | \"url\" | \"perform-action\" | \"none\"; entity?: string; navigation_path?: string; url_path?: string; perform_action?: string; data?: Record<string, unknown> }; type?: string }",
+    "ChipsCard": "config: { entities?: string[]; type?: string }",
+    "EnergyFlowCard": "config: { solar?: string; grid?: string; battery?: string; battery_soc?: string; home?: string; grid_invert?: boolean; battery_invert?: boolean; name?: string; type?: string }"
+  }
+}
