@@ -41,7 +41,11 @@ export interface CoverCardConfig extends BaseCardConfig {
   compact?: boolean;
 }
 
-const DEFAULT_COVER_BUTTONS: CoverButton[] = [{ name: '▲ Open', service: 'open' }, { name: 'Stop', service: 'stop' }, { name: '▼ Close', service: 'close' }];
+const DEFAULT_COVER_BUTTONS: CoverButton[] = [
+  { name: 'Open', icon: 'mdi:arrow-up', service: 'open' },
+  { name: 'Stop', icon: 'mdi:stop', service: 'stop' },
+  { name: 'Close', icon: 'mdi:arrow-down', service: 'close' },
+];
 
 /**
  * SimUI cover card — the Luminous tile for blinds/garage/shades: a device-class disc, the

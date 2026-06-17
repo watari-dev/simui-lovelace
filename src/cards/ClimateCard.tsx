@@ -112,9 +112,9 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   };
   const hvacModes = (e?.attributes.hvac_modes as string[] | undefined) ?? [];
   const defaultModes: ClimateChip[] = [
-    { name: 'Heat', mode: 'heat' },
-    { name: 'Auto', mode: hvacModes.includes('auto') ? 'auto' : 'heat_cool' },
-    { name: 'Cool', mode: 'cool' },
+    { name: 'Heat', mode: 'heat', icon: 'mdi:fire' },
+    { name: 'Auto', mode: hvacModes.includes('auto') ? 'auto' : 'heat_cool', icon: 'mdi:autorenew' },
+    { name: 'Cool', mode: 'cool', icon: 'mdi:snowflake' },
   ].filter((c) => !!c.mode && hvacModes.includes(c.mode));
   const modeChips = config.modes ?? defaultModes;
   const applyMode = (c: ClimateChip) => (ev: MouseEvent) => {

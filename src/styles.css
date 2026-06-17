@@ -140,16 +140,18 @@ svg.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: ro
 .swatch { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid color-mix(in srgb, #fff 18%, transparent); box-shadow: 0 0 12px -3px var(--swc, var(--acc)); background: var(--swc, var(--acc)); align-self: flex-end; flex: none; }
 
 /* segmented control with sliding thumb (tile mode rows; thumb width/x set inline) */
-.seg2 { position: relative; display: flex; background: var(--inset); border: 1px solid var(--border); border-radius: 11px; padding: 3px; }
-.seg2 .thumb { position: absolute; top: 3px; bottom: 3px; left: 3px; border-radius: 9px; background: color-mix(in srgb, var(--acc) 16%, transparent); border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent); box-shadow: 0 0 14px -5px color-mix(in srgb, var(--acc) 70%, transparent), inset 0 1px 0 var(--hi); transition: transform .3s var(--ease), opacity .2s var(--ease); pointer-events: none; }
-.seg2 button { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted); background: none; border: 0; padding: 8px 4px; cursor: pointer; transition: color .2s var(--ease); white-space: nowrap; min-width: 0; }
+/* Translucent track that tints with the card (never a black void on a coloured wallpaper);
+   hairline-divided cells so it reads as buttons even with nothing active; active = a filled cell. */
+.seg2 { display: flex; background: color-mix(in srgb, var(--text) 6%, transparent); border: 1px solid var(--border-2); border-radius: 11px; padding: 3px; overflow: hidden; }
+.seg2 button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted); background: none; border: 0; border-radius: 9px; padding: 8px 4px; cursor: pointer; transition: color .2s var(--ease), background .2s var(--ease); white-space: nowrap; min-width: 0; }
+.seg2 button + button { box-shadow: -1px 0 0 color-mix(in srgb, var(--text) 8%, transparent); }
 .seg2 button .chip-ic { display: inline-grid; place-items: center; flex: none; }
 .seg2 button:hover:not(:disabled) { color: var(--text); }
-.seg2 button.on { color: var(--acc); }
+.seg2 button.on { color: var(--acc); background: color-mix(in srgb, var(--acc) 15%, transparent); box-shadow: inset 0 1px 0 var(--hi); }
 .seg2 button:disabled { opacity: .4; cursor: default; }
 .seg2 button:active:not(:disabled) { transform: scale(.97); }
 .seg2 button:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 55%, transparent); outline-offset: -2px; border-radius: 9px; }
-@media (prefers-reduced-motion: reduce) { .seg2 .thumb, .statusdot { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .statusdot { transition: none; } }
 
 /* signature dot-bar (light brightness, cover position) */
 .dots { display: flex; gap: 4px; align-items: center; height: 22px; cursor: ew-resize; touch-action: none; }
