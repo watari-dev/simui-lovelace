@@ -19,6 +19,8 @@ export interface LightCardConfig extends BaseCardConfig {
   color?: string;
   /** Brightness slider style: dots (default) · bar · line · none (hidden). */
   slider?: SliderStyle | 'none';
+  /** What the slider sets: brightness (default) or color_temp (warm↔cool). */
+  slider_target?: 'brightness' | 'color_temp';
   /** Show the Warm / Cool / Scene colour-temperature controls (default true). */
   show_color_controls?: boolean;
   /** Glanceable footprint for dense dashboards. */
@@ -43,25 +45,35 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const on = !!e && e.state === 'on';
   const name = config.name ?? (e ? friendly(e) : config.entity);
   const hasBrightness = !!e && lightHasBrightness(e.attributes);
-  const settable = !dead && hasBrightness;
+  const modes = (e?.attributes.supported_color_modes as string[] | undefined) ?? [];
+  const hasColorTemp = modes.includes('color_temp');
+  const kelvin = e?.attributes.color_temp_kelvin as number | undefined;
+  // The slider can drive brightness (default) or colour temperature, if supported.
+  const tempMode = config.slider_target === 'color_temp' && hasColorTemp;
   const acc = accentVar(config.color) ?? (e && config.use_light_color !== false ? lightTint(e.attributes) : 'var(--warm)');
 
   const brightness = (e?.attributes.brightness as number | undefined) ?? 0;
   const livePct = on ? Math.max(1, Math.round((brightness / 255) * 100)) : 0;
+  const minK = (e?.attributes.min_color_temp_kelvin as number | undefined) ?? 2000;
+  const maxK = (e?.attributes.max_color_temp_kelvin as number | undefined) ?? 6500;
+  const kSpan = maxK - minK || 1;
+  const tempPct = on && kelvin != null ? Math.max(0, Math.min(100, ((kelvin - minK) / kSpan) * 100)) : 0;
 
   const setBrightness = (v: number) =>
     v <= 0
       ? call('light', 'turn_off', {}, { entity_id: config.entity })
       : call('light', 'turn_on', { brightness_pct: v }, { entity_id: config.entity });
+  const setColorTemp = (v: number) =>
+    call('light', 'turn_on', { color_temp_kelvin: Math.round(minK + (Math.max(0, Math.min(100, v)) / 100) * kSpan) }, { entity_id: config.entity });
 
-  const drag = useDragValue({ value: livePct, axis: 'horizontal', step: 1, min: 0, max: 100, disabled: !settable, onCommit: setBrightness });
-  const pct = settable ? drag.value : livePct;
+  const settable = !dead && (tempMode ? hasColorTemp : hasBrightness);
+  const setSlider = tempMode ? setColorTemp : setBrightness;
+  const drag = useDragValue({ value: tempMode ? tempPct : livePct, axis: 'horizontal', step: 1, min: 0, max: 100, disabled: !settable, onCommit: setSlider });
+  const pct = settable ? drag.value : tempMode ? tempPct : livePct;
   const actions = useActionHandler(config, config.entity, { moved: drag.moved });
 
-  const modes = (e?.attributes.supported_color_modes as string[] | undefined) ?? [];
-  const hasColorTemp = modes.includes('color_temp');
-  const kelvin = e?.attributes.color_temp_kelvin as number | undefined;
-  const sub = kelvin ? kelvinLabel(kelvin) : '';
+  const liveKelvin = Math.round(minK + (pct / 100) * kSpan);
+  const sub = tempMode ? (on ? `${livePct}% brightness` : '') : kelvin ? kelvinLabel(kelvin) : '';
 
   if (!config.entity) {
     return (
@@ -89,10 +101,10 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const warmActive = on && kelvin != null && kelvin < 3500;
   const coolActive = on && kelvin != null && kelvin >= 3500;
 
-  const valueNode = settable ? (
-    <>{pct}<span className="u">%</span></>
+  const valueNode = !settable ? (on ? 'On' : 'Off') : tempMode ? (
+    <>{liveKelvin}<span className="u">K</span></>
   ) : (
-    on ? 'On' : 'Off'
+    <>{pct}<span className="u">%</span></>
   );
 
   return (
@@ -135,8 +147,8 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
             segments={compact ? 12 : 14}
             settable={settable}
             handlers={drag.handlers}
-            ariaLabel={`${name} brightness`}
-            onKeyDown={sliderKeys(pct, setBrightness)}
+            ariaLabel={`${name} ${tempMode ? 'colour temperature' : 'brightness'}`}
+            onKeyDown={sliderKeys(pct, setSlider)}
             variant={config.slider ?? 'dots'}
           />
         )}

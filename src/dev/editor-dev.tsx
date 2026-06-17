@@ -82,7 +82,7 @@ const states: Record<string, HassEntity> = {
   'light.ceiling': { entity_id: 'light.ceiling', state: 'on', attributes: { friendly_name: 'Ceiling', brightness: 204, color_temp_kelvin: 2700, supported_color_modes: ['color_temp'] } },
   'light.lamp': { entity_id: 'light.lamp', state: 'on', attributes: { friendly_name: 'Lamp', brightness: 120, rgb_color: [124, 96, 240], supported_color_modes: ['rgb'] } },
   'climate.living': { entity_id: 'climate.living', state: 'heat', attributes: { friendly_name: 'Living Room', hvac_action: 'heating', hvac_modes: ['off', 'heat', 'cool', 'auto'], current_temperature: 21.5, temperature: 21, min_temp: 15, max_temp: 28, target_temp_step: 0.5 } },
-  'cover.living': { entity_id: 'cover.living', state: 'open', attributes: { friendly_name: 'Blinds', device_class: 'blind', current_position: 60, supported_features: 15 } },
+  'cover.living': { entity_id: 'cover.living', state: 'open', attributes: { friendly_name: 'Blinds', device_class: 'blind', current_position: 60, current_tilt_position: 40, supported_features: 143 } },
   'lock.front': { entity_id: 'lock.front', state: 'locked', attributes: { friendly_name: 'Front Door' } },
   'sensor.temp': { entity_id: 'sensor.temp', state: '21.5', attributes: { friendly_name: 'Temperature', device_class: 'temperature', unit_of_measurement: '°C' } },
   'sensor.humidity': { entity_id: 'sensor.humidity', state: '48', attributes: { friendly_name: 'Humidity', device_class: 'humidity', unit_of_measurement: '%' } },

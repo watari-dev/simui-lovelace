@@ -17,6 +17,8 @@ export interface CoverCardConfig extends BaseCardConfig {
   color?: string;
   /** Position slider style: dots (default) · bar · line · none (hidden). */
   slider?: SliderStyle | 'none';
+  /** What the slider sets: position (default) or tilt (for venetian/tilting covers). */
+  slider_target?: 'position' | 'tilt';
   /** Show the Open / Stop / Close buttons (default true). */
   show_buttons?: boolean;
   compact?: boolean;
@@ -37,9 +39,15 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   const v = readCover(e, dead);
   const name = config.name ?? (e ? friendly(e) : config.entity);
 
+  // The slider can drive position (default) or tilt, for venetian/tilting covers.
+  const tiltMode = config.slider_target === 'tilt' && v.canTilt;
   const setPosition = (p: number) => call('cover', 'set_cover_position', { position: p }, { entity_id: config.entity });
-  const drag = useDragValue({ value: v.position ?? 0, axis: 'horizontal', step: 1, min: 0, max: 100, disabled: !v.settable, onCommit: setPosition });
-  const position = v.settable ? drag.value : v.position;
+  const setTilt = (p: number) => call('cover', 'set_cover_tilt_position', { tilt_position: p }, { entity_id: config.entity });
+  const sliderSettable = tiltMode ? !dead && v.tilt != null : v.settable;
+  const sliderLive = tiltMode ? v.tilt ?? 0 : v.position ?? 0;
+  const setSlider = tiltMode ? setTilt : setPosition;
+  const drag = useDragValue({ value: sliderLive, axis: 'horizontal', step: 1, min: 0, max: 100, disabled: !sliderSettable, onCommit: setSlider });
+  const sliderVal = sliderSettable ? drag.value : sliderLive;
   const actions = useActionHandler(config, config.entity, { moved: drag.moved });
 
   if (!config.entity) {
@@ -54,12 +62,12 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   }
 
   const Icon = v.Icon;
-  const hasPos = position != null;
+  const hasSlider = tiltMode ? v.tilt != null : v.position != null;
   const badge = dead ? 'Off' : v.moving ? prettyState(e?.state ?? '') : v.open ? 'Open' : 'Closed';
   const fullyOpen = v.position != null ? v.position === 100 : v.open;
   const fullyClosed = v.position != null ? v.position === 0 : !v.open;
 
-  const valueNode = hasPos ? <>{position}<span className="u">%</span></> : v.open ? 'Open' : 'Closed';
+  const valueNode = hasSlider ? <>{sliderVal}<span className="u">%</span></> : v.open ? 'Open' : 'Closed';
 
   const act = (svc: string, data?: Record<string, unknown>) => (ev: MouseEvent) => {
     ev.stopPropagation();
@@ -89,19 +97,19 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
         ) : (
           <div>
             <div className="eye" title={name}>{name}</div>
-            <div className="numwrap"><div className="num tnum">{valueNode}</div><div className="nsub">Position</div></div>
+            <div className="numwrap"><div className="num tnum">{valueNode}</div><div className="nsub">{tiltMode ? 'Tilt' : 'Position'}</div></div>
           </div>
         )}
       </div>
       <div className="ctl">
-        {hasPos && config.slider !== 'none' && (
+        {hasSlider && config.slider !== 'none' && (
           <DotBar
-            value={position ?? 0}
+            value={sliderVal}
             segments={compact ? 12 : 14}
-            settable={v.settable}
+            settable={sliderSettable}
             handlers={drag.handlers}
-            ariaLabel={`${name} position`}
-            onKeyDown={sliderKeys(position ?? 0, setPosition)}
+            ariaLabel={`${name} ${tiltMode ? 'tilt' : 'position'}`}
+            onKeyDown={sliderKeys(sliderVal, setSlider)}
             variant={config.slider ?? 'dots'}
           />
         )}

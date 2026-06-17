@@ -49,6 +49,7 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       { name: 'use_light_color', selector: { boolean: {} } },
       COLOR_FIELD,
       SLIDER_FIELD,
+      { name: 'slider_target', selector: { select: { mode: 'dropdown', options: [{ value: 'brightness', label: 'Brightness' }, { value: 'color_temp', label: 'Colour temperature' }] } } },
       { name: 'show_color_controls', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
@@ -56,13 +57,14 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       entity: 'Light',
       name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS,
       use_light_color: 'Tint with the bulb’s colour', color: 'Accent colour (override)',
-      slider: 'Brightness slider style', show_color_controls: 'Warm / Cool / Scene controls', compact: 'Compact (dense)',
+      slider: 'Brightness slider style', slider_target: 'Slider controls', show_color_controls: 'Warm / Cool / Scene controls', compact: 'Compact (dense)',
     },
     helpers: {
       use_light_color: 'On: the tile takes the light’s live colour. Off: a calm warm yellow.',
       slider: 'Dots, a solid bar, a thin line, or hidden.',
+      slider_target: 'Drag to set brightness, or the colour temperature (warm ↔ cool).',
     },
-    defaults: { use_light_color: true, slider: 'dots', show_color_controls: true },
+    defaults: { use_light_color: true, slider: 'dots', slider_target: 'brightness', show_color_controls: true },
   },
 });
 
@@ -157,11 +159,13 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       ...ACTION_FIELDS,
       COLOR_FIELD,
       SLIDER_FIELD,
+      { name: 'slider_target', selector: { select: { mode: 'dropdown', options: [{ value: 'position', label: 'Position' }, { value: 'tilt', label: 'Tilt' }] } } },
       { name: 'show_buttons', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', slider: 'Position slider style', show_buttons: 'Open / Stop / Close buttons', compact: 'Compact (dense)' },
-    defaults: { slider: 'dots', show_buttons: true },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', slider: 'Position slider style', slider_target: 'Slider controls', show_buttons: 'Open / Stop / Close buttons', compact: 'Compact (dense)' },
+    helpers: { slider_target: 'Drag to set the opening position, or the slat tilt (venetian/tilting covers).' },
+    defaults: { slider: 'dots', slider_target: 'position', show_buttons: true },
   },
 });
 
