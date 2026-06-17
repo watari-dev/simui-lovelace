@@ -1,9 +1,10 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
-import { useActions, useCallService, useEntity, useLanguage, useMoreInfo } from '../core/hass';
+import { useCallService, useEntity, useLanguage, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
+import { friendly, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { accentVar, discIcon } from './luminous';
 
@@ -36,7 +37,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
+  const actions = useActionHandler(config, config.entity);
   const locale = useLanguage();
   const compact = config.compact === true;
 
@@ -76,8 +77,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
       role="button"
       aria-label={`${name}: ${prettyState(state)}`}
       tabIndex={0}
-      onClick={() => runTap(config.tap_action, config.entity)}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

@@ -1,10 +1,11 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Blinds } from 'lucide-react';
-import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
+import { friendly, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
 import { DotBar, accentVar, discIcon, sliderKeys } from './luminous';
@@ -26,7 +27,6 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
   const compact = config.compact === true;
 
   const dead = isUnavailable(e);
@@ -36,6 +36,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   const setPosition = (p: number) => call('cover', 'set_cover_position', { position: p }, { entity_id: config.entity });
   const drag = useDragValue({ value: v.position ?? 0, axis: 'horizontal', step: 1, min: 0, max: 100, disabled: !v.settable, onCommit: setPosition });
   const position = v.settable ? drag.value : v.position;
+  const actions = useActionHandler(config, config.entity, { moved: drag.moved });
 
   if (!config.entity) {
     return (
@@ -71,8 +72,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
       role="button"
       aria-label={name}
       tabIndex={0}
-      onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

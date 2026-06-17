@@ -1,10 +1,11 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Lightbulb } from 'lucide-react';
-import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isActivateKey, isUnavailable } from '../util';
+import { friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
 import { DotBar, accentVar, discIcon, sliderKeys } from './luminous';
@@ -32,7 +33,6 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
   const compact = config.compact === true;
 
   const dead = isUnavailable(e);
@@ -52,6 +52,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
 
   const drag = useDragValue({ value: livePct, axis: 'horizontal', step: 1, min: 0, max: 100, disabled: !settable, onCommit: setBrightness });
   const pct = settable ? drag.value : livePct;
+  const actions = useActionHandler(config, config.entity, { moved: drag.moved });
 
   const modes = (e?.attributes.supported_color_modes as string[] | undefined) ?? [];
   const hasColorTemp = modes.includes('color_temp');
@@ -97,8 +98,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
       role="button"
       aria-label={name}
       tabIndex={0}
-      onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

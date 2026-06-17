@@ -1,8 +1,9 @@
 import { type CSSProperties, useMemo } from 'react';
-import { useActions, useEntity, useMoreInfo } from '../core/hass';
+import { useEntity, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig, HassEntity } from '../core/types';
-import { isActivateKey, isUnavailable } from '../util';
+import { isUnavailable } from '../util';
 
 export interface EnergyFlowCardConfig extends BaseCardConfig {
   name?: string;
@@ -42,13 +43,13 @@ const fmtVal = (w: number): { v: string; u: string } => (Math.abs(w) >= 1 ? { v:
  */
 export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConfig>) {
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
   const solarE = useEntity(config.solar ?? '');
   const gridE = useEntity(config.grid ?? '');
   const batteryE = useEntity(config.battery ?? '');
   const socE = useEntity(config.battery_soc ?? '');
   const homeE = useEntity(config.home ?? '');
   const primary = config.solar ?? config.grid ?? config.battery ?? config.home ?? config.battery_soc ?? '';
+  const actions = useActionHandler(config, primary);
 
   const model = useMemo(() => {
     const solar = kw(solarE);
@@ -124,8 +125,7 @@ export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConf
       role="button"
       tabIndex={0}
       aria-label={config.name ?? 'Energy flow'}
-      onClick={() => primary && runTap(config.tap_action, primary)}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key) && primary) { ev.preventDefault(); runTap(config.tap_action, primary); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); if (primary) moreInfo(primary); }}
     >
       <div className="ehead">

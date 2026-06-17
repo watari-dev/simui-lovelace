@@ -34,6 +34,8 @@ export interface BaseCardConfig {
   name?: string;
   icon?: string;
   tap_action?: import('./actions').ActionConfig;
+  hold_action?: import('./actions').ActionConfig;
+  double_tap_action?: import('./actions').ActionConfig;
 }
 
 /** The Lovelace custom-card contract (the subset SimUI cards implement). */

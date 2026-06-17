@@ -18,6 +18,13 @@ const COLOR_OPTIONS = [
   { value: 'grey', label: 'Grey' },
 ];
 const COLOR_FIELD = { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } } as const;
+// tap / hold / double-tap — the native action set, shared by every interactive card.
+const ACTION_FIELDS = [
+  { name: 'tap_action', selector: { ui_action: {} } },
+  { name: 'hold_action', selector: { ui_action: {} } },
+  { name: 'double_tap_action', selector: { ui_action: {} } },
+];
+const ACTION_LABELS = { tap_action: 'Tap action', hold_action: 'Hold action', double_tap_action: 'Double-tap action' };
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
@@ -31,14 +38,14 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'light' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
       { name: 'use_light_color', selector: { boolean: {} } },
       COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
-      name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
+      name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS,
       use_light_color: 'Tint with the bulb’s colour', color: 'Accent colour (override)', compact: 'Compact (dense)',
     },
     helpers: {
@@ -57,11 +64,11 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'climate' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
       COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour (override)', compact: 'Compact (dense)' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', compact: 'Compact (dense)' },
   },
 });
 
@@ -74,13 +81,13 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
       { name: 'entity', required: true, selector: { entity: { domain: ['sensor', 'binary_sensor'] } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
       COLOR_FIELD,
       { name: 'sparkline', selector: { boolean: {} } },
       { name: 'show_delta', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour', sparkline: '24 h sparkline', show_delta: '24 h delta badge', compact: 'Compact (dense)' },
+    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour', sparkline: '24 h sparkline', show_delta: '24 h delta badge', compact: 'Compact (dense)' },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
     defaults: { sparkline: true, show_delta: true },
   },
@@ -100,7 +107,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       { name: 'secondary', selector: { entity: { domain: 'sensor' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
       COLOR_FIELD,
       { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
       { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.2, mode: 'slider' } } },
@@ -110,7 +117,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
     labels: {
       entity: 'Sensor',
       secondary: 'Second series (optional)',
-      name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
+      name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS,
       color: 'Accent colour',
       hours: 'Default range (hours)',
       line_width: 'Line width', fill: 'Fill under the line', show_stats: 'Show min / avg / max',
@@ -133,11 +140,11 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'cover' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
       COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour (override)', compact: 'Compact (dense)' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', compact: 'Compact (dense)' },
   },
 });
 
@@ -150,11 +157,11 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'lock' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
       COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour (override)', compact: 'Compact (dense)' },
+    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', compact: 'Compact (dense)' },
   },
 });
 
@@ -167,9 +174,9 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
       { name: 'entity', required: true, selector: { entity: { domain: 'media_player' } } },
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
     ],
-    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action' },
+    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS },
   },
 });
 
@@ -204,7 +211,7 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
       { name: 'home', selector: { entity: { domain: 'sensor' } } },
       { name: 'grid_invert', selector: { boolean: {} } },
       { name: 'battery_invert', selector: { boolean: {} } },
-      { name: 'tap_action', selector: { ui_action: {} } },
+      ...ACTION_FIELDS,
     ],
     labels: {
       name: 'Name (optional)',
@@ -215,7 +222,7 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
       home: 'Home / load power',
       grid_invert: 'Invert grid sign',
       battery_invert: 'Invert battery sign',
-      tap_action: 'Tap action',
+      ...ACTION_LABELS,
     },
     helpers: { grid: 'Signed: + importing, − exporting', battery: 'Signed: + discharging, − charging' },
   },

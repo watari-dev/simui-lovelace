@@ -1,8 +1,9 @@
 import { type CSSProperties, useMemo } from 'react';
-import { useActions, useEntity, useHistory, useMoreInfo } from '../core/hass';
+import { useEntity, useHistory, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { domainOf, friendly, isActivateKey, isUnavailable } from '../util';
+import { domainOf, friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { Sparkline, discIcon } from './luminous';
@@ -28,7 +29,7 @@ const fmt1 = (n: number): string => (Number.isInteger(n) ? `${n}` : (Math.round(
 export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const e = useEntity(config.entity);
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
+  const actions = useActionHandler(config, config.entity);
   const compact = config.compact === true;
 
   const dead = isUnavailable(e);
@@ -86,8 +87,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
       role="button"
       aria-label={`${name}: ${dead ? 'unavailable' : e ? formatSensor(e) : ''}`}
       tabIndex={0}
-      onClick={() => runTap(config.tap_action, config.entity)}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

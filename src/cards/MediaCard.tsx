@@ -1,9 +1,10 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from 'react';
 import { Music, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
-import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isActivateKey, isUnavailable, prettyState, supportsFeature } from '../util';
+import { friendly, isUnavailable, prettyState, supportsFeature } from '../util';
 import { renderIcon } from '../core/icon';
 import { MEDIA_NEXT, MEDIA_PAUSE, MEDIA_PLAY, MEDIA_PREVIOUS, readMedia } from './media-util';
 
@@ -23,7 +24,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
+  const actions = useActionHandler(config, config.entity);
 
   const dead = isUnavailable(e);
   const name = config.name ?? (e ? friendly(e) : config.entity);
@@ -55,7 +56,6 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const supports = (bit: number) => !!e && supportsFeature(e, bit);
   const ctl = (service: string) => (ev: MouseEvent) => { ev.stopPropagation(); if (config.entity) call('media_player', service, {}, { entity_id: config.entity }); };
   const stopKey = (ev: ReactKeyboardEvent) => ev.stopPropagation();
-  const open = () => config.entity && runTap(config.tap_action, config.entity);
 
   return (
     <div
@@ -64,8 +64,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
       role="button"
       aria-label={`${title}: ${sub}`}
       tabIndex={0}
-      onClick={open}
-      onKeyDown={(ev: ReactKeyboardEvent) => { if (isActivateKey(ev.key)) { ev.preventDefault(); open(); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); if (config.entity) moreInfo(config.entity); }}
     >
       <div className={`art${v.art ? ' has-art' : ''}`} style={v.art ? { backgroundImage: `url("${v.art}")` } : undefined} aria-hidden="true">

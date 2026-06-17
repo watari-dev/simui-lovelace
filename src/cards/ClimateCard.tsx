@@ -1,8 +1,9 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Thermometer } from 'lucide-react';
-import { useActions, useCallService, useEntity, useHass, useMoreInfo } from '../core/hass';
+import { useCallService, useEntity, useHass, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
-import { clamp, friendly, isActivateKey, isUnavailable, prettyState } from '../util';
+import { clamp, friendly, isUnavailable, prettyState } from '../util';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { renderIcon } from '../core/icon';
@@ -29,7 +30,6 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
   const hass = useHass();
   const compact = config.compact === true;
 
@@ -47,6 +47,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
     onCommit: (t) => call('climate', 'set_temperature', { temperature: t }, { entity_id: config.entity }),
   });
   const target = v.settable ? drag.value : v.target;
+  const actions = useActionHandler(config, config.entity, { moved: drag.moved });
 
   if (!config.entity) {
     return (
@@ -104,8 +105,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
       role="button"
       aria-label={name}
       tabIndex={0}
-      onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

@@ -1,9 +1,10 @@
 import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, useId, useMemo, useState } from 'react';
 import { Activity } from 'lucide-react';
-import { useActions, useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
+import { useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
+import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isActivateKey } from '../util';
+import { friendly } from '../util';
 import { renderIcon } from '../core/icon';
 import { sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { discIcon } from './luminous';
@@ -54,7 +55,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   const e = useEntity(config.entity);
   const e2 = useEntity(config.secondary ?? '');
   const moreInfo = useMoreInfo();
-  const runTap = useActions();
+  const actions = useActionHandler(config, config.entity);
   const locale = useLanguage();
   const gradId = useId().replace(/:/g, '');
 
@@ -127,8 +128,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
       role="button"
       tabIndex={0}
       aria-label={`${name} history`}
-      onClick={() => runTap(config.tap_action, config.entity)}
-      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
+      {...actions}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="ghead">
