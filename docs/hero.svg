@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 360" font-family="-apple-system, 'Segoe UI', Roboto, Inter, sans-serif">
   <defs>
     <linearGradient id="bgWarm" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1e1b13"/>
-      <stop offset="0.6" stop-color="#161619"/>
+      <stop offset="0" stop-color="#211e1b"/>
+      <stop offset="0.58" stop-color="#161619"/>
     </linearGradient>
     <linearGradient id="bgUp" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#13201a"/>
-      <stop offset="0.6" stop-color="#161619"/>
+      <stop offset="0" stop-color="#181f1f"/>
+      <stop offset="0.58" stop-color="#161619"/>
     </linearGradient>
     <radialGradient id="glowWarm" cx="0.3" cy="0.2" r="0.9">
       <stop offset="0" stop-color="#f4b942" stop-opacity="0.36"/>
@@ -27,22 +27,24 @@
 
   <rect width="1180" height="360" rx="28" fill="#0c0c0f"/>
 
-  <!-- ── Light tile ───────────────────────────────────────────── -->
-  <g transform="translate(30,30)">
+  <!-- ── Light tile (v4: name + status dot · value + swatch · segmented control) ─── -->
+  <g transform="translate(50,30)">
     <rect width="340" height="300" rx="22" fill="url(#bgWarm)" stroke="#26262c"/>
+    <!-- header -->
     <rect x="22" y="22" width="40" height="40" rx="12" fill="url(#glowWarm)"/>
     <g stroke="#f4b942" stroke-width="2" fill="none" stroke-linecap="round">
       <circle cx="42" cy="40" r="6.5"/>
       <path d="M38.5 50 h7"/>
     </g>
-    <g transform="translate(250,28)">
-      <rect width="68" height="26" rx="13" fill="#1c1c21" stroke="#26262c"/>
-      <circle cx="16" cy="13" r="3.5" fill="#f4b942"/>
-      <text x="28" y="17" font-size="12.5" fill="#f5f5f7" font-weight="600">On</text>
-    </g>
-    <text x="24" y="118" font-size="13" fill="#9698a2" font-weight="600">Living Room</text>
-    <text x="22" y="172" font-size="56" fill="#f5f5f7" font-weight="700" letter-spacing="-2">72<tspan font-size="24" fill="#9698a2" dx="3">%</tspan></text>
-    <g transform="translate(22,202)">
+    <text x="74" y="48" font-size="16.5" fill="#f5f5f7" font-weight="650">Living Room</text>
+    <circle cx="308" cy="42" r="8.5" fill="#f4b942" opacity="0.18"/>
+    <circle cx="308" cy="42" r="4.5" fill="#f4b942"/>
+    <!-- value row -->
+    <text x="22" y="158" font-size="54" fill="#f5f5f7" font-weight="700" letter-spacing="-2" font-variant-numeric="tabular-nums">80<tspan font-size="23" fill="#9698a2" dx="3">%</tspan></text>
+    <text x="138" y="145" font-size="13" fill="#9698a2" font-weight="500">Warm · 2700K</text>
+    <rect x="288" y="130" width="20" height="20" rx="6" fill="#ffcf8a" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5"/>
+    <!-- dot bar -->
+    <g transform="translate(22,186)">
       <rect x="0"   width="14" height="9" rx="4" fill="#f4b942"/>
       <rect x="21"  width="14" height="9" rx="4" fill="#f4b942"/>
       <rect x="42"  width="14" height="9" rx="4" fill="#f4b942"/>
@@ -53,47 +55,49 @@
       <rect x="147" width="14" height="9" rx="4" fill="#f4b942"/>
       <rect x="168" width="14" height="9" rx="4" fill="#f4b942"/>
       <rect x="189" width="14" height="9" rx="4" fill="#f4b942"/>
-      <rect x="210" width="14" height="9" rx="4" fill="#2c2c33"/>
+      <rect x="210" width="14" height="9" rx="4" fill="#f4b942"/>
       <rect x="231" width="14" height="9" rx="4" fill="#2c2c33"/>
       <rect x="252" width="14" height="9" rx="4" fill="#2c2c33"/>
       <rect x="273" width="14" height="9" rx="4" fill="#2c2c33"/>
     </g>
-    <g transform="translate(22,242)" font-size="12.5" font-weight="600">
-      <rect width="92" height="34" rx="10" fill="#3a2f15" stroke="#6b541f"/>
-      <text x="46" y="22" fill="#f4b942" text-anchor="middle">Warm</text>
-      <rect x="100" width="92" height="34" rx="10" fill="#0e0e11" stroke="#26262c"/>
-      <text x="146" y="22" fill="#9698a2" text-anchor="middle">Cool</text>
-      <rect x="200" width="92" height="34" rx="10" fill="#0e0e11" stroke="#26262c"/>
-      <text x="246" y="22" fill="#9698a2" text-anchor="middle">Scene</text>
+    <!-- segmented control (thumb on Warm) -->
+    <g transform="translate(22,232)">
+      <rect width="296" height="38" rx="11" fill="#0e0e11" stroke="#26262c"/>
+      <rect x="3" y="3" width="96.7" height="32" rx="9" fill="#332919" stroke="#6f5729"/>
+      <text x="51"  y="24" font-size="12.5" font-weight="600" fill="#f4b942" text-anchor="middle">Warm</text>
+      <text x="148" y="24" font-size="12.5" font-weight="600" fill="#9698a2" text-anchor="middle">Cool</text>
+      <text x="247" y="24" font-size="12.5" font-weight="600" fill="#9698a2" text-anchor="middle">Scene</text>
     </g>
   </g>
 
-  <!-- ── Gauge tile ───────────────────────────────────────────── -->
-  <g transform="translate(400,30)">
+  <!-- ── Gauge tile (v4 header + severity arc) ────────────────────── -->
+  <g transform="translate(420,30)">
     <rect width="340" height="300" rx="22" fill="url(#bgUp)" stroke="#26262c"/>
     <rect x="22" y="22" width="40" height="40" rx="12" fill="url(#glowUp)"/>
     <g stroke="#36d399" stroke-width="2" fill="none" stroke-linecap="round">
       <rect x="33" y="36" width="16" height="11" rx="2"/>
       <path d="M51 39 v5"/>
     </g>
-    <text x="24" y="118" font-size="13" fill="#9698a2" font-weight="600">Attic Battery</text>
-    <path d="M112 228 A82 82 0 1 1 228 228" fill="none" stroke="#2c2c33" stroke-width="11" stroke-linecap="round" pathLength="100"/>
-    <path d="M112 228 A82 82 0 1 1 228 228" fill="none" stroke="#36d399" stroke-width="11" stroke-linecap="round" pathLength="100" stroke-dasharray="73 100" filter="url(#glowG)"/>
-    <text x="170" y="184" font-size="42" fill="#f5f5f7" font-weight="700" text-anchor="middle" letter-spacing="-1">73<tspan font-size="18" fill="#9698a2" dx="1">%</tspan></text>
+    <text x="74" y="48" font-size="16.5" fill="#f5f5f7" font-weight="650">Attic Battery</text>
+    <circle cx="308" cy="42" r="8.5" fill="#36d399" opacity="0.18"/>
+    <circle cx="308" cy="42" r="4.5" fill="#36d399"/>
+    <path d="M113 246 A80 80 0 1 1 227 246" fill="none" stroke="#2c2c33" stroke-width="11" stroke-linecap="round" pathLength="100"/>
+    <path d="M113 246 A80 80 0 1 1 227 246" fill="none" stroke="#36d399" stroke-width="11" stroke-linecap="round" pathLength="100" stroke-dasharray="73 100" filter="url(#glowG)"/>
+    <text x="170" y="200" font-size="42" fill="#f5f5f7" font-weight="700" text-anchor="middle" letter-spacing="-1" font-variant-numeric="tabular-nums">73<tspan font-size="18" fill="#9698a2" dx="1">%</tspan></text>
     <g font-size="11.5" fill="#5e6069" font-weight="500" font-variant-numeric="tabular-nums">
-      <text x="118" y="252" text-anchor="middle">0</text>
-      <text x="222" y="252" text-anchor="middle">100</text>
+      <text x="116" y="268" text-anchor="middle">0</text>
+      <text x="224" y="268" text-anchor="middle">100</text>
     </g>
   </g>
 
-  <!-- ── Graph card (lightweight-charts style) ────────────────── -->
-  <g transform="translate(770,30)">
+  <!-- ── Graph card (lightweight-charts style) ────────────────────── -->
+  <g transform="translate(790,30)">
     <rect width="340" height="300" rx="22" fill="url(#bgWarm)" stroke="#26262c"/>
     <rect x="22" y="22" width="40" height="40" rx="12" fill="url(#glowWarm)"/>
     <path d="M33 45 l4 -7 4 5 4 -9 4 7 4 -3" fill="none" stroke="#f4b942" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <text x="74" y="38" font-size="15" fill="#f5f5f7" font-weight="700">Home Power</text>
     <text x="74" y="56" font-size="12" fill="#9698a2">Live · last 1d</text>
-    <text x="318" y="44" font-size="27" fill="#f5f5f7" font-weight="700" text-anchor="end" letter-spacing="-1">2,919<tspan font-size="14" fill="#9698a2" dx="2">W</tspan></text>
+    <text x="318" y="48" font-size="27" fill="#f5f5f7" font-weight="700" text-anchor="end" letter-spacing="-1" font-variant-numeric="tabular-nums">2,919<tspan font-size="14" fill="#9698a2" dx="2">W</tspan></text>
     <g stroke="#26262c">
       <line x1="22" y1="115" x2="318" y2="115"/>
       <line x1="22" y1="155" x2="318" y2="155"/>
