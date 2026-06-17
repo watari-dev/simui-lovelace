@@ -15,7 +15,7 @@ tint on a round icon disc.
 These are the tiles from [simUI](https://github.com/watari-dev/ha-simui), repackaged to
 sit beside Mushroom or Bubble Card on any dashboard.
 
-![SimUI Cards — fan, gauge, button, alarm tiles](docs/screenshots/tiles.png)
+![SimUI Cards — light, gauge and graph tiles](docs/hero.svg)
 
 ---
 
@@ -166,16 +166,10 @@ preset's `sections:` content. Or just lift individual cards into your existing d
 
 ## Screenshots
 
-> _Placeholder — drop captured images at the paths below._
-
-| | |
-|---|---|
-| ![Light, climate and sensor tiles](docs/screenshots/tiles.png) | ![Graph card with crosshair readout](docs/screenshots/graph.png) |
-| _Tiles with the active-state tint_ | _Graph — lightweight-charts, crosshair + range toggle_ |
-| ![Energy flow diagram](docs/screenshots/energy-flow.png) | ![Gauge with severity bands](docs/screenshots/gauge.png) |
-| _Energy Flow — solar / grid / battery / home_ | _Gauge — radial arc with severity bands_ |
-| ![The visual editor](docs/screenshots/editor.png) | ![Chips status strip](docs/screenshots/chips.png) |
-| _Every option, in the UI editor — no YAML_ | _Chips — a glanceable status strip_ |
+The hero above is a faithful preview of the Luminous look. Live screenshots of every card —
+on a real dashboard — go in [`docs/screenshots/`](docs/screenshots/); see that folder's
+README for the suggested filenames. Until then, the fastest way to see them is to install
+and open the picker (a live preview renders for each card).
 
 ---
 
