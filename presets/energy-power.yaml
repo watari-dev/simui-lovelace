@@ -1,0 +1,70 @@
+# SimUI preset · Energy & Power
+# Generation + consumption on one merged surface (energy-flow + gauges + graph).
+# Cards used: simui-energy-flow / simui-gauge / simui-graph.
+# Power sensors should be in W (or kW) and SIGNED where noted.
+type: sections
+title: Energy
+path: energy
+icon: mdi:lightning-bolt
+max_columns: 2
+sections:
+  - type: grid
+    cards:
+      # ── The hero: a live solar / grid / battery / home flow diagram ──
+      - type: custom:simui-energy-flow-card
+        name: Power Flow
+        solar: sensor.solar_power          # swap: your PV/solar power (W)
+        grid: sensor.grid_power            # signed: + importing, − exporting
+        battery: sensor.battery_power      # signed: + discharging, − charging
+        battery_soc: sensor.battery_soc    # battery charge %
+        home: sensor.home_load_power       # total house load (W)
+        grid_invert: false                 # flip if your grid sign is reversed
+        battery_invert: false              # flip if your battery sign is reversed
+        grid_options:
+          columns: 12
+          rows: auto
+
+      # ── Two quick power gauges with severity bands ──
+      - type: custom:simui-gauge-card
+        entity: sensor.grid_power          # swap: current grid draw
+        name: Grid
+        min: 0
+        max: 10000                         # adjust to your supply (W)
+        precision: 0
+        show_unit: true
+        severity_fill: true
+        # bands tint the fill: green → amber → coral as draw rises
+        severity:
+          - from: 0
+            color: up
+          - from: 4000
+            color: heat
+          - from: 8000
+            color: down
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-gauge-card
+        entity: sensor.solar_power         # swap: current solar generation
+        name: Solar
+        min: 0
+        max: 6600                          # adjust to your array size (W)
+        precision: 0
+        show_unit: true
+        color: up                          # solar = green accent
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── 24 h history: home load with solar overlaid ──
+      - type: custom:simui-graph-card
+        entity: sensor.home_load_power     # primary series
+        secondary: sensor.solar_power      # second series overlaid
+        name: Power · 24h
+        hours: 24
+        fill: true
+        show_stats: true                   # min / avg / max readout
+        line_width: 2.4
+        grid_options:
+          columns: 12
+          rows: auto

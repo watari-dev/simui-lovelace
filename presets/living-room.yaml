@@ -1,0 +1,64 @@
+# SimUI preset · Living Room
+# A composed room page. Swap the placeholder entity ids for your own.
+# Cards used: simui-chips / simui-light / simui-climate / simui-cover / simui-media.
+# Footprints follow the cards' built-in grid_options (12-col grid): tiles are 6-wide,
+# media is full-width. Edit any card by clicking it in the dashboard edit UI.
+type: sections
+title: Living Room
+path: living-room
+icon: mdi:sofa
+max_columns: 2
+sections:
+  - type: grid
+    cards:
+      # ── Status strip: a quick glance row (temp, humidity, a door, a scene) ──
+      - type: custom:simui-chips-card
+        # Simple list — each entity becomes an icon+value chip. Use `chips:` for
+        # per-chip name/icon/colour/tap_action (see the Security preset).
+        entities:
+          - sensor.living_room_temperature
+          - sensor.living_room_humidity
+          - binary_sensor.front_door     # swap: any door/window/motion sensor
+          - light.living_room            # swap: any entity you want at-a-glance
+        grid_options:
+          columns: 12
+          rows: auto
+
+      # ── Two big device tiles, side by side ──
+      - type: custom:simui-light-card
+        entity: light.living_room        # swap: your main living-room light/group
+        name: Living Room
+        use_light_color: true            # tile takes the bulb's live colour
+        slider: dots                     # dots | bar | line | none
+        slider_target: brightness        # brightness | color_temp
+        show_color_controls: true        # Warm / Cool / Scene preset chips
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-climate-card
+        entity: climate.living_room      # swap: your thermostat
+        name: Climate
+        show_track: true                 # the temperature track
+        show_modes: true                 # Heat / Auto / Cool chips (auto from entity)
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── Blinds / curtains ──
+      - type: custom:simui-cover-card
+        entity: cover.living_room_blinds # swap: your cover
+        name: Blinds
+        slider: dots
+        slider_target: position          # position | tilt (for venetians)
+        show_buttons: true               # Open / Stop / Close row (auto)
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── Now playing — full width: art + title/artist + transport ──
+      - type: custom:simui-media-card
+        entity: media_player.living_room # swap: your TV / speaker
+        name: Living Room
+        grid_options:
+          columns: 12
+          rows: auto

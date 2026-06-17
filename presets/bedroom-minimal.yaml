@@ -1,0 +1,49 @@
+# SimUI preset · Bedroom / Minimal
+# The smallest useful room page — copy & rename per room.
+# Cards used: simui-light / simui-climate / simui-fan / simui-chips.
+type: sections
+title: Bedroom
+path: bedroom
+icon: mdi:bed
+max_columns: 2
+sections:
+  - type: grid
+    cards:
+      # ── Two-chip glance: temp + a door/window ──
+      - type: custom:simui-chips-card
+        entities:
+          - sensor.bedroom_temperature
+          - binary_sensor.bedroom_window
+        grid_options:
+          columns: 12
+          rows: auto
+
+      # ── Light + climate, compact (dense) ──
+      - type: custom:simui-light-card
+        entity: light.bedroom            # swap: your bedside / ceiling light
+        name: Bedroom
+        compact: true                    # denser tile
+        slider: bar
+        slider_target: brightness
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-climate-card
+        entity: climate.bedroom          # swap: your thermostat / AC
+        name: Climate
+        compact: true
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── Fan ──
+      - type: custom:simui-fan-card
+        entity: fan.bedroom              # swap: your fan
+        name: Fan
+        slider: dots
+        show_oscillate: true
+        show_presets: true
+        compact: true
+        grid_options:
+          columns: 6
+          rows: auto

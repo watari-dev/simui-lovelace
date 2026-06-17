@@ -1,0 +1,83 @@
+# SimUI preset · Security
+# Alarm + locks + sensor-style cameras + a live status strip.
+# Cards used: simui-alarm / simui-chips / simui-lock / simui-sensor.
+# Note: cameras here are shown as motion/state SENSOR tiles, not live video —
+# pair with a native picture-glance card if you want the stream.
+type: sections
+title: Security
+path: security
+icon: mdi:shield-home
+max_columns: 2
+sections:
+  - type: grid
+    cards:
+      # ── Live status strip: per-chip colour by state ──
+      - type: custom:simui-chips-card
+        # Advanced `chips:` form — name, icon, colour and tap per chip.
+        chips:
+          - entity: binary_sensor.front_door
+            name: Front Door
+            icon: mdi:door
+            color: down                    # amber/coral when open
+          - entity: binary_sensor.back_door
+            name: Back Door
+            icon: mdi:door
+            color: down
+          - entity: binary_sensor.garage_motion
+            name: Garage
+            icon: mdi:motion-sensor
+            color: heat
+          - entity: binary_sensor.window_kitchen
+            name: Kitchen Window
+            icon: mdi:window-closed-variant
+            color: cool
+        grid_options:
+          columns: 12
+          rows: auto
+
+      # ── The alarm panel: armed state big, one-tap arm / disarm ──
+      - type: custom:simui-alarm-card
+        entity: alarm_control_panel.home   # swap: your panel
+        name: Alarm
+        arm_actions:                       # which arm modes to offer, in order
+          - arm_home
+          - arm_away
+          - arm_night
+        show_status: true                  # the status line under the state
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── Door locks ──
+      - type: custom:simui-lock-card
+        entity: lock.front_door            # swap: your lock
+        name: Front Door
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-lock-card
+        entity: lock.back_door
+        name: Back Door
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── Cameras surfaced as sensor tiles (motion / last-event state) ──
+      - type: custom:simui-sensor-card
+        entity: binary_sensor.driveway_camera_motion  # swap: your camera's motion sensor
+        name: Driveway Cam
+        icon: mdi:cctv
+        sparkline: false
+        show_delta: false
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-sensor-card
+        entity: binary_sensor.doorbell_camera_motion
+        name: Doorbell Cam
+        icon: mdi:cctv
+        sparkline: false
+        show_delta: false
+        grid_options:
+          columns: 6
+          rows: auto

@@ -1,0 +1,98 @@
+# SimUI preset · Climate & Sensors
+# Thermostat + comfort gauges + a history graph + dense sensor tiles.
+# Cards used: simui-climate / simui-gauge / simui-graph / simui-sensor.
+type: sections
+title: Climate
+path: climate
+icon: mdi:thermostat
+max_columns: 2
+sections:
+  - type: grid
+    cards:
+      # ── Thermostat ──
+      - type: custom:simui-climate-card
+        entity: climate.main             # swap: your thermostat
+        name: Thermostat
+        show_track: true
+        show_modes: true
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── Comfort gauges ──
+      - type: custom:simui-gauge-card
+        entity: sensor.indoor_temperature
+        name: Temperature
+        min: 10
+        max: 35
+        precision: 1
+        show_unit: true
+        # comfort band: cool below 18, good 18–26, warm above
+        severity:
+          - from: 10
+            color: cool
+          - from: 18
+            color: up
+          - from: 26
+            color: heat
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-gauge-card
+        entity: sensor.indoor_humidity
+        name: Humidity
+        min: 0
+        max: 100
+        precision: 0
+        show_unit: true
+        color: cool
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-gauge-card
+        entity: sensor.indoor_co2         # swap: CO₂ / AQI / any numeric sensor
+        name: CO₂
+        min: 400
+        max: 2000
+        precision: 0
+        show_unit: true
+        severity:
+          - from: 400
+            color: up
+          - from: 1000
+            color: heat
+          - from: 1500
+            color: down
+        grid_options:
+          columns: 6
+          rows: auto
+
+      # ── 24 h temperature with humidity overlaid ──
+      - type: custom:simui-graph-card
+        entity: sensor.indoor_temperature
+        secondary: sensor.indoor_humidity
+        name: Temp · Humidity · 24h
+        hours: 24
+        fill: true
+        show_stats: true
+        grid_options:
+          columns: 12
+          rows: auto
+
+      # ── Dense sensor tiles (sparkline + 24 h delta) ──
+      - type: custom:simui-sensor-card
+        entity: sensor.outdoor_temperature  # swap freely
+        name: Outdoor
+        sparkline: true
+        show_delta: true
+        grid_options:
+          columns: 6
+          rows: auto
+      - type: custom:simui-sensor-card
+        entity: sensor.bedroom_temperature
+        name: Bedroom
+        sparkline: true
+        show_delta: true
+        grid_options:
+          columns: 6
+          rows: auto

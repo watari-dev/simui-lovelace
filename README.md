@@ -1,112 +1,104 @@
-# SimUI Cards
+# SimUI Cards — Luminous
 
-A set of **minimalist, Apple-Home-inspired custom Lovelace cards** for Home Assistant —
-the beautiful tiles from [simUI](https://github.com/watari-dev/ha-simui), repackaged to
-drop into a normal Lovelace dashboard (like Mushroom or Bubble Card) instead of taking
-over the whole UI. Lovelace owns the dashboard; SimUI owns the cards.
+**A minimalist, information-dense, fully UI-editable card set for Home Assistant.**
 
-The look is grounded in [UI-Lovelace-Minimalist](https://github.com/UI-Lovelace-Minimalist/UI):
-soft pastel state colours, `#1d1d1d` cards floating on a soft shadow, 20px corners, a
-barely-there active tint on a round icon disc.
+Beautiful tiles you drop into a *normal* Lovelace dashboard — Lovelace owns the layout,
+SimUI owns the cards. No YAML required: every option is in the visual editor. The design
+language borrows from **Linear** (restrained dark-first palette, hairline detail, one
+accent), **Apple Home** (continuous-radius cards, content-first hierarchy, an active-state
+tint), and **TradingView** (thin precise charts, tabular figures, crosshair readouts) —
+grounded in the look of
+[UI-Lovelace-Minimalist](https://github.com/UI-Lovelace-Minimalist/UI): soft pastel state
+colours, near-black cards floating on a soft shadow, 20px corners, a barely-there active
+tint on a round icon disc.
 
-![SimUI Cards — media, cover, lock, graph, and light tiles](docs/screenshot.png)
+These are the tiles from [simUI](https://github.com/watari-dev/ha-simui), repackaged to
+sit beside Mushroom or Bubble Card on any dashboard.
+
+![SimUI Cards — fan, gauge, button, alarm tiles](docs/screenshots/tiles.png)
+
+---
 
 ## Cards
 
-| Card | `type` | What it does |
-|------|--------|--------------|
-| Light | `custom:simui-light-card` | Tap the disc to toggle, drag anywhere to set brightness, tap the body for more-info. Tints with the bulb's own colour; on/off-only lights just toggle. |
-| Climate | `custom:simui-climate-card` | Drag the tile to set the target temperature, tap the disc to toggle on/off. Icon + tint follow the HVAC action (heating → orange, cooling → blue). Shows `current → target`. |
-| Sensor | `custom:simui-sensor-card` | The value, big, with a device-class icon + accent (temperature, humidity, power, pressure, battery, air quality…). Tap for more-info. |
-| Graph | `custom:simui-graph-card` | A sensor history chart — thin line + soft gradient fill, gridlines, a crosshair value readout, a range toggle (1h/12h/24h/7d) and min/avg/max. Custom-rendered SVG, no chart library. |
-| Cover | `custom:simui-cover-card` | A blinds/garage/shade tile — device-class icon, an "N% open" line, drag to set position, tap to open/close (or stop while moving). |
-| Lock | `custom:simui-lock-card` | A lock tile tinted by state (locked → green, unlocked → amber, jammed → coral). Tap to lock/unlock. |
-| Media | `custom:simui-media-card` | A media-player tile — album art (or a music disc), title + artist, and transport controls (prev / play-pause / next) gated by the player's features. |
-| Chips | `custom:simui-chips-card` | A wrapping row of compact status pills — icon + value, one per entity (lights on, temperature, locks, presence…). A glanceable status strip for the top of a dashboard. |
-| Energy flow | `custom:simui-energy-flow-card` | A Powerwall-style power-flow diagram — solar, grid, battery (with charge %), and home, with wires that colour + animate in the live direction of flow. |
+16 cards, all driven by the visual editor — every column below is also an option in the UI
+(no YAML needed).
 
-## Install (HACS)
+| Card | `custom:` type | What it does |
+|------|----------------|--------------|
+| **Light** | `custom:simui-light-card` | Tap the disc to toggle, drag anywhere to set brightness (or colour temperature), tap the body for more-info. Tints with the bulb's live colour; configurable preset chips. |
+| **Climate** | `custom:simui-climate-card` | Thermostat tile — drag to set the target, a temperature track, fully configurable mode / preset / temperature chips, tint + icon following the HVAC action. |
+| **Cover** | `custom:simui-cover-card` | Blinds / garage / shade tile — drag to set position or slat tilt, with a configurable button row (Open / Stop / Close, or your own service / position / tilt buttons). |
+| **Lock** | `custom:simui-lock-card` | A lock tile tinted by state (locked → green, unlocked → amber, jammed → coral). Tap to lock / unlock. |
+| **Fan** | `custom:simui-fan-card` | Fan tile — drag to set speed (snaps to the fan's step), with oscillate / preset / direction chips gated by the fan's features. |
+| **Sensor** | `custom:simui-sensor-card` | The value, big, with a device-class icon + accent; optional 24 h sparkline and a 24 h delta badge. Works with `sensor` and `binary_sensor`. |
+| **Gauge** | `custom:simui-gauge-card` | A radial gauge for a numeric entity — precise 270° arc, big centre value, configurable min / max / precision, and coloured **severity bands**. |
+| **Graph** | `custom:simui-graph-card` | A sensor history chart powered by TradingView's [`lightweight-charts`](https://github.com/tradingview/lightweight-charts) — curved area/line, a magnet **crosshair value readout**, hairline gridlines, a range toggle (1h / 12h / 24h / 7d), an optional second series, and a min / avg / max footer. |
+| **Media** | `custom:simui-media-card` | Media-player tile — album art (or a spinning music disc), title + artist, a scrubber, and transport controls gated by the player's features. |
+| **Weather** | `custom:simui-weather-card` | A weather card — condition disc + big temperature, a feels-like / humidity / wind detail row, and a live forecast strip (daily / hourly). |
+| **Vacuum** | `custom:simui-vacuum-card` | Robot-vacuum tile — state big (cleaning / docked / returning…), battery level, and Clean / Pause / Stop / Dock / Locate + fan-speed controls, gated by features. |
+| **Alarm** | `custom:simui-alarm-card` | Alarm-panel tile — armed state big, one-tap arm / disarm (only the modes your panel supports), tinted by state. Code-protected panels defer to HA's native keypad. |
+| **Select** | `custom:simui-select-card` | A tile for `select` / `input_select` — the current option big, with chips for a few options, a dropdown for many, or tap-to-cycle. |
+| **Button** | `custom:simui-button-card` | A scene / script action tile — tap the glowing disc to run. Works with any tap action, no entity required; scripts show a live "Running…" state. |
+| **Chips** | `custom:simui-chips-card` | A wrapping row of compact status pills — icon + value, one per entity. A glanceable status strip; a simple entity list or fully per-chip control (icon / name / colour / action). |
+| **Energy Flow** | `custom:simui-energy-flow-card` | A Powerwall-style power-flow diagram — solar, grid, battery (with charge %), and home, with ribbons that colour + animate in the live direction of flow. |
 
-1. HACS → ⋮ → **Custom repositories** → add this repo as a **Dashboard** (Lovelace) plugin.
-2. Install **SimUI Cards**; HACS registers the JS resource for you.
-3. Hard-refresh the browser.
+---
 
-## Use
+## Install
 
-Add it from the dashboard's **+ card** picker and configure it in the **visual editor**
-(pick a light, set a name, toggle colour tinting) — no YAML needed. Or in YAML:
+### HACS (recommended)
+
+1. In Home Assistant, open **HACS**.
+2. Top-right **⋮** → **Custom repositories**.
+3. Repository: `https://github.com/watari-dev/simui-lovelace` — Category: **Dashboard** (Lovelace plugin).
+4. Find **SimUI Cards** in the list and click **Download**. HACS registers the JS resource for you.
+5. **Hard-refresh** the browser (clear the dashboard cache).
+
+### Manual
+
+1. Download `simui-lovelace.js` from the [latest release](https://github.com/watari-dev/simui-lovelace/releases).
+2. Copy it to `<config>/www/simui-lovelace.js`.
+3. **Settings → Dashboards → ⋮ → Resources → Add resource**:
+   - URL: `/local/simui-lovelace.js`
+   - Type: **JavaScript module**
+4. Hard-refresh the browser.
+
+---
+
+## Quick start
+
+You almost never need YAML. Open any dashboard, click **+ Add card**, pick a **SimUI**
+card from the picker, and configure it in the **visual editor** — choose an entity, set a
+name, toggle the accent colour, drag in extra chips or buttons. Everything below is a
+field in that editor.
+
+If you prefer YAML, mind the `custom:` prefix:
 
 ```yaml
 type: custom:simui-light-card
 entity: light.living_room_ceiling
-name: Ceiling            # optional — defaults to the light's name
-icon: mdi:floor-lamp     # optional — overrides the device-class icon (any mdi:… name)
-use_light_color: true    # optional — tile takes the bulb's colour (default); false ⇒ warm yellow
+name: Ceiling              # optional — defaults to the light's name
+icon: mdi:floor-lamp       # optional — overrides the device-class icon (any mdi:… name)
+use_light_color: true      # optional — tile takes the bulb's colour (default); false ⇒ warm yellow
+slider: dots               # dots | bar | line | none
+slider_target: brightness  # brightness | color_temp
+tap_action:
+  action: more-info        # more-info (default) | toggle | navigate | url | perform-action | none
 ```
 
-> Every tile card (light, climate, sensor, graph, cover, lock, media) accepts an optional
-> `icon:` (an `mdi:…` name) to override the automatic device-class icon, and a `tap_action:`
-> to configure what tapping the body does (`more-info` default, or `toggle` / `navigate` /
-> `url` / `perform-action` / `none`). Both are in the visual editor; right-click always opens
-> more-info. The icon disc keeps its own toggle, and drag still sets brightness/temperature/position.
->
-> ```yaml
-> type: custom:simui-sensor-card
-> entity: sensor.washing_machine
-> tap_action:
->   action: navigate
->   navigation_path: /lovelace/laundry
-> ```
+A couple more, to show the shape:
 
 ```yaml
-type: custom:simui-climate-card
-entity: climate.living_room
-name: Living Room        # optional
-```
-
-```yaml
-type: custom:simui-sensor-card
-entity: sensor.living_room_temperature
-name: Temperature        # optional
-color: warm              # optional — warm | cool | up | down | grey (default: from device class)
-```
-
-```yaml
-type: custom:simui-graph-card
-entity: sensor.living_room_temperature
-name: Temperature        # optional
-hours: 24                # optional — default range (default 24)
-ranges: [1, 12, 24, 168] # optional — range-toggle options in hours; [] hides the toggle
-fill: true               # optional — area fill under the line (default true)
-color: warm              # optional — warm | cool | up | down | grey (default: from device class)
-```
-
-```yaml
-type: custom:simui-cover-card
-entity: cover.living_room_blinds
-name: Blinds             # optional
-```
-
-```yaml
-type: custom:simui-lock-card
-entity: lock.front_door
-name: Front Door         # optional
-```
-
-```yaml
-type: custom:simui-media-card
-entity: media_player.living_room_speaker
-name: Speaker            # optional
-```
-
-```yaml
-type: custom:simui-chips-card
-entities:
-  - light.living_room
-  - climate.living_room
-  - sensor.outdoor_temperature
-  - lock.front_door
-  - binary_sensor.motion
+type: custom:simui-gauge-card
+entity: sensor.cpu_temperature
+min: 0
+max: 100
+severity_fill: true
+severity:                  # coloured thresholds — each band runs to the next
+  - { from: 0,  color: up }    # green
+  - { from: 60, color: warm }  # amber
+  - { from: 85, color: down }  # coral
 ```
 
 ```yaml
@@ -120,6 +112,73 @@ home: sensor.home_power          # optional
 # battery_invert: true           # if your battery sensor's sign is reversed
 ```
 
+> Accent colours (the `color:` option and per-chip / per-band colours) use a shared
+> palette: `warm` (amber) · `cool` (blue) · `up` (green) · `heat` (orange) ·
+> `down` (coral) · `grey`. Leave `color` unset and tiles pick a sensible tint from the
+> entity's device class automatically.
+
+---
+
+## Presets
+
+Drop-in pages for a sections dashboard — copy a preset's YAML, swap the placeholder entity
+ids for your own, and edit any card in the visual editor. See [`presets/`](presets/).
+
+| Preset | What's on it |
+|--------|--------------|
+| [Living Room](presets/living-room.yaml) | Lights + thermostat side-by-side, blinds, a full-width media tile, and a status chips strip. |
+| [Energy & Power](presets/energy-power.yaml) | A Powerwall flow diagram, two power gauges, and a 24 h consumption graph — generation + consumption on one surface. |
+| [Security](presets/security.yaml) | An alarm panel with one-tap arm/disarm, every lock, motion/contact sensors as a chips strip, and camera tiles. |
+| [Climate & Sensors](presets/climate-sensors.yaml) | A thermostat hero, comfort gauges (temp / humidity / CO₂), a temp+humidity graph, and dense sensor tiles. |
+| [Bedroom / Minimal](presets/bedroom-minimal.yaml) | The minimal per-room template: one light, one climate tile, a fan, and a two-chip strip. |
+
+To use one: edit a dashboard → **⋮ → Edit in YAML** (or add a new view) → paste the
+preset's `sections:` content. Or just lift individual cards into your existing dashboard.
+
+---
+
+## Features
+
+- **Native interactions** — `tap_action`, `hold_action`, and `double_tap_action` on every
+  interactive card, using HA's standard action set (`more-info`, `toggle`, `navigate`,
+  `url`, `perform-action`, `none`). Right-click / long-press always opens more-info.
+- **Accent colours** — one palette (`warm` / `cool` / `up` / `heat` / `down` / `grey`),
+  with automatic device-class tinting when you don't pick one.
+- **Compact variants** — a `compact: true` toggle on the tiles for denser dashboards.
+- **Configurable chip & button rows** — opt-in `buttons:` (name · icon · tap action) on
+  most cards, plus cover service buttons, climate mode chips, fan oscillate / preset /
+  direction chips, vacuum controls, alarm arm modes, and light preset chips — all editable
+  inline in the UI.
+- **Sections-aware sizing** — every card declares a sensible grid footprint
+  (`gridOptions` with `min_columns` / `min_rows`) so HA's Sections view lays it out at the
+  right size instead of spanning all 12 columns.
+- **Severity gauges** — radial gauges with multi-band thresholds that recolour the arc (or
+  the whole fill) as the value crosses each band.
+- **TradingView-grade history** — the Graph card renders with `lightweight-charts`: a
+  magnet crosshair value readout, curved area/line, hairline gridlines, a range toggle,
+  and an optional second series, themed to match the card.
+- **Energy / power flow** — a live Powerwall-style diagram with signed grid / battery
+  handling and direction-aware animated ribbons.
+- **Theme-aware & live** — React rendered inside a shadow-DOM custom element, reading the
+  live `hass` object HA injects, opening HA's own more-info dialog for detail.
+
+---
+
+## Screenshots
+
+> _Placeholder — drop captured images at the paths below._
+
+| | |
+|---|---|
+| ![Light, climate and sensor tiles](docs/screenshots/tiles.png) | ![Graph card with crosshair readout](docs/screenshots/graph.png) |
+| _Tiles with the active-state tint_ | _Graph — lightweight-charts, crosshair + range toggle_ |
+| ![Energy flow diagram](docs/screenshots/energy-flow.png) | ![Gauge with severity bands](docs/screenshots/gauge.png) |
+| _Energy Flow — solar / grid / battery / home_ | _Gauge — radial arc with severity bands_ |
+| ![The visual editor](docs/screenshots/editor.png) | ![Chips status strip](docs/screenshots/chips.png) |
+| _Every option, in the UI editor — no YAML_ | _Chips — a glanceable status strip_ |
+
+---
+
 ## Develop
 
 ```bash
@@ -127,12 +186,37 @@ npm install
 npm run dev        # mock-hass harness at http://localhost:5174
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint
-npm test           # vitest (pure util/parse logic)
+npm test           # vitest (pure util / parse logic)
 npm run build      # → dist/simui-lovelace.js
 ```
 
 Releases are cut from a `v*` git tag: CI builds `simui-lovelace.js` and attaches it to a
 GitHub release, which is the artifact HACS downloads.
 
-The cards are React rendered inside a shadow-DOM custom element; they read the live
-`hass` object HA injects and open HA's own more-info dialog for details.
+The cards are React rendered inside a shadow-DOM custom element; they read the live `hass`
+object HA injects and open HA's own more-info dialog for details.
+
+---
+
+## Contributing
+
+Issues and PRs are welcome. A good contribution:
+
+- keeps the **visual editor** in step with any new config option (schema + label + helper),
+- gives new tile cards a sensible **`gridOptions`** footprint so Sections view sizes them,
+- returns a **`custom:`-prefixed type** from `getStubConfig` so the picker emits a resolvable config,
+- **degrades gracefully** — a missing entity shows a friendly placeholder, never a crash,
+- runs `npm run typecheck`, `npm run lint`, and `npm test` clean.
+
+If you're adding a card, follow the pattern in `src/cards/*` + the registration block in
+`src/main.ts`, and add it to the **Cards** table above.
+
+---
+
+## Licence
+
+[MIT](LICENSE) © Watari Dev.
+
+The Graph card bundles TradingView's
+[`lightweight-charts`](https://github.com/tradingview/lightweight-charts), which is licensed
+under **Apache-2.0**.
