@@ -51,9 +51,16 @@ const BUTTONS_FIELD = {
 };
 const BUTTONS_LABEL = 'Action buttons';
 const BUTTONS_HELP = 'Optional buttons beneath the card — each runs its tap action (default: more-info).';
+// Sections (grid) view footprints (of 12 columns; rows:'auto' = content height). Without these
+// HA spans a custom card across all 12 columns — so tiles need a smaller default footprint.
+const TILE_GRID = { columns: 6, rows: 'auto', min_columns: 3, min_rows: 2 } as const;   // half-width entity tiles
+const WIDE_GRID = { columns: 12, rows: 'auto', min_columns: 6, min_rows: 2 } as const;   // media
+const TALL_GRID = { columns: 12, rows: 'auto', min_columns: 6, min_rows: 4 } as const;   // graph / energy
+const STRIP_GRID = { columns: 12, rows: 'auto', min_columns: 4, min_rows: 1 } as const;  // chips strip
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
+  gridOptions: TILE_GRID,
   // Auto-pick a light for the card-picker preview; the card itself shows a friendly
   // "Select a light" placeholder until one is chosen (no throwing, graceful degradation).
   stubConfig: (hass) => ({
@@ -107,6 +114,7 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
 });
 
 defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
+  gridOptions: TILE_GRID,
   stubConfig: (hass) => ({
     entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('climate.')) ?? '' : '',
   }),
@@ -145,6 +153,7 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
 });
 
 defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
+  gridOptions: TILE_GRID,
   stubConfig: (hass) => ({
     entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('sensor.')) ?? '' : '',
   }),
@@ -167,6 +176,7 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
 });
 
 defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
+  gridOptions: TALL_GRID,
   stubConfig: (hass) => ({
     entity: hass
       ? Object.keys(hass.states).find(
@@ -208,6 +218,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
 });
 
 defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
+  gridOptions: TILE_GRID,
   stubConfig: (hass) => ({
     entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('cover.')) ?? '' : '',
   }),
@@ -250,6 +261,7 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
 });
 
 defineCard<LockCardConfig>('simui-lock-card', LockCard, {
+  gridOptions: TILE_GRID,
   stubConfig: (hass) => ({
     entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('lock.')) ?? '' : '',
   }),
@@ -269,6 +281,7 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
 });
 
 defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
+  gridOptions: WIDE_GRID,
   stubConfig: (hass) => ({
     entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('media_player.')) ?? '' : '',
   }),
@@ -287,6 +300,7 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
 });
 
 defineCard<ChipsCardConfig>('simui-chips-card', ChipsCard, {
+  gridOptions: STRIP_GRID,
   stubConfig: (hass) => {
     if (!hass) return { entities: [] };
     const pick = (p: string) => Object.keys(hass.states).find((id) => id.startsWith(p));
@@ -323,6 +337,7 @@ defineCard<ChipsCardConfig>('simui-chips-card', ChipsCard, {
 });
 
 defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
+  gridOptions: TALL_GRID,
   stubConfig: (hass) => {
     if (!hass) return {};
     const find = (rx: RegExp) => Object.keys(hass.states).find((id) => id.startsWith('sensor.') && rx.test(id));

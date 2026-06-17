@@ -9,6 +9,19 @@ export interface CardComponentProps<C extends BaseCardConfig = BaseCardConfig> {
   config: C;
 }
 
+/** A card's preferred footprint in HA's Sections (grid) view — how many of the 12 columns it
+ *  spans and how tall it is. `rows: 'auto'` sizes to content; min/max bound the resize handle.
+ *  Without this, HA gives a custom card the full 12 columns and ignores rows — so tiles would
+ *  span the whole width on a Sections dashboard. */
+export interface GridOptions {
+  columns?: number | 'full';
+  rows?: number | 'auto';
+  min_columns?: number;
+  max_columns?: number;
+  min_rows?: number;
+  max_rows?: number;
+}
+
 interface DefineOptions<C extends BaseCardConfig> {
   /** A starter config for the card-picker preview (gets `hass` so it can auto-pick an entity). */
   stubConfig?: (hass?: HomeAssistant) => Partial<C>;
@@ -18,6 +31,9 @@ interface DefineOptions<C extends BaseCardConfig> {
   editor?: EditorSpec;
   /** Approx height in Lovelace grid units (~50px each) for masonry layout; default 1. */
   cardSize?: number;
+  /** Preferred footprint in HA's Sections (grid) view. Strongly recommended — without it a
+   *  custom card spans all 12 columns (tiles end up full-width). */
+  gridOptions?: GridOptions;
   /** Extra entity ids the card depends on (beyond `config.entity`) — so a multi-entity
    *  card (chips, energy flow) re-renders when any of them change, not just config.entity. */
   entities?: (config: C) => Array<string | undefined>;
@@ -104,6 +120,12 @@ export function defineCard<C extends BaseCardConfig>(
 
     getCardSize(): number {
       return opts.cardSize ?? 1;
+    }
+
+    // Sections (grid) view sizing. Only consulted in Sections dashboards; masonry uses
+    // getCardSize. Defining it stops HA's "12 columns, ignore rows" default for custom cards.
+    getGridOptions(): GridOptions | undefined {
+      return opts.gridOptions;
     }
 
     static getStubConfig(hass?: HomeAssistant): Partial<C> & { type: string } {
