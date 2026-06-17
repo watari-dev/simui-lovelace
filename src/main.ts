@@ -8,6 +8,10 @@ import { LockCard, type LockCardConfig } from './cards/LockCard';
 import { MediaCard, type MediaCardConfig } from './cards/MediaCard';
 import { ChipsCard, type ChipsCardConfig } from './cards/ChipsCard';
 import { EnergyFlowCard, type EnergyFlowCardConfig } from './cards/EnergyFlowCard';
+import { FanCard, type FanCardConfig } from './cards/FanCard';
+import { ButtonCard, type ButtonCardConfig } from './cards/ButtonCard';
+import { GaugeCard, type GaugeCardConfig } from './cards/GaugeCard';
+import { AlarmCard, type AlarmCardConfig } from './cards/AlarmCard';
 
 const COLOR_OPTIONS = [
   { value: 'warm', label: 'Amber' },
@@ -374,6 +378,125 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
   },
 });
 
+defineCard<FanCardConfig>('simui-fan-card', FanCard, {
+  gridOptions: TILE_GRID,
+  stubConfig: (hass) => ({ entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('fan.')) ?? '' : '' }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'fan' } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      SLIDER_FIELD,
+      { name: 'show_oscillate', selector: { boolean: {} } },
+      { name: 'show_presets', selector: { boolean: {} } },
+      { name: 'show_direction', selector: { boolean: {} } },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Fan', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', slider: 'Speed slider style', show_oscillate: 'Show oscillate chip', show_presets: 'Show preset chips', show_direction: 'Show direction chip', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: { buttons: BUTTONS_HELP },
+    defaults: { slider: 'dots', show_oscillate: true, show_presets: true, show_direction: true },
+  },
+});
+
+defineCard<ButtonCardConfig>('simui-button-card', ButtonCard, {
+  gridOptions: TILE_GRID,
+  stubConfig: (hass) => ({
+    entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('scene.')) ?? Object.keys(hass.states).find((id) => id.startsWith('script.')) ?? '' : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', selector: { entity: { domain: ['scene', 'script'] } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      { name: 'subtitle', selector: { text: {} } },
+      { name: 'show_state', selector: { boolean: {} } },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Scene or script (optional)', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', subtitle: 'Subtitle (optional)', show_state: 'Show run state', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: {
+      entity: 'Pick a scene or script to run on tap. Leave empty and set a Tap action for a pure action button.',
+      subtitle: 'A small caption under the name. Defaults to the last-run time / “Tap to run”.',
+      buttons: BUTTONS_HELP,
+    },
+    defaults: { show_state: true },
+  },
+});
+
+defineCard<GaugeCardConfig>('simui-gauge-card', GaugeCard, {
+  gridOptions: TILE_GRID,
+  cardSize: 2,
+  stubConfig: (hass) => ({
+    entity: hass
+      ? Object.keys(hass.states).find((id) => (id.startsWith('sensor.') || id.startsWith('number.') || id.startsWith('input_number.')) && hass.states[id].attributes.unit_of_measurement != null && !Number.isNaN(Number(hass.states[id].state))) ?? Object.keys(hass.states).find((id) => id.startsWith('sensor.')) ?? ''
+      : '',
+  }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: ['sensor', 'number', 'input_number', 'counter'] } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      { name: 'min', selector: { number: { mode: 'box' } } },
+      { name: 'max', selector: { number: { mode: 'box' } } },
+      { name: 'precision', selector: { number: { min: 0, max: 4, step: 1, mode: 'box' } } },
+      { name: 'show_unit', selector: { boolean: {} } },
+      { name: 'show_minmax', selector: { boolean: {} } },
+      { name: 'severity_fill', selector: { boolean: {} } },
+      {
+        name: 'severity',
+        selector: { object: { multiple: true, label_field: 'from', translation_key: 'severity', fields: { from: { required: true, selector: { number: { mode: 'box' } } }, color: { selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } } } } },
+      },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Gauge entity', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', min: 'Minimum', max: 'Maximum', precision: 'Decimal places', show_unit: 'Show unit', show_minmax: 'Show min / max labels', severity_fill: 'Fill by severity band', severity: 'Severity bands', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: {
+      color: 'Overrides the device-class tint and the severity colour.',
+      min: 'Arc start. Default 0.',
+      max: 'Arc end. Default 100 for %, else auto from the value.',
+      severity: 'Coloured thresholds — each band starts at “from” and runs to the next (or max). e.g. 0 green · 60 amber · 85 red.',
+      severity_fill: 'On: the whole fill tints by the active band. Off: fill stays one accent.',
+      buttons: BUTTONS_HELP,
+    },
+    defaults: { show_unit: true, show_minmax: true, severity_fill: true },
+  },
+});
+
+defineCard<AlarmCardConfig>('simui-alarm-card', AlarmCard, {
+  gridOptions: TILE_GRID,
+  stubConfig: (hass) => ({ entity: hass ? Object.keys(hass.states).find((id) => id.startsWith('alarm_control_panel.')) ?? '' : '' }),
+  editor: {
+    schema: [
+      { name: 'entity', required: true, selector: { entity: { domain: 'alarm_control_panel' } } },
+      { name: 'name', selector: { text: {} } },
+      { name: 'icon', selector: { icon: {} } },
+      ...ACTION_FIELDS,
+      COLOR_FIELD,
+      {
+        name: 'arm_actions',
+        selector: { select: { multiple: true, mode: 'list', options: [{ value: 'arm_home', label: 'Arm Home' }, { value: 'arm_away', label: 'Arm Away' }, { value: 'arm_night', label: 'Arm Night' }, { value: 'arm_vacation', label: 'Arm Vacation' }, { value: 'arm_custom_bypass', label: 'Arm Custom Bypass' }] } },
+      },
+      { name: 'show_status', selector: { boolean: {} } },
+      BUTTONS_FIELD,
+      { name: 'compact', selector: { boolean: {} } },
+    ],
+    labels: { entity: 'Alarm panel', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', arm_actions: 'Arm buttons', show_status: 'Show status line', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: {
+      arm_actions: 'Which arm modes to offer, in order. Empty ⇒ auto from what the panel supports. A Disarm button appears automatically when armed.',
+      color: 'Overrides the automatic state colour (green disarmed · amber armed home/night · coral armed away · red triggered).',
+      buttons: BUTTONS_HELP,
+    },
+    defaults: { show_status: true },
+  },
+});
+
 // ── Card-picker / HACS metadata ───────────────────────────────────────────────
 interface CustomCard {
   type: string;
@@ -445,6 +568,34 @@ w.customCards.push(
     type: 'simui-energy-flow-card',
     name: 'SimUI Energy Flow',
     description: 'A Powerwall-style power-flow diagram — solar, grid, battery, home.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-fan-card',
+    name: 'SimUI Fan',
+    description: 'A minimalist fan tile — tap to toggle, drag to set speed, oscillate / preset / direction chips.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-button-card',
+    name: 'SimUI Button',
+    description: 'A scene / script action tile — tap the glowing disc to activate. Works with any action, no entity needed.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-gauge-card',
+    name: 'SimUI Gauge',
+    description: 'A radial gauge for a numeric sensor — a precise arc, big centre value, severity bands.',
+    preview: true,
+    documentationURL: 'https://github.com/watari-dev/simui-lovelace',
+  },
+  {
+    type: 'simui-alarm-card',
+    name: 'SimUI Alarm',
+    description: 'A minimalist alarm panel tile — armed state big, one-tap arm / disarm, tinted by state.',
     preview: true,
     documentationURL: 'https://github.com/watari-dev/simui-lovelace',
   },

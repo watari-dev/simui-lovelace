@@ -203,6 +203,37 @@ export function Sparkline({
   );
 }
 
+// ── Gauge arc (radial sensor gauge) ─────────────────────────────────────────────
+/** A 270° radial gauge arc: a grey track + an accent fill to `pct` (0–1), with the same glow
+ *  as the dot-bar. The big value is rendered separately, centred over the dial. */
+export function GaugeArc({
+  pct,
+  color,
+  size = 132,
+  strokeWidth = 11,
+}: {
+  pct: number;
+  color: string;
+  size?: number;
+  strokeWidth?: number;
+}): ReactNode {
+  const start = 135, sweep = 270; // gap at the bottom
+  const r = size / 2 - strokeWidth / 2 - 2;
+  const c = size / 2;
+  const at = (ang: number): string => {
+    const a = (ang * Math.PI) / 180;
+    return `${(c + r * Math.cos(a)).toFixed(2)} ${(c + r * Math.sin(a)).toFixed(2)}`;
+  };
+  const d = `M ${at(start)} A ${r} ${r} 0 1 1 ${at(start + sweep)}`;
+  const p = Math.max(0, Math.min(1, pct));
+  return (
+    <svg className="gaugesvg" viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      <path className="gauge-track" d={d} strokeWidth={strokeWidth} pathLength={100} />
+      <path className="gauge-fill" d={d} strokeWidth={strokeWidth} pathLength={100} stroke={color} strokeDasharray={`${(p * 100).toFixed(2)} 100`} />
+    </svg>
+  );
+}
+
 // ── Disc icon helper ───────────────────────────────────────────────────────────
 /** A lucide glyph sized + weighted for the Luminous disc (1.8px stroke). */
 export function discIcon(Icon: (props: Record<string, unknown>) => ReactNode, size: number): ReactNode {

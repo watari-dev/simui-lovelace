@@ -180,6 +180,31 @@ svg.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: ro
 .statrow { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--faint); font-weight: 500; }
 .statrow .avg { color: var(--muted); }
 
+/* ── Gauge card ──────────────────────────────────────────────────────────────── */
+.gauge { position: relative; display: grid; place-items: center; margin: 2px auto 0; width: 100%; max-width: 196px; }
+.gauge.compact { max-width: 118px; }
+.gaugesvg { display: block; width: 100%; height: auto; overflow: visible; }
+.gauge-track { fill: none; stroke: var(--dot-off); stroke-linecap: round; }
+.gauge-fill { fill: none; stroke-linecap: round; transition: stroke-dasharray .35s var(--ease); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--acc) 55%, transparent)); }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.gauge-center .num { font-size: 32px; line-height: .9; }
+.gauge-ends { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--faint); font-weight: 500; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.tile.is-unavailable .gauge-fill { stroke: var(--grey); filter: none; }
+
+/* ── Button card (scene / script) — momentary press pulse + running ring ───────── */
+.tile.fired .disc { animation: simui-pop .9s var(--ease); }
+@keyframes simui-pop { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.tile.running .disc { animation: simui-run 1.6s var(--ease) infinite; }
+@keyframes simui-run { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--acc) 45%, transparent); } 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* ── Alarm card — pulsing siren disc when triggered ───────────────────────────── */
+.tile.triggered .disc { animation: simui-alarm 1.1s var(--ease) infinite; }
+@keyframes simui-alarm { 0%, 100% { box-shadow: 0 0 16px -8px color-mix(in srgb, var(--acc) 70%, transparent); } 50% { box-shadow: 0 0 22px -3px color-mix(in srgb, var(--acc) 95%, transparent); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile.fired .disc, .tile.running .disc, .tile.triggered .disc, .gauge-fill { animation: none; transition: none; }
+}
+
 /* ── Status strip (chips card) ──────────────────────────────────────────────── */
 .strip { display: flex; flex-wrap: wrap; gap: 10px; }
 .chip {
