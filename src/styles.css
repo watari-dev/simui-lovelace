@@ -313,10 +313,9 @@ svg.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: ro
 .granges button { font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--inset); border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; cursor: pointer; transition: .15s; }
 .granges button.on { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 45%, transparent); background: color-mix(in srgb, var(--acc) 13%, transparent); }
 .granges button:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); outline-offset: 1px; }
-.gchart { flex: 1; position: relative; min-height: 90px; }
-.gchart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.gread { position: absolute; top: 2px; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 9px; font-size: 11px; font-weight: 650; color: var(--text); white-space: nowrap; box-shadow: 0 5px 14px -5px rgba(0, 0, 0, .5); font-variant-numeric: tabular-nums; pointer-events: none; }
-.gread span { color: var(--faint); font-weight: 500; margin-left: 5px; }
+.gchartwrap { flex: 1; position: relative; display: flex; min-height: 96px; }
+.gchart { flex: 1; position: relative; min-width: 0; }
+.gchart canvas { display: block; }
 .gstats { display: flex; gap: 22px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
 .gstats div { font-size: 11px; color: var(--faint); font-weight: 500; }
 .gstats b { display: block; font-size: 15px; color: var(--text); font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
