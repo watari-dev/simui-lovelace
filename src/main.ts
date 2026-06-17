@@ -283,6 +283,7 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
     labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, buttons: BUTTONS_LABEL },
     helpers: { buttons: BUTTONS_HELP },
   },
+  cardSize: 3,
 });
 
 defineCard<ChipsCardConfig>('simui-chips-card', ChipsCard, {
