@@ -1,14 +1,29 @@
-import { type CSSProperties, type MouseEvent } from 'react';
+import { type CSSProperties } from 'react';
 import { Blinds } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
+import type { ActionConfig } from '../core/actions';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
 import { DotBar, accentVar, discIcon, sliderKeys, type SliderStyle } from './luminous';
+
+/** One configurable cover button — a service, a position/tilt preset, or an action. */
+export interface CoverButton {
+  name?: string;
+  icon?: string;
+  /** A cover service: open · close · stop · toggle. */
+  service?: 'open' | 'close' | 'stop' | 'toggle';
+  /** Move to a specific opening position (0–100). */
+  position?: number;
+  /** Move to a specific tilt (0–100). */
+  tilt?: number;
+  /** Run an arbitrary action instead. */
+  tap_action?: ActionConfig;
+}
 
 export interface CoverCardConfig extends BaseCardConfig {
   entity: string;
@@ -19,10 +34,14 @@ export interface CoverCardConfig extends BaseCardConfig {
   slider?: SliderStyle | 'none';
   /** What the slider sets: position (default) or tilt (for venetian/tilting covers). */
   slider_target?: 'position' | 'tilt';
-  /** Show the Open / Stop / Close buttons (default true). */
+  /** Show the button row (default true). */
   show_buttons?: boolean;
+  /** The buttons. Omit for the default Open / Stop / Close. */
+  buttons?: CoverButton[];
   compact?: boolean;
 }
+
+const DEFAULT_COVER_BUTTONS: CoverButton[] = [{ name: '▲ Open', service: 'open' }, { name: 'Stop', service: 'stop' }, { name: '▼ Close', service: 'close' }];
 
 /**
  * SimUI cover card — the Luminous tile for blinds/garage/shades: a device-class disc, the
@@ -33,6 +52,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runButton = useActions();
   const compact = config.compact === true;
 
   const dead = isUnavailable(e);
@@ -69,13 +89,20 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
 
   const valueNode = hasSlider ? <>{sliderVal}<span className="u">%</span></> : v.open ? 'Open' : 'Closed';
 
-  const act = (svc: string, data?: Record<string, unknown>) => (ev: MouseEvent) => {
-    ev.stopPropagation();
-    call('cover', svc, data ?? {}, { entity_id: config.entity });
+  const svc = (s: string, data?: Record<string, unknown>) => () => call('cover', s, data ?? {}, { entity_id: config.entity });
+  const buttons = config.buttons ?? DEFAULT_COVER_BUTTONS;
+  const resolveButton = (b: CoverButton): { run?: () => void; disabled: boolean; active: boolean } => {
+    if (b.tap_action) return { run: () => runButton(b.tap_action, config.entity), disabled: dead, active: false };
+    if (b.position != null) return { run: svc('set_cover_position', { position: b.position }), disabled: dead || !v.settable, active: v.position === b.position };
+    if (b.tilt != null) return { run: svc('set_cover_tilt_position', { tilt_position: b.tilt }), disabled: dead || !v.canTilt, active: v.tilt === b.tilt };
+    switch (b.service) {
+      case 'open': { const run = v.canOpen ? svc('open_cover') : v.settable ? svc('set_cover_position', { position: 100 }) : undefined; return { run, disabled: !run || (fullyOpen && !v.moving), active: false }; }
+      case 'close': { const run = v.canClose ? svc('close_cover') : v.settable ? svc('set_cover_position', { position: 0 }) : undefined; return { run, disabled: !run || (fullyClosed && !v.moving), active: false }; }
+      case 'stop': { const run = v.canStop ? svc('stop_cover') : undefined; return { run, disabled: !run, active: v.moving }; }
+      case 'toggle': return { run: svc('toggle'), disabled: dead, active: false };
+      default: return { disabled: true, active: false };
+    }
   };
-  const onOpen = v.canOpen ? act('open_cover') : v.settable ? act('set_cover_position', { position: 100 }) : undefined;
-  const onClose = v.canClose ? act('close_cover') : v.settable ? act('set_cover_position', { position: 0 }) : undefined;
-  const onStop = v.canStop ? act('stop_cover') : undefined;
 
   return (
     <div
@@ -113,11 +140,16 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
             variant={config.slider ?? 'dots'}
           />
         )}
-        {!compact && config.show_buttons !== false && (
+        {!compact && config.show_buttons !== false && buttons.length > 0 && (
           <div className="chips">
-            <button type="button" disabled={!onOpen || (fullyOpen && !v.moving)} onClick={onOpen} onPointerDown={(ev) => ev.stopPropagation()}>▲ Open</button>
-            <button type="button" className={v.moving ? 'on' : ''} disabled={!onStop} onClick={onStop} onPointerDown={(ev) => ev.stopPropagation()}>Stop</button>
-            <button type="button" disabled={!onClose || (fullyClosed && !v.moving)} onClick={onClose} onPointerDown={(ev) => ev.stopPropagation()}>▼ Close</button>
+            {buttons.map((b, i) => {
+              const { run, disabled, active } = resolveButton(b);
+              return (
+                <button key={i} type="button" className={active ? 'on' : ''} disabled={disabled} onClick={(ev) => { ev.stopPropagation(); run?.(); }} onPointerDown={(ev) => ev.stopPropagation()}>
+                  {b.icon ? <span className="chip-ic">{renderIcon(b.icon, 15, null)}</span> : null}{b.name ?? ''}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

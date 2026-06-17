@@ -100,9 +100,27 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
       COLOR_FIELD,
       { name: 'show_track', selector: { boolean: {} } },
       { name: 'show_modes', selector: { boolean: {} } },
+      {
+        name: 'modes',
+        selector: {
+          object: {
+            multiple: true,
+            label_field: 'name',
+            translation_key: 'mode',
+            fields: {
+              name: { required: true, selector: { text: {} } },
+              icon: { selector: { icon: {} } },
+              mode: { selector: { text: {} } },
+              preset: { selector: { text: {} } },
+              temperature: { selector: { number: { min: 5, max: 35, step: 0.5, mode: 'box', unit_of_measurement: '°' } } },
+            },
+          },
+        },
+      },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', show_track: 'Temperature track', show_modes: 'Heat / Auto / Cool chips', compact: 'Compact (dense)' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', show_track: 'Temperature track', show_modes: 'Show mode chips', modes: 'Mode chips', compact: 'Compact (dense)' },
+    helpers: { modes: 'Each chip sets an HVAC mode, a preset, or a temperature. Empty ⇒ Heat / Auto / Cool from the entity.' },
     defaults: { show_track: true, show_modes: true },
   },
 });
@@ -180,10 +198,30 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       SLIDER_FIELD,
       { name: 'slider_target', selector: { select: { mode: 'dropdown', options: [{ value: 'position', label: 'Position' }, { value: 'tilt', label: 'Tilt' }] } } },
       { name: 'show_buttons', selector: { boolean: {} } },
+      {
+        name: 'buttons',
+        selector: {
+          object: {
+            multiple: true,
+            label_field: 'name',
+            translation_key: 'button',
+            fields: {
+              name: { required: true, selector: { text: {} } },
+              icon: { selector: { icon: {} } },
+              service: { selector: { select: { mode: 'dropdown', options: [{ value: 'open', label: 'Open' }, { value: 'close', label: 'Close' }, { value: 'stop', label: 'Stop' }, { value: 'toggle', label: 'Toggle' }] } } },
+              position: { selector: { number: { min: 0, max: 100, step: 1, mode: 'slider', unit_of_measurement: '%' } } },
+              tilt: { selector: { number: { min: 0, max: 100, step: 1, mode: 'slider', unit_of_measurement: '%' } } },
+            },
+          },
+        },
+      },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', slider: 'Position slider style', slider_target: 'Slider controls', show_buttons: 'Open / Stop / Close buttons', compact: 'Compact (dense)' },
-    helpers: { slider_target: 'Drag to set the opening position, or the slat tilt (venetian/tilting covers).' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', slider: 'Position slider style', slider_target: 'Slider controls', show_buttons: 'Show button row', buttons: 'Buttons', compact: 'Compact (dense)' },
+    helpers: {
+      slider_target: 'Drag to set the opening position, or the slat tilt (venetian/tilting covers).',
+      buttons: 'Each button runs a cover service, or moves to a position / tilt. Empty ⇒ Open / Stop / Close.',
+    },
     defaults: { slider: 'dots', slider_target: 'position', show_buttons: true },
   },
 });

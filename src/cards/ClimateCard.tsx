@@ -1,14 +1,29 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Thermometer } from 'lucide-react';
-import { useCallService, useEntity, useHass, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useHass, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import { useDragValue } from '../hooks/useDragValue';
 import { clamp, friendly, isUnavailable, prettyState } from '../util';
 import type { CardComponentProps } from '../core/react-card';
+import type { ActionConfig } from '../core/actions';
 import type { BaseCardConfig } from '../core/types';
 import { renderIcon } from '../core/icon';
 import { readClimate } from './climate-util';
 import { TempTrack, accentVar, discIcon } from './luminous';
+
+/** One configurable mode chip — sets an HVAC mode, preset, temperature, or runs an action. */
+export interface ClimateChip {
+  name?: string;
+  icon?: string;
+  /** Set the HVAC mode (heat / cool / auto / off …). */
+  mode?: string;
+  /** Set a preset mode (eco / away / comfort …). */
+  preset?: string;
+  /** Set a target temperature. */
+  temperature?: number;
+  /** Run an arbitrary action instead. */
+  tap_action?: ActionConfig;
+}
 
 export interface ClimateCardConfig extends BaseCardConfig {
   entity: string;
@@ -17,8 +32,10 @@ export interface ClimateCardConfig extends BaseCardConfig {
   color?: string;
   /** Show the draggable temperature track (default true). */
   show_track?: boolean;
-  /** Show the Heat / Auto / Cool mode chips (default true). */
+  /** Show the mode-chip row (default true). */
   show_modes?: boolean;
+  /** The mode chips. Omit for the default Heat / Auto / Cool derived from hvac_modes. */
+  modes?: ClimateChip[];
   compact?: boolean;
 }
 
@@ -34,6 +51,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runButton = useActions();
   const hass = useHass();
   const compact = config.compact === true;
 
@@ -93,14 +111,23 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
     const primary = ['heat_cool', 'auto', 'heat', 'cool', 'dry', 'fan_only'].find((m) => modes.includes(m)) ?? modes.find((m) => m !== 'off');
     if (primary) call('climate', 'set_hvac_mode', { hvac_mode: primary }, { entity_id: config.entity });
   };
-  const setMode = (m: string) => (ev: MouseEvent) => { ev.stopPropagation(); call('climate', 'set_hvac_mode', { hvac_mode: m }, { entity_id: config.entity }); };
-
   const hvacModes = (e?.attributes.hvac_modes as string[] | undefined) ?? [];
-  const modeChips = [
-    { label: 'Heat', mode: 'heat' },
-    { label: 'Auto', mode: hvacModes.includes('auto') ? 'auto' : 'heat_cool' },
-    { label: 'Cool', mode: 'cool' },
-  ].filter((c) => hvacModes.includes(c.mode));
+  const defaultModes: ClimateChip[] = [
+    { name: 'Heat', mode: 'heat' },
+    { name: 'Auto', mode: hvacModes.includes('auto') ? 'auto' : 'heat_cool' },
+    { name: 'Cool', mode: 'cool' },
+  ].filter((c) => !!c.mode && hvacModes.includes(c.mode));
+  const modeChips = config.modes ?? defaultModes;
+  const applyMode = (c: ClimateChip) => (ev: MouseEvent) => {
+    ev.stopPropagation();
+    if (c.tap_action) { runButton(c.tap_action, config.entity); return; }
+    if (c.mode != null) call('climate', 'set_hvac_mode', { hvac_mode: c.mode }, { entity_id: config.entity });
+    else if (c.preset != null) call('climate', 'set_preset_mode', { preset_mode: c.preset }, { entity_id: config.entity });
+    else if (c.temperature != null) call('climate', 'set_temperature', { temperature: c.temperature }, { entity_id: config.entity });
+    else moreInfo(config.entity);
+  };
+  const modeActive = (c: ClimateChip): boolean =>
+    c.mode != null ? v.on && e?.state === c.mode : c.preset != null ? (e?.attributes.preset_mode as string | undefined) === c.preset : false;
 
   return (
     <div
@@ -165,8 +192,10 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
         )}
         {!compact && modeChips.length > 0 && config.show_modes !== false && (
           <div className="chips">
-            {modeChips.map((c) => (
-              <button key={c.label} type="button" className={v.on && e?.state === c.mode ? 'on' : ''} onClick={setMode(c.mode)} onPointerDown={(ev) => ev.stopPropagation()}>{c.label}</button>
+            {modeChips.map((c, i) => (
+              <button key={i} type="button" className={modeActive(c) ? 'on' : ''} onClick={applyMode(c)} onPointerDown={(ev) => ev.stopPropagation()}>
+                {c.icon ? <span className="chip-ic">{renderIcon(c.icon, 15, null)}</span> : null}{c.name ?? ''}
+              </button>
             ))}
           </div>
         )}
