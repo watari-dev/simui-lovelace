@@ -35,20 +35,20 @@ function hsvToRgb(h: number, s: number, v: number): RGB {
   return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
 }
 
-/** Interpolate warm→cool by colour temperature (Kelvin). Returns an `R, G, B` triplet. */
+/** Interpolate warm→cool by colour temperature (Kelvin). Returns a CSS `rgb(...)` colour. */
 function tempTint(kelvin: number): string {
   const t = Math.max(0, Math.min(1, (kelvin - 2000) / (6500 - 2000)));
   const warm: RGB = [255, 197, 110]; // ~2000K soft amber
   const cool: RGB = [201, 221, 255]; // ~6500K soft cool white
   const mix = warm.map((w, i) => Math.round(w + (cool[i] - w) * t)) as RGB;
-  return `${mix[0]}, ${mix[1]}, ${mix[2]}`;
+  return `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`;
 }
 
 /**
- * The value for `--tile-tint`: an `R, G, B` triplet (so the CSS can take it at any alpha
- * — `rgb(var(--tile-tint))` solid, `rgba(var(--tile-tint), .2)` for the icon-cell wash).
- * Coloured/temp lights resolve to a literal triplet; everything else returns the `--warm`
- * token, itself a triplet the user's ULM theme can override.
+ * The card accent (`--acc`): a full CSS colour the Luminous surface uses directly and via
+ * color-mix. Coloured lights resolve to their own (saturation/value-floored so a near-white
+ * bulb still reads on dark) `rgb(...)`; colour-temp lights to a warm↔cool `rgb(...)`;
+ * everything else returns the `--warm` accent token.
  */
 export function lightTint(attrs: Record<string, unknown>): string {
   const rgb = attrs.rgb_color as RGB | undefined;
@@ -56,7 +56,7 @@ export function lightTint(attrs: Record<string, unknown>): string {
     const [h, s, v] = rgbToHsv(rgb[0], rgb[1], rgb[2]);
     // Keep it visible on a dark surface: floor the saturation + value.
     const [r, g, b] = hsvToRgb(h, Math.max(s, 0.55), Math.max(v, 0.92));
-    return `${r}, ${g}, ${b}`;
+    return `rgb(${r}, ${g}, ${b})`;
   }
   const kelvin =
     (attrs.color_temp_kelvin as number | undefined) ??

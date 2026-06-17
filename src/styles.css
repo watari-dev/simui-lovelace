@@ -1,408 +1,275 @@
-/* SimUI Cards — the UI-Lovelace-Minimalist material, faithfully.
-   Each card renders in its own shadow root. Colour tokens are RGB *triplets* (not hex) so
-   a tint can be used at any alpha — `rgb(var(--warm))` for solid, `rgba(var(--warm), .2)`
-   for the icon-cell wash — exactly like ULM's `rgba(var(--color-yellow), …)`. Each token
-   inherits the user's ULM theme variable when present (so an installed Minimalist theme
-   recolours the cards for free) and falls back to ULM's own dark-mode value otherwise.
-   CSS custom properties cross the shadow boundary, so the theme still reaches us; nothing
-   we declare leaks back out. */
+/* SimUI Cards — "Luminous" design system.
+   Each card renders in its own shadow root. Tokens live on :host: the STATE ACCENTS are a
+   fixed Luminous palette (warm/cool/up/heat/down); the NEUTRALS map to Home Assistant's own
+   theme variables (so the cards adapt to the user's HA light/dark + custom theme) with the
+   Luminous dark values as fallbacks. The Luminous-specific neutrals (surface-2, inset, …) flip
+   with prefers-color-scheme. Set `--acc` per card to its entity accent; the whole surface
+   recipe (gradient, hairline edge, glow disc, big numeral) derives from --acc + the neutrals. */
 :host {
-  --surface: var(--ha-card-background, var(--card-background-color, #1d1d1d));
-  --text: var(--primary-text-color, #dddddd);
+  /* state accents — the Luminous palette, used directly + via color-mix (NOT rgb triplets) */
+  --warm: #f4b942;   /* lights / switches / on / solar */
+  --cool: #5b9dff;   /* covers / climate-cool / grid / sensor */
+  --up: #36d399;     /* secured / battery / charging / positive */
+  --heat: #fb7c3c;   /* climate heating */
+  --down: #f76b6b;   /* unlocked / alert / negative */
+  --home: #cfd2da;   /* energy "home" ribbon (neutral) */
+  --ease: cubic-bezier(.4, .1, .2, 1);
 
-  /* state colours — RGB triplets, ULM dark-mode palette */
-  /* The dim base (off icons / cells / gridlines). Inherit ULM's --color-theme; else HA's
-     per-theme text triplet (dark on a light theme, light on a dark theme) so it stays
-     visible without ULM; else a mid-grey that reads on both light and dark surfaces. */
-  --theme: var(--color-theme, var(--rgb-primary-text-color, 127, 127, 127));
-  --warm: var(--color-yellow, 252, 214, 99);     /* lights / switches / on */
-  --cool: var(--color-blue, 137, 179, 248);      /* cooling / fan / covers / media / active */
-  --up: var(--color-green, 128, 201, 148);       /* good / secure / charging */
-  --down: var(--color-red, 241, 139, 130);       /* alert / fault / unavailable — NOT "active" */
-  --heat: var(--color-orange, 240, 150, 90);     /* heating (warm/active, not a fault) */
-  --grey: var(--color-grey, 187, 187, 187);      /* neutral / at-rest / unknown */
+  /* neutrals — inherit the HA theme, Luminous dark values as fallback */
+  --surface: var(--ha-card-background, var(--card-background-color, #161619));
+  --text: var(--primary-text-color, #f5f5f7);
+  --muted: var(--secondary-text-color, #9698a2);
+  --border: var(--divider-color, #26262c);
 
-  /* ULM geometry */
-  --r-surface: var(--border-radius, 20px);
-  --bezel: var(--box-shadow, 0 2px 4px 0 rgba(0, 0, 0, 0.16));
-  --shadow-hover: 0 5px 14px 0 rgba(0, 0, 0, 0.26);
+  /* Luminous-specific neutrals (dark defaults; light variants below) */
+  --surface-2: #1c1c21;
+  --border-2: #34343c;
+  --inset: #0e0e11;
+  --faint: #5e6069;
+  --dot-off: #2c2c33;
+  --hi: rgba(255, 255, 255, .05); /* top inner highlight */
 
   display: block;
+  font-family: var(--paper-font-body1_-_font-family, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
 }
 :host * { box-sizing: border-box; }
 
-/* ── The Minimalist entity tile ───────────────────────────────────────────────────
-   ULM's signature card: a 42px icon disc on the left, the name + a dim state line
-   stacked to its right, on a flat dark surface with a soft drop shadow. The COLOUR
-   lives in the icon disc (cell wash at .2, icon at full), not the whole card — that's
-   the read that makes it feel Minimalist rather than a tinted tile. */
-.simui-tile {
-  --tile-tint: var(--warm);
+@media (prefers-color-scheme: light) {
+  :host {
+    --surface-2: #f7f7f9;
+    --border-2: #dadae2;
+    --inset: #f0f0f3;
+    --faint: #a6a8b2;
+    --dot-off: #e4e4ea;
+    --hi: rgba(255, 255, 255, .8);
+    --home: #9aa0ad;
+  }
+}
+
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+
+/* ── The Luminous surface (shared by tiles + wide cards) ────────────────────── */
+.tile, .card {
+  --acc: var(--warm);
   position: relative;
-  display: grid;
-  grid-template-columns: min-content 1fr;
-  grid-template-areas: 'ic name' 'ic state';
-  grid-template-rows: auto auto;
-  align-items: center;
-  align-content: center;
-  column-gap: 12px;
-  padding: 10px;
-  border-radius: var(--r-surface);
-  background: var(--surface);
-  box-shadow: var(--bezel);
-  cursor: pointer;
-  touch-action: none;
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
-  transition: background 0.18s ease, box-shadow 0.18s ease;
-  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 5%, var(--surface)), var(--surface) 58%);
+  box-shadow: inset 0 1px 0 var(--hi);
+  transition: transform .25s var(--ease), box-shadow .3s var(--ease);
   color: var(--text);
 }
-.simui-tile.is-dragging {
-  background: rgba(var(--tile-tint), 0.1); /* fallback for browsers without color-mix (iOS < 16.2) */
-  background: color-mix(in srgb, rgb(var(--tile-tint)) 8%, var(--surface));
-  box-shadow: var(--shadow-hover);
+.tile { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-height: 150px; padding: 18px 18px 16px; }
+.tile.compact { border-radius: 18px; min-height: 104px; padding: 14px 14px 13px; gap: 9px; }
+/* hairline accent edge — a 1px masked gradient ring, top-weighted */
+.tile::before, .card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 24%, transparent), transparent 38%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
 }
-.simui-tile.is-unavailable { cursor: default; touch-action: auto; }
-.simui-tile.is-unavailable .simui-tile-name,
-.simui-tile.is-unavailable .simui-tile-state { opacity: 0.5; }
-.simui-tile:focus-visible {
-  outline: 2px solid rgba(var(--tile-tint), 0.6);
-  outline-offset: 1px;
-}
+.tile:hover, .card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 var(--hi), 0 22px 48px -28px color-mix(in srgb, var(--acc) 55%, #000); }
+.tile:focus-visible, .card:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 70%, transparent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .tile, .card, .disc, .dots i, .sw, .sw::after, .chips button { transition: none; } }
 
-/* the icon disc — the toggle, and where all the colour is */
-.simui-tile-ic {
-  grid-area: ic;
-  place-self: center;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: rgba(var(--theme), 0.05);
-  color: rgba(var(--theme), 0.2);
+.top { display: flex; flex-direction: column; gap: 13px; }
+.compact .top { gap: 9px; }
+.ctl { display: flex; flex-direction: column; gap: 11px; }
+.compact .ctl { gap: 8px; }
+
+.thead { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+
+/* glowing icon disc */
+.disc {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: grid; place-items: center; flex: none; padding: 0; border: 0;
+  color: var(--acc);
+  background: radial-gradient(120% 120% at 30% 22%, color-mix(in srgb, var(--acc) 34%, transparent), color-mix(in srgb, var(--acc) 13%, transparent));
+  box-shadow: 0 0 16px -8px color-mix(in srgb, var(--acc) 70%, transparent);
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
+  transition: transform .3s var(--ease);
 }
-button.simui-tile-ic { font: inherit; }
-.simui-tile.is-on .simui-tile-ic {
-  background: rgba(var(--tile-tint), 0.2);
-  color: rgb(var(--tile-tint));
-}
-.simui-tile-ic:hover { background: rgba(var(--tile-tint), 0.28); }
-.simui-tile.is-unavailable .simui-tile-ic:hover { background: rgba(var(--theme), 0.05); }
-button.simui-tile-ic:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
+.disc:hover { transform: scale(1.05); }
+.disc:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 70%, transparent); outline-offset: 2px; }
+.compact .disc { width: 32px; height: 32px; border-radius: 10px; }
+.disc svg { width: 21px; height: 21px; }
+.compact .disc svg { width: 18px; height: 18px; }
+svg.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-/* name (bold) + state line (dim), hugging the icon's vertical centre */
-.simui-tile-name {
-  grid-area: name;
-  align-self: end;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  font-size: 10.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--acc); padding: 5px 9px; border-radius: 999px;
+  background: color-mix(in srgb, var(--acc) 15%, transparent);
 }
-/* sensor cards put the value in the name slot — give it tabular figures */
-.simui-tile-value { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-.simui-tile-state {
-  grid-area: state;
-  align-self: start;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--text);
-  opacity: 0.6;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-}
+.badge .pt { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 7px 0 currentColor; }
 
-@media (prefers-reduced-motion: reduce) {
-  .simui-tile, .simui-tile-ic, .simui-graph-range { transition: none; }
-}
+.eye { font-size: 10.5px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; color: var(--faint); margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cname { font-size: 13.5px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.csub { font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.numwrap { display: flex; align-items: flex-end; gap: 9px; margin-top: -2px; }
+.num { font-size: 40px; font-weight: 700; letter-spacing: -.045em; line-height: .86; text-shadow: 0 0 24px color-mix(in srgb, var(--acc) 26%, transparent); white-space: nowrap; }
+.compact .num { font-size: 25px; }
+.num .u { font-size: 17px; font-weight: 600; color: var(--muted); letter-spacing: -.02em; margin-left: 1px; }
+.compact .num .u { font-size: 12px; }
+.nsub { font-size: 12.5px; color: var(--muted); font-weight: 500; padding-bottom: 3px; }
+@media (prefers-color-scheme: light) { .num { text-shadow: none; } }
 
-/* ── History graph card ───────────────────────────────────────────────────────
-   ULM material with a TradingView-flavoured chart: thin line, soft gradient area,
-   hairline gridlines, crosshair readout, a range toggle + min/avg/max. */
-.simui-graph {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px;
-  border-radius: var(--r-surface);
-  background: var(--surface);
-  box-shadow: var(--bezel);
-  color: var(--text);
-  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-}
-.simui-graph-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  border-radius: 8px;
-}
-.simui-graph-head:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
-.simui-graph-ic {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(var(--tile-tint), 0.2);
-  color: rgb(var(--tile-tint));
-}
-.simui-graph-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.simui-graph-value {
-  margin-left: auto;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-}
+/* signature dot-bar (light brightness, cover position) */
+.dots { display: flex; gap: 4px; align-items: center; height: 22px; cursor: ew-resize; touch-action: none; }
+.compact .dots { height: 16px; gap: 3px; }
+.dots i { flex: 1; height: 9px; border-radius: 5px; background: var(--dot-off); transition: background .12s var(--ease), box-shadow .2s; }
+.compact .dots i { height: 6px; }
+.dots i.on { background: var(--acc); box-shadow: 0 0 9px -1px color-mix(in srgb, var(--acc) 75%, transparent); }
+.dots:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 70%, transparent); outline-offset: 4px; border-radius: 4px; }
 
-.simui-graph-chart { position: relative; width: 100%; height: 132px; }
-.simui-graph-empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; opacity: 0.4; }
+/* climate temperature track */
+.track { position: relative; height: 34px; cursor: ew-resize; touch-action: none; display: flex; align-items: center; }
+.compact .track { height: 24px; }
+.track .rail { position: absolute; left: 0; right: 0; height: 8px; border-radius: 6px; background: linear-gradient(90deg, var(--cool), #9aa6bd 42%, var(--warm) 72%, var(--heat)); opacity: .85; }
+.compact .track .rail { height: 6px; }
+.track .ttick { position: absolute; top: 50%; width: 3px; height: 18px; border-radius: 2px; background: var(--text); transform: translate(-50%, -50%); opacity: .5; }
+.track .tknob { position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 2.5px solid var(--acc); transform: translate(-50%, -50%); box-shadow: 0 3px 9px rgba(0, 0, 0, .3), 0 0 14px -4px var(--acc); }
+.compact .track .tknob { width: 18px; height: 18px; }
+.track:focus-visible { outline: none; }
+.track:focus-visible .tknob { box-shadow: 0 3px 9px rgba(0, 0, 0, .3), 0 0 0 4px color-mix(in srgb, var(--acc) 35%, transparent); }
 
-.simui-graph-svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.simui-graph-grid { stroke: rgba(var(--theme), 0.14); stroke-width: 1; shape-rendering: crispEdges; }
-.simui-graph-line { fill: none; stroke: rgb(var(--tile-tint)); stroke-linejoin: round; stroke-linecap: round; }
-.simui-graph-end { fill: rgb(var(--tile-tint)); stroke: var(--surface); stroke-width: 1.5; }
-.simui-graph-axis {
-  fill: rgba(var(--theme), 0.5);
-  font-size: 10px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
-  /* a surface-coloured halo so value labels stay legible where they cross the line / fill */
-  paint-order: stroke;
-  stroke: var(--surface);
-  stroke-width: 2px;
-  stroke-linejoin: round;
+/* mode / action chips */
+.chips { display: flex; gap: 6px; }
+.chips button {
+  flex: 1; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted);
+  background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 8px 0; cursor: pointer;
+  transition: .15s var(--ease); white-space: nowrap;
 }
-.simui-graph-cross { stroke: rgba(var(--theme), 0.35); stroke-width: 1; stroke-dasharray: 3 3; }
-.simui-graph-dot { fill: rgb(var(--tile-tint)); stroke: var(--surface); stroke-width: 2; }
+.chips button:hover { color: var(--text); }
+.chips button.on { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 45%, transparent); background: color-mix(in srgb, var(--acc) 13%, transparent); }
+.chips button:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); outline-offset: 1px; }
 
-.simui-graph-tip {
-  position: absolute;
-  top: -2px;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 4px 7px;
-  border-radius: 8px;
-  background: var(--surface); /* fallback for browsers without color-mix (iOS < 16.2) */
-  background: color-mix(in srgb, var(--surface) 84%, #000);
-  box-shadow: var(--bezel);
-  white-space: nowrap;
-  z-index: 2;
-}
-.simui-graph-tip-v { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-.simui-graph-tip-u { font-size: 11px; opacity: 0.6; margin-left: 1px; }
-.simui-graph-tip-t { font-size: 10px; opacity: 0.6; }
+/* lock row + toggle switch */
+.hr { height: 1px; background: var(--border); }
+.lockrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lockrow .ltxt { font-size: 12px; color: var(--muted); font-weight: 500; }
+.sw { width: 52px; height: 30px; border-radius: 999px; background: var(--border-2); position: relative; cursor: pointer; transition: .25s var(--ease); flex: none; border: 0; padding: 0; }
+.compact .sw { width: 44px; height: 26px; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .3); transition: .25s var(--ease); }
+.compact .sw::after { width: 20px; height: 20px; }
+.tile.locked .sw { background: var(--up); box-shadow: 0 0 14px -3px color-mix(in srgb, var(--up) 70%, transparent); }
+.tile.locked .sw::after { left: 25px; }
+.compact.locked .sw::after { left: 21px; }
+.sw:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 70%, transparent); outline-offset: 2px; }
 
-.simui-graph-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; }
-.simui-graph-ranges { display: flex; gap: 3px; }
-.simui-graph-range {
-  font: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 7px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text);
-  opacity: 0.4;
-  transition: opacity 0.15s ease, background 0.15s ease;
-}
-.simui-graph-range:hover { opacity: 0.7; }
-.simui-graph-range.on { opacity: 1; background: rgba(var(--tile-tint), 0.16); color: rgb(var(--tile-tint)); }
-.simui-graph-stats { display: flex; gap: 11px; font-size: 11px; opacity: 0.6; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-.simui-graph-stats b { font-weight: 700; }
+/* sparkline */
+.spark { margin: 0 -2px; display: block; }
+.statrow { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--faint); font-weight: 500; }
+.statrow .avg { color: var(--muted); }
 
-/* ── Media player card ─────────────────────────────────────────────────────────
-   ULM material: album art (or a music disc) + title/artist + transport controls. */
-.simui-media {
-  display: grid;
-  grid-template-columns: min-content minmax(0, 1fr) auto;
-  grid-template-areas: 'art body ctrl';
-  align-items: center;
-  column-gap: 12px;
-  padding: 12px;
-  border-radius: var(--r-surface);
-  background: var(--surface);
-  box-shadow: var(--bezel);
-  color: var(--text);
-  cursor: pointer;
-  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+/* ── Status strip (chips card) ──────────────────────────────────────────────── */
+.strip { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  --acc: var(--cool);
+  display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px 7px 8px; border-radius: 999px; cursor: pointer;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 11%, var(--surface)), var(--surface));
+  border: 1px solid color-mix(in srgb, var(--acc) 26%, var(--border)); box-shadow: inset 0 1px 0 var(--hi);
+  transition: transform .2s var(--ease); color: var(--text);
 }
-.simui-media:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 1px; }
-.simui-media.is-unavailable .simui-media-title,
-.simui-media.is-unavailable .simui-media-sub { opacity: 0.5; }
+.chip:hover { transform: translateY(-1px); }
+.chip:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 70%, transparent); outline-offset: 2px; }
+.chip.is-dead { opacity: .5; }
+.chip .cd {
+  width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; color: var(--acc); flex: none;
+  background: radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--acc) 36%, transparent), color-mix(in srgb, var(--acc) 14%, transparent));
+  box-shadow: 0 0 12px -5px color-mix(in srgb, var(--acc) 75%, transparent);
+}
+.chip .cd svg { width: 15px; height: 15px; }
+.chip .cv { font-size: 13px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+.chip .cv small { color: var(--muted); font-weight: 500; margin-left: 5px; font-size: 11.5px; }
+.strip-empty { font-size: 13px; color: var(--muted); opacity: .6; padding: 8px 4px; }
 
-.simui-media-art {
-  grid-area: art;
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background-size: cover;
-  background-position: center;
-  background-color: rgba(var(--theme), 0.05);
-  color: rgba(var(--theme), 0.2);
+/* ── Media card ─────────────────────────────────────────────────────────────── */
+.media { --acc: #b06ef0; padding: 18px; display: flex; gap: 16px; align-items: center; }
+.art {
+  width: 96px; height: 96px; border-radius: 16px; flex: none; position: relative; overflow: hidden;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--acc) 85%, #fff), color-mix(in srgb, var(--acc) 55%, #000));
+  background-size: cover; background-position: center;
+  box-shadow: 0 0 30px -8px color-mix(in srgb, var(--acc) 75%, transparent), inset 0 1px 0 rgba(255, 255, 255, .25);
 }
-.simui-media.is-on .simui-media-art { background-color: rgba(var(--tile-tint), 0.2); color: rgb(var(--tile-tint)); }
+.art .disc-spin { position: absolute; inset: 24px; border-radius: 50%; background: radial-gradient(circle, rgba(0, 0, 0, .35) 18%, transparent 19%), conic-gradient(from 0deg, rgba(255, 255, 255, .18), transparent 40%, rgba(255, 255, 255, .14) 70%, transparent); animation: spin 5s linear infinite; }
+.art.has-art .disc-spin { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .art .disc-spin { animation: none; } }
+.minfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.minfo .meye { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--acc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minfo .mtitle { font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minfo .martist { font-size: 12.5px; color: var(--muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scrub { height: 5px; border-radius: 3px; background: var(--inset); overflow: hidden; margin-top: 8px; }
+.scrub i { display: block; height: 100%; border-radius: 3px; background: var(--acc); box-shadow: 0 0 8px 0 color-mix(in srgb, var(--acc) 80%, transparent); }
+.mtime { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--faint); font-weight: 500; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.transport { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+.mbtn { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; flex: none; color: var(--text); border: 1px solid var(--border); background: var(--inset); transition: .15s var(--ease); padding: 0; }
+.mbtn:hover { border-color: var(--border-2); }
+.mbtn:disabled { opacity: .35; cursor: default; }
+.mbtn:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); outline-offset: 2px; }
+.mbtn.play { width: 46px; height: 46px; border: 0; color: #0b0b0d; background: radial-gradient(120% 120% at 35% 25%, color-mix(in srgb, var(--acc) 92%, #fff), var(--acc)); box-shadow: 0 0 20px -4px color-mix(in srgb, var(--acc) 80%, transparent); }
+@media (prefers-color-scheme: light) { .mbtn.play { color: #fff; } }
+.mbtn svg { width: 17px; height: 17px; fill: currentColor; stroke: none; }
+.mbtn.play svg { width: 19px; height: 19px; }
 
-.simui-media-body { grid-area: body; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.simui-media-title { font-size: 14px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.simui-media-sub { font-size: 12px; font-weight: 600; opacity: 0.6; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ── Graph card ─────────────────────────────────────────────────────────────── */
+.graph { --acc: var(--warm); padding: 20px 22px; display: flex; flex-direction: column; }
+.ghead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.glabel { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.glabel .gtitle { font-size: 14.5px; font-weight: 650; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.glabel .gsub { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+.gval { text-align: right; flex: none; }
+.gval b { font-size: 30px; font-weight: 700; letter-spacing: -.03em; line-height: 1; text-shadow: 0 0 24px color-mix(in srgb, var(--acc) 26%, transparent); }
+@media (prefers-color-scheme: light) { .gval b { text-shadow: none; } }
+.gval b .u { font-size: 15px; color: var(--muted); font-weight: 600; }
+.gval span { display: block; font-size: 11px; color: var(--up); font-weight: 600; margin-top: 3px; }
+.granges { display: flex; gap: 6px; margin: 14px 0 10px; flex-wrap: wrap; }
+.granges button { font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--inset); border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; cursor: pointer; transition: .15s; }
+.granges button.on { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 45%, transparent); background: color-mix(in srgb, var(--acc) 13%, transparent); }
+.granges button:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); outline-offset: 1px; }
+.gchart { flex: 1; position: relative; min-height: 90px; }
+.gchart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gread { position: absolute; top: 2px; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 9px; font-size: 11px; font-weight: 650; color: var(--text); white-space: nowrap; box-shadow: 0 5px 14px -5px rgba(0, 0, 0, .5); font-variant-numeric: tabular-nums; pointer-events: none; }
+.gread span { color: var(--faint); font-weight: 500; margin-left: 5px; }
+.gstats { display: flex; gap: 22px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.gstats div { font-size: 11px; color: var(--faint); font-weight: 500; }
+.gstats b { display: block; font-size: 15px; color: var(--text); font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.gempty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: var(--muted); opacity: .6; }
 
-.simui-media-ctrl { grid-area: ctrl; display: flex; align-items: center; gap: 1px; }
-.simui-media-btn {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text);
-  opacity: 0.7;
-  cursor: pointer;
-  transition: opacity 0.15s ease, background 0.15s ease;
-}
-.simui-media-btn:hover { opacity: 1; background: rgba(var(--theme), 0.08); }
-.simui-media-btn:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
-.simui-media-btn.primary { color: rgb(var(--tile-tint)); opacity: 1; }
+/* ── Energy card — flow ribbons (Sankey) ────────────────────────────────────── */
+.energy { --acc: var(--up); padding: 18px 20px 16px; display: flex; flex-direction: column; }
+.ehead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ehead .etitle { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.ehead .etitle .tick { width: 5px; height: 5px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acc) 20%, transparent); }
+.eright { display: flex; align-items: center; gap: 10px; }
+.epill { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 650; color: var(--acc); background: color-mix(in srgb, var(--acc) 13%, transparent); border: 1px solid color-mix(in srgb, var(--acc) 26%, transparent); padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+.epill .pt { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 7px currentColor; }
+.eseg { display: inline-flex; background: var(--inset); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+.eseg button { font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 5px 12px; border-radius: 999px; transition: .2s var(--ease); }
+.eseg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
+.eseg button:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); outline-offset: 1px; }
+.ediagram { position: relative; flex: 1; min-height: 150px; margin: auto 0; }
+.ediagram svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ribbon { transition: opacity .4s; }
+@media (prefers-reduced-motion: reduce) { .ediagram circle animateMotion { display: none; } }
+.elabels { position: absolute; inset: 0; pointer-events: none; }
+.elab { position: absolute; display: flex; flex-direction: column; gap: 2px; }
+.elab.src { align-items: flex-end; text-align: right; }
+.elab.snk { align-items: flex-start; text-align: left; }
+.elab .nm { font-size: 9.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); line-height: 1; }
+.elab .v { font-size: 18px; font-weight: 700; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -.02em; white-space: nowrap; }
+.elab .v .u { font-size: 10px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+.elab .nt { font-size: 10px; font-weight: 500; color: var(--faint); line-height: 1; white-space: nowrap; }
+.elab.big .v { font-size: 27px; letter-spacing: -.03em; }
+.elab.big .v .u { font-size: 12px; }
 
-@media (prefers-reduced-motion: reduce) {
-  .simui-media-btn { transition: none; }
-}
-
-/* ── Status chips ──────────────────────────────────────────────────────────────
-   A wrapping row of compact pills (ULM chip: 36px tall, soft shadow) — icon tinted
-   by state + a short value/state label. The card itself is transparent. */
-.simui-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-}
-.simui-chips-empty {
-  min-height: 36px;
-  padding: 0 12px;
-  font-size: 13px;
-  color: var(--text);
-  opacity: 0.4;
-}
-.simui-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 12px 0 10px;
-  border: none;
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--bezel);
-  color: var(--text);
-  cursor: pointer;
-  font: inherit;
-  white-space: nowrap;
-  transition: background 0.15s ease;
-}
-.simui-chip:hover { background: color-mix(in srgb, rgb(var(--tile-tint)) 8%, var(--surface)); }
-.simui-chip:focus-visible { outline: 2px solid rgba(var(--tile-tint), 0.6); outline-offset: 2px; }
-.simui-chip.is-unavailable { opacity: 0.5; }
-.simui-chip-ic { display: grid; place-items: center; flex: none; color: rgba(var(--theme), 0.45); }
-.simui-chip.is-on .simui-chip-ic { color: rgb(var(--tile-tint)); }
-.simui-chip-label { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-
-@media (prefers-reduced-motion: reduce) {
-  .simui-chip { transition: none; }
-}
-
-/* ── Energy-flow card ──────────────────────────────────────────────────────────
-   A Powerwall-style diagram: Solar / Grid / Battery on a cross around the Home hub,
-   wires that colour + animate only when power crosses them. Ported from the panel. */
-.simui-eflow {
-  position: relative;
-  width: 100%;
-  max-width: 440px;
-  margin-inline: auto;
-  background: var(--surface);
-  border-radius: var(--r-surface);
-  padding: 8px;
-  box-shadow: var(--bezel);
-  aspect-ratio: 260 / 180;
-  overflow: hidden;
-  font-family: var(--paper-font-body1_-_font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-}
-.simui-eflow-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-
-.simui-eflow-wire { stroke: rgba(var(--theme), 0.15); stroke-width: 2; stroke-linecap: round; fill: none; }
-/* Active wire: a calm, solid colour overlay in the flow colour — no marching-ants loop.
-   Direction is read from the layout (solar feeds in; grid/battery branch out), not motion. */
-.simui-eflow-edge.is-active .simui-eflow-pulse {
-  stroke: rgb(var(--eflow-edge, var(--cool)));
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  fill: none;
-  opacity: 0.95;
-}
-.simui-eflow-edge.is-dead .simui-eflow-wire { opacity: 0.4; }
-
-.simui-eflow-nodes { position: absolute; inset: 0; pointer-events: none; }
-.simui-eflow-node {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 60px;
-  padding: 0;
-  border: none;
-  background: none;
-  text-align: center;
-  color: var(--text);
-  pointer-events: auto;
-  cursor: pointer;
-  font: inherit;
-}
-.simui-eflow-node:disabled { cursor: default; }
-.simui-eflow-node-ic {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  color: rgb(var(--eflow-node, var(--grey)));
-  background: color-mix(in srgb, rgb(var(--eflow-node, var(--theme))) 9%, var(--surface));
-}
-.simui-eflow-node.role-load .simui-eflow-node-ic { width: 42px; height: 42px; border-radius: 13px; }
-.simui-eflow-node:focus-visible { outline: none; }
-.simui-eflow-node:focus-visible .simui-eflow-node-ic { outline: 2px solid rgb(var(--eflow-node, var(--cool))); outline-offset: 2px; }
-.simui-eflow-node-label { font-size: 10px; font-weight: 500; letter-spacing: 0.2px; color: rgba(var(--theme), 0.55); white-space: nowrap; }
-.simui-eflow-node-val { font-size: 14px; font-weight: 600; line-height: 1.05; color: var(--text); font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; white-space: nowrap; }
-.simui-eflow-node-unit { font-size: 9px; font-weight: 500; color: rgba(var(--theme), 0.55); margin-left: 1px; }
-.simui-eflow-node-soc { font-size: 9px; font-weight: 600; color: rgb(var(--cool)); font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-.simui-eflow-node.is-dead { opacity: 0.42; }
-.simui-eflow-node.is-dead .simui-eflow-node-ic { color: rgba(var(--theme), 0.5); background: color-mix(in srgb, rgb(var(--theme)) 4%, var(--surface)); }
-
+/* unconfigured / placeholder */
+.tile.is-unavailable, .card.is-unavailable { opacity: .8; }
+.tile.is-unavailable .num, .tile.is-unavailable .cname { color: var(--muted); }

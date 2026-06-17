@@ -55,9 +55,10 @@ describe('light-color', () => {
     expect(lightHasBrightness({})).toBe(false);
   });
 
-  it('lightTint returns a triplet or the warm token', () => {
+  it('lightTint returns an rgb() colour or the warm token', () => {
     expect(lightTint({})).toBe('var(--warm)');
-    expect(lightTint({ rgb_color: [124, 96, 240] })).toMatch(/^\d+, \d+, \d+$/);
+    expect(lightTint({ rgb_color: [124, 96, 240] })).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+    expect(lightTint({ color_temp_kelvin: 2700 })).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
   });
 });
 

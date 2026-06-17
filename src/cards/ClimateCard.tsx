@@ -1,34 +1,34 @@
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent } from 'react';
+import { type CSSProperties, type MouseEvent } from 'react';
 import { Thermometer } from 'lucide-react';
 import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useDragValue } from '../hooks/useDragValue';
+import { clamp, friendly, isUnavailable, prettyState } from '../util';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isActivateKey, isUnavailable, prettyState, stepKey } from '../util';
 import { renderIcon } from '../core/icon';
-import { degrees, readClimate } from './climate-util';
+import { readClimate } from './climate-util';
+import { TempTrack, discIcon } from './luminous';
 
 export interface ClimateCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
+  compact?: boolean;
 }
 
-// HA doesn't expose a "last mode", and hvac_modes[] is in driver-declaration order — so the
-// first non-off entry is unreliable (it's `fan_only` on many ACs). Prefer a real conditioning
-// mode: heat_cool/auto self-regulate, then heat, then cool, with fan/dry last.
-const PREFERRED_MODES = ['heat_cool', 'auto', 'heat', 'cool', 'dry', 'fan_only'];
+const fmt = (n: number): string => (Number.isInteger(n) ? `${n}` : n.toFixed(1));
 
 /**
- * SimUI climate card — the ULM thermostat tile: an icon disc tinted by hvac action
- * (heating → red, cooling → blue), the name, and a "current → target" line. Drag the
- * tile to set the target temperature; tap the disc toggles on/off; tap the body /
- * right-click opens HA's native more-info.
+ * SimUI climate card — the Luminous thermostat tile: a disc tinted by hvac action (heating →
+ * orange, cooling → blue), the current temperature big, the target surfaced beneath, the
+ * gradient temperature track (a tick marks "now", a draggable knob sets the target), and
+ * Heat / Auto / Cool mode chips.
  */
 export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
   const runTap = useActions();
+  const compact = config.compact === true;
 
   const dead = isUnavailable(e);
   const v = readClimate(e, dead);
@@ -36,109 +36,127 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
 
   const drag = useDragValue({
     value: v.target ?? v.min,
-    axis: 'vertical',
+    axis: 'horizontal',
     step: v.step,
     min: v.min,
     max: v.max,
     disabled: !v.settable,
     onCommit: (t) => call('climate', 'set_temperature', { temperature: t }, { entity_id: config.entity }),
   });
+  const target = v.settable ? drag.value : v.target;
 
-  // No entity yet (fresh editor) — placeholder, rendered after every hook runs.
   if (!config.entity) {
     return (
-      <div className="simui-tile is-unavailable" role="button" aria-label="Select a thermostat" tabIndex={0}>
-        <span className="simui-tile-ic" aria-hidden="true">
-          <Thermometer size={20} strokeWidth={2} />
-        </span>
-        <span className="simui-tile-name">Select a thermostat</span>
-        <span className="simui-tile-state">Set up</span>
+      <div className={`tile is-unavailable${compact ? ' compact' : ''}`} style={{ ['--acc']: 'var(--heat)' } as CSSProperties} role="button" aria-label="Select a thermostat" tabIndex={0}>
+        <div className="top">
+          <div className="thead"><span className="disc">{discIcon(Thermometer, compact ? 18 : 21)}</span></div>
+          <div className="cname">Select a thermostat</div>
+        </div>
       </div>
     );
   }
 
-  const target = v.settable ? drag.value : v.target;
-  const stateLine = dead
-    ? 'Unavailable'
-    : !v.on
-      ? 'Off'
-      : v.dual && v.low != null && v.high != null
-        ? `${degrees(v.low)}–${degrees(v.high)}`
-        : target != null
-          ? v.current != null
-            ? `${degrees(v.current)} → ${degrees(target)}`
-            : degrees(target)
-          : v.current != null
-            ? degrees(v.current)
-            : prettyState(e?.state ?? 'off');
+  const Icon = v.Icon;
+  const span = v.max - v.min || 1;
+  const knobPct = target != null ? ((target - v.min) / span) * 100 : 50;
+  const tickPct = v.current != null ? clamp(((v.current - v.min) / span) * 100, 0, 100) : null;
+  const settable = v.settable;
+  const unit = '°C';
 
-  const onBody = () => {
-    if (drag.moved()) return;
-    runTap(config.tap_action, config.entity);
-  };
-  const onIcon = (ev: MouseEvent) => {
+  const bigVal = dead
+    ? '—'
+    : v.dual && v.low != null && v.high != null
+      ? `${fmt(v.low)}–${fmt(v.high)}`
+      : v.current != null
+        ? fmt(v.current)
+        : target != null
+          ? fmt(target)
+          : '—';
+  const showUnit = !dead && !(v.dual && v.low != null);
+  const badge = dead ? 'Off' : !v.on ? 'Off' : prettyState(v.action);
+  const sub = !v.on ? 'Off' : v.dual ? 'Range' : target != null ? <>Target <b style={{ color: 'var(--text)', fontWeight: 650 }} className="tnum">{target.toFixed(1)}°</b></> : '';
+
+  const toggle = (ev: MouseEvent) => {
     ev.stopPropagation();
     if (dead) return;
-    if (v.on) {
-      call('climate', 'set_hvac_mode', { hvac_mode: 'off' }, { entity_id: config.entity });
-      return;
-    }
+    if (v.on) { call('climate', 'set_hvac_mode', { hvac_mode: 'off' }, { entity_id: config.entity }); return; }
     const modes = (e?.attributes.hvac_modes as string[] | undefined) ?? [];
-    const primary = PREFERRED_MODES.find((m) => modes.includes(m)) ?? modes.find((m) => m !== 'off');
-    if (!primary) return; // no actionable mode — don't toggle on with a guess
-    call('climate', 'set_hvac_mode', { hvac_mode: primary }, { entity_id: config.entity });
+    const primary = ['heat_cool', 'auto', 'heat', 'cool', 'dry', 'fan_only'].find((m) => modes.includes(m)) ?? modes.find((m) => m !== 'off');
+    if (primary) call('climate', 'set_hvac_mode', { hvac_mode: primary }, { entity_id: config.entity });
   };
-  const onKeyDown = (ev: ReactKeyboardEvent) => {
-    if (v.settable && target != null) {
-      const next = stepKey(ev.key, target, v.step, v.min, v.max);
-      if (next != null) {
-        ev.preventDefault();
-        call('climate', 'set_temperature', { temperature: next }, { entity_id: config.entity });
-        return;
-      }
-    }
-    if (isActivateKey(ev.key)) {
-      ev.preventDefault();
-      runTap(config.tap_action, config.entity); // parity with the body click
-    }
-  };
+  const setMode = (m: string) => (ev: MouseEvent) => { ev.stopPropagation(); call('climate', 'set_hvac_mode', { hvac_mode: m }, { entity_id: config.entity }); };
 
-  const Icon = v.Icon;
-  const settable = v.settable;
-  const cls =
-    `simui-tile${v.on ? ' is-on' : ''}${drag.dragging ? ' is-dragging' : ''}${dead ? ' is-unavailable' : ''}`;
+  const hvacModes = (e?.attributes.hvac_modes as string[] | undefined) ?? [];
+  const modeChips = [
+    { label: 'Heat', mode: 'heat' },
+    { label: 'Auto', mode: hvacModes.includes('auto') ? 'auto' : 'heat_cool' },
+    { label: 'Cool', mode: 'cool' },
+  ].filter((c) => hvacModes.includes(c.mode));
 
   return (
     <div
-      className={cls}
-      style={{ ['--tile-tint' as string]: v.tint } as CSSProperties}
-      role={settable ? 'slider' : 'button'}
-      aria-label={settable ? `${name} target temperature` : name}
-      aria-valuemin={settable ? v.min : undefined}
-      aria-valuemax={settable ? v.max : undefined}
-      aria-valuenow={settable && target != null ? target : undefined}
-      aria-valuetext={settable && target != null ? degrees(target) : undefined}
+      className={`tile${compact ? ' compact' : ''}${dead ? ' is-unavailable' : ''}`}
+      style={{ ['--acc']: v.tint } as CSSProperties}
+      role="button"
+      aria-label={name}
       tabIndex={0}
-      onClick={onBody}
-      onKeyDown={onKeyDown}
-      onContextMenu={(ev) => {
-        ev.preventDefault();
-        moreInfo(config.entity);
-      }}
-      {...(settable ? drag.handlers : {})}
+      onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
+      onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
-      <button
-        type="button"
-        className="simui-tile-ic"
-        aria-label={v.on ? 'Turn off' : 'Turn on'}
-        onClick={onIcon}
-        onPointerDown={(ev) => ev.stopPropagation()}
-        onKeyDown={(ev) => ev.stopPropagation()}
-      >
-        {renderIcon(config.icon, 20, <Icon size={20} strokeWidth={2} />)}
-      </button>
-      <span className="simui-tile-name" title={name}>{name}</span>
-      <span className="simui-tile-state">{stateLine}</span>
+      <div className="top">
+        <div className="thead">
+          <button type="button" className="disc" aria-label={v.on ? 'Turn off' : 'Turn on'} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()}>
+            {renderIcon(config.icon, compact ? 18 : 21, discIcon(Icon, compact ? 18 : 21))}
+          </button>
+          {compact ? (
+            <div className="num tnum">{bigVal}{showUnit && <span className="u">°</span>}</div>
+          ) : (
+            <div className="badge"><span className="pt" />{badge}</div>
+          )}
+        </div>
+        {compact ? (
+          <>
+            <div className="cname" title={name}>{name}</div>
+            <div className="csub">{sub}</div>
+          </>
+        ) : (
+          <div>
+            <div className="eye" title={name}>{name}</div>
+            <div className="numwrap">
+              <div className="num tnum">{bigVal}{showUnit && <span className="u">{unit}</span>}</div>
+              <div className="nsub">{sub}</div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="ctl">
+        <TempTrack
+          knobPct={knobPct}
+          tickPct={compact ? null : tickPct}
+          settable={settable}
+          handlers={drag.handlers}
+          ariaLabel={`${name} target temperature`}
+          ariaNow={target != null ? `${fmt(target)}°` : undefined}
+          onKeyDown={(ev) => {
+            const cur = target ?? v.min;
+            let next: number | null = null;
+            if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') next = Math.min(v.max, cur + v.step);
+            else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') next = Math.max(v.min, cur - v.step);
+            if (next != null) {
+              ev.preventDefault();
+              ev.stopPropagation();
+              call('climate', 'set_temperature', { temperature: next }, { entity_id: config.entity });
+            }
+          }}
+        />
+        {!compact && modeChips.length > 0 && (
+          <div className="chips">
+            {modeChips.map((c) => (
+              <button key={c.label} type="button" className={v.on && e?.state === c.mode ? 'on' : ''} onClick={setMode(c.mode)} onPointerDown={(ev) => ev.stopPropagation()}>{c.label}</button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
