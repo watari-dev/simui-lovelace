@@ -12,6 +12,7 @@
   --up: #36d399;     /* secured / battery / charging / positive */
   --heat: #fb7c3c;   /* climate heating */
   --down: #f76b6b;   /* unlocked / alert / negative */
+  --grey: #8b8e99;   /* neutral / unknown / at-rest */
   --home: #cfd2da;   /* energy "home" ribbon (neutral) */
   --ease: cubic-bezier(.4, .1, .2, 1);
 

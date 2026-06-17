@@ -2,7 +2,7 @@ import { type CSSProperties, useMemo } from 'react';
 import { useActions, useEntity, useHistory, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { domainOf, friendly, isUnavailable } from '../util';
+import { domainOf, friendly, isActivateKey, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { Sparkline, discIcon } from './luminous';
@@ -66,8 +66,9 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const bigVal = dead ? 'Unavailable' : numeric ? fmt1(Number(e!.state)) : e ? formatSensor(e) : '—';
   const cur = numeric ? Number(e!.state) : NaN;
   const delta = stats && Number.isFinite(cur) ? cur - stats.first : null;
+  const deltaUnit = numeric && unit ? unit : '';
   const deltaNode = delta != null && Math.abs(delta) >= 0.05 ? (
-    <div className="badge" style={{ ['--acc']: delta >= 0 ? 'var(--up)' : 'var(--down)' } as CSSProperties}>{delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)} today</div>
+    <div className="badge" style={{ ['--acc']: delta >= 0 ? 'var(--up)' : 'var(--down)' } as CSSProperties}>{delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit} · 24h</div>
   ) : null;
 
   const sparkH = compact ? 30 : 46;
@@ -81,6 +82,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
       aria-label={`${name}: ${dead ? 'unavailable' : e ? formatSensor(e) : ''}`}
       tabIndex={0}
       onClick={() => runTap(config.tap_action, config.entity)}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
@@ -89,7 +91,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
           {compact ? <div className="num tnum">{valueNode}</div> : (deltaNode ?? <span />)}
         </div>
         {compact ? (
-          <div className="cname" title={name}>{name}{delta != null && Math.abs(delta) >= 0.05 && <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)', fontWeight: 600 }}> {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}</span>}</div>
+          <div className="cname" title={name}>{name}{delta != null && Math.abs(delta) >= 0.05 && <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)', fontWeight: 600 }}> {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit}</span>}</div>
         ) : (
           <div>
             <div className="eye" title={name}>{name}</div>

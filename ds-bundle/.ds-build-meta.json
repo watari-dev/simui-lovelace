@@ -1,0 +1,9 @@
+{
+  "namespace": "SimUI",
+  "source": "simui-lovelace@0.2.0",
+  "shape": "package",
+  "provider": "SimuiProvider",
+  "componentCount": 9,
+  "skippedStoryIds": [],
+  "runtimeFontPrefixes": []
+}

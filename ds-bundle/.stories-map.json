@@ -1,0 +1,84 @@
+{
+  "global": "SimUI",
+  "pkg": "simui-lovelace",
+  "pkgDir": "/Users/michael/Development/simui-lovelace",
+  "extraEntries": [],
+  "exported": [],
+  "storybookStatic": null,
+  "keyRecipe": 7,
+  "cfgSliceGlobal": "6eed5020f28e8710f93f8646d3568c6c33e453b3d28f510c2166d1f026e4f185",
+  "components": [
+    {
+      "name": "ChipsCard",
+      "group": "media-status",
+      "srcSha": null,
+      "sourceKey": "42df1c111fcae641",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "ClimateCard",
+      "group": "entity-tiles",
+      "srcSha": null,
+      "sourceKey": "1b4f9caf2ad8458e",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "CoverCard",
+      "group": "entity-tiles",
+      "srcSha": null,
+      "sourceKey": "90a4c273d635927b",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "EnergyFlowCard",
+      "group": "data-viz",
+      "srcSha": null,
+      "sourceKey": "b4c134782e3384a7",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "GraphCard",
+      "group": "data-viz",
+      "srcSha": null,
+      "sourceKey": "326248c7f5b44d16",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "LightCard",
+      "group": "entity-tiles",
+      "srcSha": null,
+      "sourceKey": "b864b78f64bc960d",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "LockCard",
+      "group": "entity-tiles",
+      "srcSha": null,
+      "sourceKey": "982b5e5e85d21a39",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "MediaCard",
+      "group": "media-status",
+      "srcSha": null,
+      "sourceKey": "46120441815322e9",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    },
+    {
+      "name": "SensorCard",
+      "group": "entity-tiles",
+      "srcSha": null,
+      "sourceKey": "2564f8fa1ec090ae",
+      "cfgSlice": "5ff899b099eb6923833804cda955efdd69101524bec86f67dac5537cd81802e8",
+      "stories": []
+    }
+  ]
+}

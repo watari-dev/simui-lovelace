@@ -32,18 +32,18 @@ export function chipView(entity: HassEntity | undefined, entityId: string): Chip
     case 'light': {
       const on = state === 'on';
       const bri = a.brightness as number | undefined;
-      const label = !on ? 'Off' : lightHasBrightness(a) && bri != null ? `${Math.max(1, Math.round(bri / 2.55))}%` : 'On';
+      const label = dead ? '—' : !on ? 'Off' : lightHasBrightness(a) && bri != null ? `${Math.max(1, Math.round(bri / 2.55))}%` : 'On';
       return { Icon: Lightbulb, tint: on ? lightTint(a) : 'var(--warm)', active: on, dead, label };
     }
     case 'switch':
     case 'input_boolean': {
       const on = state === 'on';
       // A controllable thing that's ON is amber (like lights) — keep --up for good/secure/charging.
-      return { Icon: on ? ToggleRight : Power, tint: 'var(--warm)', active: on, dead, label: on ? 'On' : 'Off' };
+      return { Icon: on ? ToggleRight : Power, tint: 'var(--warm)', active: on, dead, label: dead ? '—' : on ? 'On' : 'Off' };
     }
     case 'fan': {
       const on = state === 'on';
-      return { Icon: Fan, tint: 'var(--cool)', active: on, dead, label: on ? 'On' : 'Off' };
+      return { Icon: Fan, tint: 'var(--cool)', active: on, dead, label: dead ? '—' : on ? 'On' : 'Off' };
     }
     case 'climate': {
       const v = readClimate(entity, dead);

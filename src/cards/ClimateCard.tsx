@@ -1,8 +1,8 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Thermometer } from 'lucide-react';
-import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useHass, useMoreInfo } from '../core/hass';
 import { useDragValue } from '../hooks/useDragValue';
-import { clamp, friendly, isUnavailable, prettyState } from '../util';
+import { clamp, friendly, isActivateKey, isUnavailable, prettyState } from '../util';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { renderIcon } from '../core/icon';
@@ -28,6 +28,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   const call = useCallService();
   const moreInfo = useMoreInfo();
   const runTap = useActions();
+  const hass = useHass();
   const compact = config.compact === true;
 
   const dead = isUnavailable(e);
@@ -58,10 +59,11 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
 
   const Icon = v.Icon;
   const span = v.max - v.min || 1;
-  const knobPct = target != null ? ((target - v.min) / span) * 100 : 50;
+  // dual-setpoint thermostats have no single target — show the rail + current tick, no knob.
+  const knobPct = !v.dual && target != null ? ((target - v.min) / span) * 100 : null;
   const tickPct = v.current != null ? clamp(((v.current - v.min) / span) * 100, 0, 100) : null;
   const settable = v.settable;
-  const unit = '°C';
+  const unit = (hass as unknown as { config?: { unit_system?: { temperature?: string } } })?.config?.unit_system?.temperature ?? '°C';
 
   const bigVal = dead
     ? '—'
@@ -101,6 +103,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
       aria-label={name}
       tabIndex={0}
       onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
@@ -136,6 +139,9 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
           settable={settable}
           handlers={drag.handlers}
           ariaLabel={`${name} target temperature`}
+          ariaMin={v.min}
+          ariaMax={v.max}
+          ariaValue={target ?? undefined}
           ariaNow={target != null ? `${fmt(target)}°` : undefined}
           onKeyDown={(ev) => {
             const cur = target ?? v.min;

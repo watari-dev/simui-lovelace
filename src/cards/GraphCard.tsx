@@ -3,7 +3,7 @@ import { Activity } from 'lucide-react';
 import { useActions, useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly } from '../util';
+import { friendly, isActivateKey } from '../util';
 import { renderIcon } from '../core/icon';
 import { sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
 import { discIcon } from './luminous';
@@ -64,7 +64,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   const Icon = sensorIcon(dc);
   const accent = config.color && VALID_COLORS.has(config.color) ? `var(--${config.color})` : sensorTint(dc);
   const name = config.name ?? (e ? friendly(e) : config.entity);
-  const sub = config.secondary ? 'Temperature & humidity' : 'Live · last ' + rangeLabel(hours);
+  const sub = (config.secondary ? 'Two series · last ' : 'Live · last ') + rangeLabel(hours);
 
   const series = useMemo<Series[]>(() => {
     const build = (pts: { t: number; v: number }[], color: string, unit: string): Series | null => {
@@ -85,7 +85,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   if (!config.entity || series.length === 0) {
     return (
       <div className="card graph" style={{ ['--acc']: accent, height: '100%' } as CSSProperties}>
-        <div className="ghead"><div className="glabel"><div className="disc">{discIcon(config.entity ? Icon : Activity, 21)}</div><div><div className="gtitle">{config.entity ? name : 'Select a sensor'}</div><div className="gsub">{config.entity ? 'No history yet' : 'Set up'}</div></div></div></div>
+        <div className="ghead"><div className="glabel"><div className="disc">{renderIcon(config.icon, 21, discIcon(config.entity ? Icon : Activity, 21))}</div><div><div className="gtitle">{config.entity ? name : 'Select a sensor'}</div><div className="gsub">{config.entity ? 'No history yet' : 'Set up'}</div></div></div></div>
         <div className="gchart"><div className="gempty">{config.entity ? 'Not enough history yet' : 'Pick a sensor to chart'}</div></div>
       </div>
     );
@@ -110,6 +110,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
 
   const onMove = (ev: ReactPointerEvent) => {
     const r = ev.currentTarget.getBoundingClientRect();
+    if (r.width <= 0) return;
     setHover(Math.round(((ev.clientX - r.left) / r.width) * (n - 1)));
   };
 
@@ -121,12 +122,13 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
       tabIndex={0}
       aria-label={`${name} history`}
       onClick={() => runTap(config.tap_action, config.entity)}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="ghead">
         <div className="glabel">
           <div className="disc">{renderIcon(config.icon, 21, discIcon(Icon, 21))}</div>
-          <div><div className="gtitle" title={name}>{name}</div><div className="gsub">{sub}{config.secondary ? ` · ${rangeLabel(hours)}` : ''}</div></div>
+          <div><div className="gtitle" title={name}>{name}</div><div className="gsub">{sub}</div></div>
         </div>
         <div className="gval">
           <b className="tnum">{fmtV(primary.cur)}{primary.unit && <span className="u">{primary.unit}</span>}</b>

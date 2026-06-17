@@ -4,7 +4,7 @@ import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isUnavailable, prettyState } from '../util';
+import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
 import { DotBar, discIcon, sliderKeys } from './luminous';
@@ -49,7 +49,8 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   const Icon = v.Icon;
   const hasPos = position != null;
   const badge = dead ? 'Off' : v.moving ? prettyState(e?.state ?? '') : v.open ? 'Open' : 'Closed';
-  const closed = v.position != null ? v.position === 0 : e?.state === 'closed';
+  const fullyOpen = v.position != null ? v.position === 100 : v.open;
+  const fullyClosed = v.position != null ? v.position === 0 : !v.open;
 
   const valueNode = hasPos ? <>{position}<span className="u">%</span></> : v.open ? 'Open' : 'Closed';
 
@@ -69,6 +70,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
       aria-label={name}
       tabIndex={0}
       onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">
@@ -98,9 +100,9 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
         )}
         {!compact && (
           <div className="chips">
-            <button type="button" disabled={!onOpen || (!closed && !v.moving && v.position === 100)} onClick={onOpen} onPointerDown={(ev) => ev.stopPropagation()}>▲ Open</button>
+            <button type="button" disabled={!onOpen || (fullyOpen && !v.moving)} onClick={onOpen} onPointerDown={(ev) => ev.stopPropagation()}>▲ Open</button>
             <button type="button" className={v.moving ? 'on' : ''} disabled={!onStop} onClick={onStop} onPointerDown={(ev) => ev.stopPropagation()}>Stop</button>
-            <button type="button" disabled={!onClose || closed} onClick={onClose} onPointerDown={(ev) => ev.stopPropagation()}>▼ Close</button>
+            <button type="button" disabled={!onClose || (fullyClosed && !v.moving)} onClick={onClose} onPointerDown={(ev) => ev.stopPropagation()}>▼ Close</button>
           </div>
         )}
       </div>

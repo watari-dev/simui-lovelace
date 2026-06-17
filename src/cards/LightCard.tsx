@@ -4,7 +4,7 @@ import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass
 import { useDragValue } from '../hooks/useDragValue';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isUnavailable } from '../util';
+import { friendly, isActivateKey, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
 import { DotBar, discIcon, sliderKeys } from './luminous';
@@ -96,6 +96,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
       aria-label={name}
       tabIndex={0}
       onClick={() => { if (!drag.moved()) runTap(config.tap_action, config.entity); }}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

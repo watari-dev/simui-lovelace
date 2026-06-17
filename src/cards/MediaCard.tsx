@@ -49,7 +49,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
       className={`card media${dead || !config.entity ? ' is-unavailable' : ''}`}
       style={{ ['--acc']: acc, height: '100%' } as CSSProperties}
       role="button"
-      aria-label={`${name}: ${sub}`}
+      aria-label={`${title}: ${sub}`}
       tabIndex={0}
       onClick={open}
       onKeyDown={(ev: ReactKeyboardEvent) => { if (isActivateKey(ev.key)) { ev.preventDefault(); open(); } }}
@@ -74,7 +74,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
             <div className="mtime"><span>{mmss(position ?? 0)}</span><span>{mmss(duration)}</span></div>
           </>
         ) : null}
-        {config.entity && !dead && v.active && (
+        {config.entity && !dead && (v.active || supports(MEDIA_PLAY) || supports(MEDIA_PAUSE)) && (
           <div className="transport">
             {supports(MEDIA_PREVIOUS) && (
               <button type="button" className="mbtn" aria-label="Previous" onClick={ctl('media_previous_track')} onPointerDown={(ev) => ev.stopPropagation()} onKeyDown={stopKey}><SkipBack /></button>

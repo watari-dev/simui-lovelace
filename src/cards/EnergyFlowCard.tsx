@@ -1,8 +1,8 @@
 import { type CSSProperties, useMemo } from 'react';
-import { useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useEntity, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig, HassEntity } from '../core/types';
-import { isUnavailable } from '../util';
+import { isActivateKey, isUnavailable } from '../util';
 
 export interface EnergyFlowCardConfig extends BaseCardConfig {
   name?: string;
@@ -42,11 +42,13 @@ const fmtVal = (w: number): { v: string; u: string } => (Math.abs(w) >= 1 ? { v:
  */
 export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConfig>) {
   const moreInfo = useMoreInfo();
+  const runTap = useActions();
   const solarE = useEntity(config.solar ?? '');
   const gridE = useEntity(config.grid ?? '');
   const batteryE = useEntity(config.battery ?? '');
   const socE = useEntity(config.battery_soc ?? '');
   const homeE = useEntity(config.home ?? '');
+  const primary = config.solar ?? config.grid ?? config.battery ?? config.home ?? config.battery_soc ?? '';
 
   const model = useMemo(() => {
     const solar = kw(solarE);
@@ -110,15 +112,24 @@ export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConf
     return { ribs, srcLy: place(sources), snkLy: place(sinks) };
   }, [sources, sinks]);
 
-  if (!config.solar && !config.grid && !config.battery && !config.home) {
-    return <div className="card energy" style={{ ['--acc']: 'var(--up)', height: '100%' } as CSSProperties}><div className="ehead"><span className="etitle"><span className="tick" />Energy</span></div><div className="ediagram"><div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: 'var(--muted)', fontSize: 12, opacity: .6 }}>Add power sensors</div></div></div>;
+  if (!config.solar && !config.grid && !config.battery && !config.home && !config.battery_soc) {
+    return <div className="card energy" style={{ ['--acc']: 'var(--up)', height: '100%' } as CSSProperties}><div className="ehead"><span className="etitle"><span className="tick" />{config.name ?? 'Energy'}</span></div><div className="ediagram"><div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: 'var(--muted)', fontSize: 12, opacity: .6 }}>Add power sensors</div></div></div>;
   }
 
   const dur = 2.4;
   return (
-    <div className="card energy" style={{ ['--acc']: acc, height: '100%' } as CSSProperties} role="button" tabIndex={0} aria-label="Energy flow" onContextMenu={(ev) => { ev.preventDefault(); if (config.solar) moreInfo(config.solar); }}>
+    <div
+      className="card energy"
+      style={{ ['--acc']: acc, height: '100%' } as CSSProperties}
+      role="button"
+      tabIndex={0}
+      aria-label={config.name ?? 'Energy flow'}
+      onClick={() => primary && runTap(config.tap_action, primary)}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key) && primary) { ev.preventDefault(); runTap(config.tap_action, primary); } }}
+      onContextMenu={(ev) => { ev.preventDefault(); if (primary) moreInfo(primary); }}
+    >
       <div className="ehead">
-        <span className="etitle"><span className="tick" />Energy · Now</span>
+        <span className="etitle"><span className="tick" />{config.name ?? 'Energy · Now'}</span>
         <div className="eright">
           <span className="epill"><span className="pt" />{idle ? 'Idle' : statusText}</span>
         </div>

@@ -68,14 +68,20 @@ export function TempTrack({
   handlers,
   ariaLabel,
   ariaNow,
+  ariaMin,
+  ariaMax,
+  ariaValue,
   onKeyDown,
 }: {
-  knobPct: number; // 0–100 (target position)
+  knobPct: number | null; // 0–100 (target position), or null to hide the knob (e.g. dual setpoint)
   tickPct: number | null; // 0–100 (current temp marker), or null
   settable: boolean;
   handlers?: DragHandlers;
   ariaLabel: string;
   ariaNow?: string;
+  ariaMin?: number;
+  ariaMax?: number;
+  ariaValue?: number;
   onKeyDown?: (e: ReactKeyboardEvent) => void;
 }): ReactNode {
   return (
@@ -83,6 +89,9 @@ export function TempTrack({
       className="track"
       role="slider"
       aria-label={ariaLabel}
+      aria-valuemin={ariaMin}
+      aria-valuemax={ariaMax}
+      aria-valuenow={ariaValue}
       aria-valuetext={ariaNow}
       tabIndex={settable ? 0 : -1}
       onKeyDown={settable ? onKeyDown : undefined}
@@ -90,7 +99,7 @@ export function TempTrack({
     >
       <div className="rail" />
       {tickPct != null && <div className="ttick" style={{ left: `${tickPct}%` }} />}
-      <div className="tknob" style={{ left: `${Math.max(0, Math.min(100, knobPct))}%` }} />
+      {knobPct != null && <div className="tknob" style={{ left: `${Math.max(0, Math.min(100, knobPct))}%` }} />}
     </div>
   );
 }

@@ -183,6 +183,7 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
   cardSize: 5,
   editor: {
     schema: [
+      { name: 'name', selector: { text: {} } },
       { name: 'solar', selector: { entity: { domain: 'sensor' } } },
       { name: 'grid', selector: { entity: { domain: 'sensor' } } },
       { name: 'battery', selector: { entity: { domain: 'sensor' } } },
@@ -190,8 +191,10 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
       { name: 'home', selector: { entity: { domain: 'sensor' } } },
       { name: 'grid_invert', selector: { boolean: {} } },
       { name: 'battery_invert', selector: { boolean: {} } },
+      { name: 'tap_action', selector: { ui_action: {} } },
     ],
     labels: {
+      name: 'Name (optional)',
       solar: 'Solar power',
       grid: 'Grid power',
       battery: 'Battery power',
@@ -199,6 +202,7 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
       home: 'Home / load power',
       grid_invert: 'Invert grid sign',
       battery_invert: 'Invert battery sign',
+      tap_action: 'Tap action',
     },
     helpers: { grid: 'Signed: + importing, − exporting', battery: 'Signed: + discharging, − charging' },
   },

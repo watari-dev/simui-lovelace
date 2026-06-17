@@ -3,7 +3,7 @@ import { Lock, LockOpen } from 'lucide-react';
 import { useActions, useCallService, useEntity, useLanguage, useMoreInfo } from '../core/hass';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
-import { friendly, isUnavailable, prettyState } from '../util';
+import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { discIcon } from './luminous';
 
@@ -75,6 +75,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
       aria-label={`${name}: ${prettyState(state)}`}
       tabIndex={0}
       onClick={() => runTap(config.tap_action, config.entity)}
+      onKeyDown={(ev) => { if (isActivateKey(ev.key)) { ev.preventDefault(); runTap(config.tap_action, config.entity); } }}
       onContextMenu={(ev) => { ev.preventDefault(); moreInfo(config.entity); }}
     >
       <div className="top">

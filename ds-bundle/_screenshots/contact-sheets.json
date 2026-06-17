@@ -1,0 +1,16 @@
+[
+  {
+    "sheet": 1,
+    "components": [
+      "ChipsCard",
+      "ClimateCard",
+      "CoverCard",
+      "EnergyFlowCard",
+      "GraphCard",
+      "LightCard",
+      "LockCard",
+      "MediaCard",
+      "SensorCard"
+    ]
+  }
+]
