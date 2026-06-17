@@ -1,12 +1,12 @@
 import { type CSSProperties, useMemo } from 'react';
-import { useEntity, useHistory, useMoreInfo } from '../core/hass';
+import { useActions, useEntity, useHistory, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { domainOf, friendly, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { formatSensor, sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
-import { Sparkline, discIcon } from './luminous';
+import { ChipRow, Sparkline, discIcon, type ActionChip } from './luminous';
 
 export interface SensorCardConfig extends BaseCardConfig {
   entity: string;
@@ -17,6 +17,8 @@ export interface SensorCardConfig extends BaseCardConfig {
   sparkline?: boolean;
   /** Show the 24 h delta badge (default true). */
   show_delta?: boolean;
+  /** Custom action buttons shown beneath the sparkline. */
+  buttons?: ActionChip[];
   compact?: boolean;
 }
 
@@ -29,6 +31,7 @@ const fmt1 = (n: number): string => (Number.isInteger(n) ? `${n}` : (Math.round(
 export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const e = useEntity(config.entity);
   const moreInfo = useMoreInfo();
+  const runBtn = useActions();
   const actions = useActionHandler(config, config.entity);
   const compact = config.compact === true;
 
@@ -112,6 +115,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
             <span className="avg">avg {fmt1(stats.avg)}{unit && numeric ? unit : ''}</span>
           </div>
         )}
+        {!compact && <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />}
       </div>
     </div>
   );

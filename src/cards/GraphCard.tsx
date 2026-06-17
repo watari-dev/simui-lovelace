@@ -1,13 +1,13 @@
 import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, useId, useMemo, useState } from 'react';
 import { Activity } from 'lucide-react';
-import { useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
+import { useActions, useEntity, useHistory, useLanguage, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly } from '../util';
 import { renderIcon } from '../core/icon';
 import { sensorIcon, sensorTint, VALID_COLORS } from './sensor-util';
-import { discIcon } from './luminous';
+import { ChipRow, discIcon, type ActionChip } from './luminous';
 
 export interface GraphCardConfig extends BaseCardConfig {
   entity: string;
@@ -26,6 +26,8 @@ export interface GraphCardConfig extends BaseCardConfig {
   line_width?: number;
   /** Show the Min / Avg / Max / Now stats footer (default true). */
   show_stats?: boolean;
+  /** Custom action buttons shown beneath the chart. */
+  buttons?: ActionChip[];
 }
 
 const W = 512, H = 150, PAD = 6;
@@ -55,6 +57,7 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
   const e = useEntity(config.entity);
   const e2 = useEntity(config.secondary ?? '');
   const moreInfo = useMoreInfo();
+  const runBtn = useActions();
   const actions = useActionHandler(config, config.entity);
   const locale = useLanguage();
   const gradId = useId().replace(/:/g, '');
@@ -191,6 +194,8 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
           <div>Now<b className="tnum">{fmtV(primary.cur)}{primary.unit}</b></div>
         </div>
       )}
+
+      <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />
     </div>
   );
 }

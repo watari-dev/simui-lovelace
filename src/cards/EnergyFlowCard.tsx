@@ -1,9 +1,10 @@
 import { type CSSProperties, useMemo } from 'react';
-import { useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useEntity, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig, HassEntity } from '../core/types';
 import { isUnavailable } from '../util';
+import { ChipRow, type ActionChip } from './luminous';
 
 export interface EnergyFlowCardConfig extends BaseCardConfig {
   name?: string;
@@ -16,6 +17,8 @@ export interface EnergyFlowCardConfig extends BaseCardConfig {
   grid_invert?: boolean;
   /** A positive battery reading normally means discharging; set true if reversed. */
   battery_invert?: boolean;
+  /** Custom action buttons shown beneath the flow diagram. */
+  buttons?: ActionChip[];
 }
 
 // ── viewBox geometry (matches the Luminous reference) ──────────────────────────
@@ -43,6 +46,7 @@ const fmtVal = (w: number): { v: string; u: string } => (Math.abs(w) >= 1 ? { v:
  */
 export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConfig>) {
   const moreInfo = useMoreInfo();
+  const runBtn = useActions();
   const solarE = useEntity(config.solar ?? '');
   const gridE = useEntity(config.grid ?? '');
   const batteryE = useEntity(config.battery ?? '');
@@ -173,6 +177,7 @@ export function EnergyFlowCard({ config }: CardComponentProps<EnergyFlowCardConf
           })}
         </div>
       </div>
+      <ChipRow chips={config.buttons} run={(a) => runBtn(a, primary)} />
     </div>
   );
 }

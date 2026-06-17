@@ -1,18 +1,20 @@
 import { type CSSProperties, type MouseEvent } from 'react';
 import { Lock, LockOpen } from 'lucide-react';
-import { useCallService, useEntity, useLanguage, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useLanguage, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
-import { accentVar, discIcon } from './luminous';
+import { ChipRow, accentVar, discIcon, type ActionChip } from './luminous';
 
 export interface LockCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
   /** Force an accent colour (overrides the state-based tint). */
   color?: string;
+  /** Custom action buttons shown beneath the lock row. */
+  buttons?: ActionChip[];
   compact?: boolean;
 }
 
@@ -37,6 +39,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runBtn = useActions();
   const actions = useActionHandler(config, config.entity);
   const locale = useLanguage();
   const compact = config.compact === true;
@@ -110,6 +113,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
               <div className="ltxt">{caption}</div>
               <button type="button" className="sw" aria-label={locked ? 'Unlock' : 'Lock'} aria-pressed={locked} disabled={transitioning} onClick={toggle} onPointerDown={(ev) => ev.stopPropagation()} />
             </div>
+            <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />
           </>
         )}
       </div>

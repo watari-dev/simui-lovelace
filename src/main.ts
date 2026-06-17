@@ -32,6 +32,25 @@ const SLIDER_OPTIONS = [
   { value: 'none', label: 'Hidden' },
 ];
 const SLIDER_FIELD = { name: 'slider', selector: { select: { mode: 'dropdown', options: SLIDER_OPTIONS } } };
+// A generic, opt-in row of custom action buttons (name · icon · tap action) — shared by the
+// cards that have no domain-specific control row (sensor / lock / media / graph / energy).
+const BUTTONS_FIELD = {
+  name: 'buttons',
+  selector: {
+    object: {
+      multiple: true,
+      label_field: 'name',
+      translation_key: 'button',
+      fields: {
+        name: { required: true, selector: { text: {} } },
+        icon: { selector: { icon: {} } },
+        tap_action: { selector: { ui_action: {} } },
+      },
+    },
+  },
+};
+const BUTTONS_LABEL = 'Action buttons';
+const BUTTONS_HELP = 'Optional buttons beneath the card — each runs its tap action (default: more-info).';
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
@@ -138,10 +157,11 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
       COLOR_FIELD,
       { name: 'sparkline', selector: { boolean: {} } },
       { name: 'show_delta', selector: { boolean: {} } },
+      BUTTONS_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour', sparkline: '24 h sparkline', show_delta: '24 h delta badge', compact: 'Compact (dense)' },
-    helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
+    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour', sparkline: '24 h sparkline', show_delta: '24 h delta badge', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.', buttons: BUTTONS_HELP },
     defaults: { sparkline: true, show_delta: true },
   },
 });
@@ -166,6 +186,7 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.2, mode: 'slider' } } },
       { name: 'fill', selector: { boolean: {} } },
       { name: 'show_stats', selector: { boolean: {} } },
+      BUTTONS_FIELD,
     ],
     labels: {
       entity: 'Sensor',
@@ -174,10 +195,12 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       color: 'Accent colour',
       hours: 'Default range (hours)',
       line_width: 'Line width', fill: 'Fill under the line', show_stats: 'Show min / avg / max',
+      buttons: BUTTONS_LABEL,
     },
     helpers: {
       color: 'Overrides the automatic colour picked from the sensor’s device class.',
       secondary: 'A second sensor overlaid on the same chart (e.g. humidity over temperature).',
+      buttons: BUTTONS_HELP,
     },
     defaults: { hours: 24, fill: true, show_stats: true, line_width: 2.4 },
   },
@@ -237,9 +260,11 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
       { name: 'icon', selector: { icon: {} } },
       ...ACTION_FIELDS,
       COLOR_FIELD,
+      BUTTONS_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', compact: 'Compact (dense)' },
+    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, color: 'Accent colour (override)', buttons: BUTTONS_LABEL, compact: 'Compact (dense)' },
+    helpers: { buttons: BUTTONS_HELP },
   },
 });
 
@@ -253,8 +278,10 @@ defineCard<MediaCardConfig>('simui-media-card', MediaCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       ...ACTION_FIELDS,
+      BUTTONS_FIELD,
     ],
-    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS },
+    labels: { entity: 'Media player', name: 'Name (optional)', icon: 'Icon (optional)', ...ACTION_LABELS, buttons: BUTTONS_LABEL },
+    helpers: { buttons: BUTTONS_HELP },
   },
 });
 
@@ -264,10 +291,33 @@ defineCard<ChipsCardConfig>('simui-chips-card', ChipsCard, {
     const pick = (p: string) => Object.keys(hass.states).find((id) => id.startsWith(p));
     return { entities: [pick('light.'), pick('sensor.'), pick('lock.')].filter((x): x is string => !!x) };
   },
-  entities: (c) => c.entities ?? [],
+  entities: (c) => (c.chips ? c.chips.map((ch) => ch.entity).filter((x): x is string => !!x) : c.entities ?? []),
   editor: {
-    schema: [{ name: 'entities', selector: { entity: { multiple: true } } }],
-    labels: { entities: 'Entities' },
+    schema: [
+      { name: 'entities', selector: { entity: { multiple: true } } },
+      {
+        name: 'chips',
+        selector: {
+          object: {
+            multiple: true,
+            label_field: 'name',
+            translation_key: 'chip',
+            fields: {
+              entity: { selector: { entity: {} } },
+              name: { selector: { text: {} } },
+              icon: { selector: { icon: {} } },
+              color: { selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
+              tap_action: { selector: { ui_action: {} } },
+            },
+          },
+        },
+      },
+    ],
+    labels: { entities: 'Entities (simple)', chips: 'Chips (advanced)' },
+    helpers: {
+      entities: 'A quick list of entities, each shown as a status chip.',
+      chips: 'Per-chip control — entity, custom name / icon / colour, and tap action. Overrides the simple list above.',
+    },
   },
 });
 
@@ -290,6 +340,7 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
       { name: 'grid_invert', selector: { boolean: {} } },
       { name: 'battery_invert', selector: { boolean: {} } },
       ...ACTION_FIELDS,
+      BUTTONS_FIELD,
     ],
     labels: {
       name: 'Name (optional)',
@@ -301,8 +352,9 @@ defineCard<EnergyFlowCardConfig>('simui-energy-flow-card', EnergyFlowCard, {
       grid_invert: 'Invert grid sign',
       battery_invert: 'Invert battery sign',
       ...ACTION_LABELS,
+      buttons: BUTTONS_LABEL,
     },
-    helpers: { grid: 'Signed: + importing, − exporting', battery: 'Signed: + discharging, − charging' },
+    helpers: { grid: 'Signed: + importing, − exporting', battery: 'Signed: + discharging, − charging', buttons: BUTTONS_HELP },
   },
 });
 

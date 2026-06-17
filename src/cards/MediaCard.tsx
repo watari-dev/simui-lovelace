@@ -1,16 +1,19 @@
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from 'react';
 import { Music, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
-import { useCallService, useEntity, useMoreInfo } from '../core/hass';
+import { useActions, useCallService, useEntity, useMoreInfo } from '../core/hass';
 import { useActionHandler } from '../core/action-handler';
 import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isUnavailable, prettyState, supportsFeature } from '../util';
 import { renderIcon } from '../core/icon';
+import { ChipRow, type ActionChip } from './luminous';
 import { MEDIA_NEXT, MEDIA_PAUSE, MEDIA_PLAY, MEDIA_PREVIOUS, readMedia } from './media-util';
 
 export interface MediaCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
+  /** Custom action buttons shown beneath the transport controls. */
+  buttons?: ActionChip[];
 }
 
 const mmss = (s: number): string => (Number.isFinite(s) && s >= 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '');
@@ -24,6 +27,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const e = useEntity(config.entity);
   const call = useCallService();
   const moreInfo = useMoreInfo();
+  const runBtn = useActions();
   const actions = useActionHandler(config, config.entity);
 
   const dead = isUnavailable(e);
@@ -99,6 +103,7 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
             )}
           </div>
         )}
+        {config.entity && <ChipRow chips={config.buttons} run={(a) => runBtn(a, config.entity)} />}
       </div>
     </div>
   );

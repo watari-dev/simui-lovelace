@@ -1,4 +1,6 @@
 import { createElement, useId, useMemo, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { renderIcon } from '../core/icon';
+import type { ActionConfig } from '../core/actions';
 
 /** Shared "Luminous" primitives: the dot-bar, the temperature track, and the sparkline.
  *  The interactive controls are presentational — each card owns its `useDragValue` so the
@@ -26,6 +28,39 @@ function swallow(handlers?: DragHandlers): { onPointerDown?: (e: ReactPointerEve
 /** Map a config `color:` accent name to its CSS var — the optional tint override on tiles. */
 const ACCENTS = new Set(['warm', 'cool', 'up', 'down', 'grey', 'heat']);
 export const accentVar = (name?: string): string | undefined => (name && ACCENTS.has(name) ? `var(--${name})` : undefined);
+
+// ── Action chips (generic configurable button row) ────────────────────────────
+/** One configurable action button — a name + optional icon that runs a tap action. */
+export interface ActionChip {
+  name?: string;
+  icon?: string;
+  /** The action to run on tap. Omit ⇒ the card's default (more-info on its entity). */
+  tap_action?: ActionConfig;
+}
+
+/**
+ * A configurable row of action buttons, shared by the cards that have no domain-specific
+ * control row (sensor / lock / media / graph / energy). Each button runs its `tap_action`
+ * (or the card default when none is set). Renders nothing when no chips are configured, so
+ * it's purely opt-in — a card with no `buttons` looks exactly as before.
+ */
+export function ChipRow({ chips, run }: { chips?: ActionChip[]; run: (a: ActionConfig | undefined) => void }): ReactNode {
+  if (!chips || chips.length === 0) return null;
+  return (
+    <div className="chips actions">
+      {chips.map((c, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={(e) => { e.stopPropagation(); run(c.tap_action); }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {c.icon ? <span className="chip-ic">{renderIcon(c.icon, 15, null)}</span> : null}{c.name ?? ''}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 // ── Dot bar (brightness / position) ───────────────────────────────────────────
 export type SliderStyle = 'dots' | 'bar' | 'line';
