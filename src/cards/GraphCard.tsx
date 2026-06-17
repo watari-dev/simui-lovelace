@@ -173,12 +173,14 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
               </g>
             );
           })}
-          <line x1={crossX} y1="0" x2={crossX} y2={H} stroke={primary.color} strokeWidth="1" strokeDasharray="3 3" opacity="0.55" vectorEffect="non-scaling-stroke" />
+          {hover != null && <line x1={crossX} y1="0" x2={crossX} y2={H} stroke={primary.color} strokeWidth="1" strokeDasharray="3 3" opacity="0.55" vectorEffect="non-scaling-stroke" />}
         </svg>
-        <div className="gread" style={{ left: `${Math.max(9, Math.min(89, (crossX / W) * 100))}%` }}>
-          {fmtV(primary.values[idx])}{primary.unit}{series[1] ? ` · ${fmtV(series[1].values[Math.min(idx, series[1].values.length - 1)])}${series[1].unit}` : ''}
-          <span>{readTime}</span>
-        </div>
+        {hover != null && (
+          <div className="gread" style={{ left: `${Math.max(9, Math.min(89, (crossX / W) * 100))}%` }}>
+            {fmtV(primary.values[idx])}{primary.unit}{series[1] ? ` · ${fmtV(series[1].values[Math.min(idx, series[1].values.length - 1)])}${series[1].unit}` : ''}
+            <span>{readTime}</span>
+          </div>
+        )}
       </div>
 
       {config.show_stats !== false && (
