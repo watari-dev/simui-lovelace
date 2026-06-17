@@ -107,7 +107,9 @@ export function defineCard<C extends BaseCardConfig>(
     }
 
     static getStubConfig(hass?: HomeAssistant): Partial<C> & { type: string } {
-      return { type: tag, ...(opts.stubConfig?.(hass) ?? {}) } as Partial<C> & { type: string };
+      // MUST carry the `custom:` prefix. HA builds the stub as `{ type: 'custom:<tag>', ...this }`,
+      // so a bare `type: tag` here clobbers HA's prefixed type → "Unknown type encountered".
+      return { type: `custom:${tag}`, ...(opts.stubConfig?.(hass) ?? {}) } as Partial<C> & { type: string };
     }
 
     static getConfigElement(): HTMLElement | undefined {
