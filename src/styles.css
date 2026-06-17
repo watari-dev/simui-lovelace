@@ -255,7 +255,7 @@ svg.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: ro
 .eseg button { font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 5px 12px; border-radius: 999px; transition: .2s var(--ease); }
 .eseg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
 .eseg button:focus-visible { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); outline-offset: 1px; }
-.ediagram { position: relative; flex: 1; min-height: 150px; margin: auto 0; }
+.ediagram { position: relative; flex: 1; min-height: 168px; }
 .ediagram svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .ribbon { transition: opacity .4s; }
 @media (prefers-reduced-motion: reduce) { .ediagram circle animateMotion { display: none; } }

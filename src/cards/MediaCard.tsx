@@ -12,10 +12,12 @@ export interface MediaCardConfig extends BaseCardConfig {
   name?: string;
 }
 
+const mmss = (s: number): string => (Number.isFinite(s) && s >= 0 ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '');
+
 /**
- * SimUI media card — album art (or a music disc), the track title + artist (or the player
- * state), and transport controls (prev / play-pause / next) gated by the player's features.
- * Tap the body for more-info.
+ * SimUI media card — the Luminous player: album art (or a spinning vinyl disc), the eyebrow
+ * "Now Playing", title + artist, a progress scrubber with times, and centred transport
+ * controls (prev / play-pause / next) gated by the player's features.
  */
 export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const e = useEntity(config.entity);
@@ -26,84 +28,66 @@ export function MediaCard({ config }: CardComponentProps<MediaCardConfig>) {
   const dead = isUnavailable(e);
   const name = config.name ?? (e ? friendly(e) : config.entity);
   const v = readMedia(e, dead);
+  const acc = '#b06ef0';
 
   const hasTrack = v.active && !!v.mediaTitle;
   const title = !config.entity ? 'Select a media player' : hasTrack ? v.mediaTitle : name;
-  const subtitle = !config.entity
-    ? 'Set up'
-    : dead
-      ? 'Unavailable'
-      : hasTrack
-        ? v.mediaSub || name
-        : prettyState(v.state);
+  const sub = !config.entity ? 'Set up' : dead ? 'Unavailable' : hasTrack ? v.mediaSub || name : prettyState(v.state);
+  const eyebrow = v.active ? `Now Playing · ${name}` : name;
+
+  const position = e?.attributes.media_position as number | undefined;
+  const duration = e?.attributes.media_duration as number | undefined;
+  const pct = duration && duration > 0 && position != null ? Math.max(0, Math.min(100, (position / duration) * 100)) : 0;
 
   const supports = (bit: number) => !!e && supportsFeature(e, bit);
-  const ctl = (service: string) => (ev: MouseEvent) => {
-    ev.stopPropagation();
-    if (config.entity) call('media_player', service, {}, { entity_id: config.entity });
-  };
+  const ctl = (service: string) => (ev: MouseEvent) => { ev.stopPropagation(); if (config.entity) call('media_player', service, {}, { entity_id: config.entity }); };
   const stopKey = (ev: ReactKeyboardEvent) => ev.stopPropagation();
   const open = () => config.entity && runTap(config.tap_action, config.entity);
 
-  const cls = `simui-media${v.active ? ' is-on' : ''}${dead || !config.entity ? ' is-unavailable' : ''}`;
-
   return (
     <div
-      className={cls}
-      style={{ ['--tile-tint' as string]: v.tint } as CSSProperties}
+      className={`card media${dead || !config.entity ? ' is-unavailable' : ''}`}
+      style={{ ['--acc']: acc, height: '100%' } as CSSProperties}
       role="button"
-      aria-label={`${name}: ${subtitle}`}
+      aria-label={`${name}: ${sub}`}
       tabIndex={0}
       onClick={open}
-      onKeyDown={(ev: ReactKeyboardEvent) => {
-        if (isActivateKey(ev.key)) {
-          ev.preventDefault();
-          open();
-        }
-      }}
-      onContextMenu={(ev) => {
-        ev.preventDefault();
-        if (config.entity) moreInfo(config.entity);
-      }}
+      onKeyDown={(ev: ReactKeyboardEvent) => { if (isActivateKey(ev.key)) { ev.preventDefault(); open(); } }}
+      onContextMenu={(ev) => { ev.preventDefault(); if (config.entity) moreInfo(config.entity); }}
     >
-      <span
-        className="simui-media-art"
-        style={v.art ? { backgroundImage: `url("${v.art}")` } : undefined}
-        aria-hidden="true"
-      >
-        {!v.art && renderIcon(config.icon, 20, <Music size={20} strokeWidth={2} />)}
-      </span>
+      <div className={`art${v.art ? ' has-art' : ''}`} style={v.art ? { backgroundImage: `url("${v.art}")` } : undefined} aria-hidden="true">
+        {!v.art && <div className="disc-spin" style={{ animationPlayState: v.playing ? 'running' : 'paused' }} />}
+        {!v.art && (
+          <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,.85)' }}>
+            {renderIcon(config.icon, 26, <Music size={26} strokeWidth={1.8} />)}
+          </span>
+        )}
+      </div>
 
-      <span className="simui-media-body">
-        <span className="simui-media-title" title={title}>{title}</span>
-        <span className="simui-media-sub" title={subtitle}>{subtitle}</span>
-      </span>
-
-      {config.entity && !dead && v.active && (
-        <span className="simui-media-ctrl">
-          {supports(MEDIA_PREVIOUS) && (
-            <button type="button" className="simui-media-btn" aria-label="Previous" onClick={ctl('media_previous_track')} onKeyDown={stopKey}>
-              <SkipBack size={17} fill="currentColor" />
-            </button>
-          )}
-          {(supports(MEDIA_PLAY) || supports(MEDIA_PAUSE)) && (
-            <button
-              type="button"
-              className="simui-media-btn primary"
-              aria-label={v.playing ? 'Pause' : 'Play'}
-              onClick={ctl('media_play_pause')}
-              onKeyDown={stopKey}
-            >
-              {v.playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-            </button>
-          )}
-          {supports(MEDIA_NEXT) && (
-            <button type="button" className="simui-media-btn" aria-label="Next" onClick={ctl('media_next_track')} onKeyDown={stopKey}>
-              <SkipForward size={17} fill="currentColor" />
-            </button>
-          )}
-        </span>
-      )}
+      <div className="minfo">
+        <div className="meye" title={eyebrow}>{eyebrow}</div>
+        <div className="mtitle" title={title}>{title}</div>
+        <div className="martist" title={sub}>{sub}</div>
+        {v.active && duration ? (
+          <>
+            <div className="scrub"><i style={{ width: `${pct}%` }} /></div>
+            <div className="mtime"><span>{mmss(position ?? 0)}</span><span>{mmss(duration)}</span></div>
+          </>
+        ) : null}
+        {config.entity && !dead && v.active && (
+          <div className="transport">
+            {supports(MEDIA_PREVIOUS) && (
+              <button type="button" className="mbtn" aria-label="Previous" onClick={ctl('media_previous_track')} onPointerDown={(ev) => ev.stopPropagation()} onKeyDown={stopKey}><SkipBack /></button>
+            )}
+            {(supports(MEDIA_PLAY) || supports(MEDIA_PAUSE)) && (
+              <button type="button" className="mbtn play" aria-label={v.playing ? 'Pause' : 'Play'} onClick={ctl('media_play_pause')} onPointerDown={(ev) => ev.stopPropagation()} onKeyDown={stopKey}>{v.playing ? <Pause /> : <Play />}</button>
+            )}
+            {supports(MEDIA_NEXT) && (
+              <button type="button" className="mbtn" aria-label="Next" onClick={ctl('media_next_track')} onPointerDown={(ev) => ev.stopPropagation()} onKeyDown={stopKey}><SkipForward /></button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

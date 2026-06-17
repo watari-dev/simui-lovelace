@@ -11,9 +11,9 @@ export interface ChipsCardConfig extends BaseCardConfig {
 }
 
 /**
- * SimUI chips card — a wrapping row of compact status pills, one per entity: a small icon
- * tinted by state + a short value/state label. Tap a chip for HA's more-info. A glanceable
- * status strip (lights on, temperature, locks, presence…) for the top of a dashboard.
+ * SimUI chips card — a wrapping strip of lit status pills, one per entity: a small glowing
+ * icon disc tinted by state + a short value label. Tap a chip for HA's more-info. A
+ * glanceable status strip for the top of a dashboard.
  */
 export function ChipsCard({ config }: CardComponentProps<ChipsCardConfig>) {
   const hass = useHass();
@@ -21,11 +21,11 @@ export function ChipsCard({ config }: CardComponentProps<ChipsCardConfig>) {
   const ids = config.entities ?? [];
 
   if (ids.length === 0) {
-    return <div className="simui-chips simui-chips-empty">Add entities to show as chips</div>;
+    return <div className="strip-empty">Add entities to show as chips</div>;
   }
 
   return (
-    <div className="simui-chips">
+    <div className="strip">
       {ids.map((id) => {
         const e = hass.states[id];
         const v = chipView(e, id);
@@ -35,20 +35,15 @@ export function ChipsCard({ config }: CardComponentProps<ChipsCardConfig>) {
           <button
             key={id}
             type="button"
-            className={`simui-chip${v.active ? ' is-on' : ''}${v.dead ? ' is-unavailable' : ''}`}
-            style={{ ['--tile-tint' as string]: v.tint } as CSSProperties}
+            className={`chip${v.dead ? ' is-dead' : ''}`}
+            style={{ ['--acc']: v.tint } as CSSProperties}
             aria-label={`${name}: ${v.label}`}
             title={name}
             onClick={() => moreInfo(id)}
-            onContextMenu={(ev) => {
-              ev.preventDefault();
-              moreInfo(id);
-            }}
+            onContextMenu={(ev) => { ev.preventDefault(); moreInfo(id); }}
           >
-            <span className="simui-chip-ic" aria-hidden="true">
-              <Icon size={16} strokeWidth={2} />
-            </span>
-            {v.label && <span className="simui-chip-label">{v.label}</span>}
+            <span className="cd" aria-hidden="true"><Icon size={15} strokeWidth={1.8} /></span>
+            <span className="cv">{v.label}</span>
           </button>
         );
       })}
