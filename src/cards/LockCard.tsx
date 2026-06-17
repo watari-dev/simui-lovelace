@@ -5,11 +5,13 @@ import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
-import { discIcon } from './luminous';
+import { accentVar, discIcon } from './luminous';
 
 export interface LockCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
+  /** Force an accent colour (overrides the state-based tint). */
+  color?: string;
   compact?: boolean;
 }
 
@@ -43,7 +45,7 @@ export function LockCard({ config }: CardComponentProps<LockCardConfig>) {
   const locked = state === 'locked';
   const transitioning = state === 'locking' || state === 'unlocking';
   const name = config.name ?? (e ? friendly(e) : config.entity);
-  const tint = TINT[state] ?? 'var(--cool)';
+  const tint = accentVar(config.color) ?? TINT[state] ?? 'var(--cool)';
   const Icon = locked || state === 'locking' || state === 'jammed' ? Lock : LockOpen;
   const word = dead ? 'Unavailable' : WORD[state] ?? prettyState(state);
 

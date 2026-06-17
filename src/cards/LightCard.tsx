@@ -7,13 +7,15 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable } from '../util';
 import { renderIcon } from '../core/icon';
 import { lightHasBrightness, lightTint } from './light-color';
-import { DotBar, discIcon, sliderKeys } from './luminous';
+import { DotBar, accentVar, discIcon, sliderKeys } from './luminous';
 
 export interface LightCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
   /** Tint the tile with the bulb's own colour (default true). false ⇒ always warm. */
   use_light_color?: boolean;
+  /** Force an accent colour: warm | cool | up | down | grey | heat (overrides use_light_color). */
+  color?: string;
   /** Glanceable footprint for dense dashboards. */
   compact?: boolean;
 }
@@ -38,7 +40,7 @@ export function LightCard({ config }: CardComponentProps<LightCardConfig>) {
   const name = config.name ?? (e ? friendly(e) : config.entity);
   const hasBrightness = !!e && lightHasBrightness(e.attributes);
   const settable = !dead && hasBrightness;
-  const acc = e && config.use_light_color !== false ? lightTint(e.attributes) : 'var(--warm)';
+  const acc = accentVar(config.color) ?? (e && config.use_light_color !== false ? lightTint(e.attributes) : 'var(--warm)');
 
   const brightness = (e?.attributes.brightness as number | undefined) ?? 0;
   const livePct = on ? Math.max(1, Math.round((brightness / 255) * 100)) : 0;

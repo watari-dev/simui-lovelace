@@ -10,8 +10,12 @@ import { Sparkline, discIcon } from './luminous';
 export interface SensorCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
-  /** Override the device-class tint: warm | cool | up | down | grey. */
+  /** Override the device-class tint: warm | cool | up | down | grey | heat. */
   color?: string;
+  /** Show the 24 h sparkline (default true). */
+  sparkline?: boolean;
+  /** Show the 24 h delta badge (default true). */
+  show_delta?: boolean;
   compact?: boolean;
 }
 
@@ -67,7 +71,8 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
   const cur = numeric ? Number(e!.state) : NaN;
   const delta = stats && Number.isFinite(cur) ? cur - stats.first : null;
   const deltaUnit = numeric && unit ? unit : '';
-  const deltaNode = delta != null && Math.abs(delta) >= 0.05 ? (
+  const showDelta = config.show_delta !== false && delta != null && Math.abs(delta) >= 0.05;
+  const deltaNode = showDelta ? (
     <div className="badge" style={{ ['--acc']: delta >= 0 ? 'var(--up)' : 'var(--down)' } as CSSProperties}>{delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit} · 24h</div>
   ) : null;
 
@@ -91,7 +96,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
           {compact ? <div className="num tnum">{valueNode}</div> : (deltaNode ?? <span />)}
         </div>
         {compact ? (
-          <div className="cname" title={name}>{name}{delta != null && Math.abs(delta) >= 0.05 && <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)', fontWeight: 600 }}> {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit}</span>}</div>
+          <div className="cname" title={name}>{name}{showDelta && delta != null && <span style={{ color: delta >= 0 ? 'var(--up)' : 'var(--down)', fontWeight: 600 }}> {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{fmt1(delta)}{deltaUnit}</span>}</div>
         ) : (
           <div>
             <div className="eye" title={name}>{name}</div>
@@ -100,7 +105,7 @@ export function SensorCard({ config }: CardComponentProps<SensorCardConfig>) {
         )}
       </div>
       <div className="ctl">
-        {stats && <Sparkline values={stats.line} width={compact ? 180 : 250} height={sparkH} color={acc} strokeWidth={compact ? 2 : 2.2} />}
+        {config.sparkline !== false && stats && <Sparkline values={stats.line} width={compact ? 180 : 250} height={sparkH} color={acc} strokeWidth={compact ? 2 : 2.2} />}
         {!compact && stats && (
           <div className="statrow">
             <span>24h&nbsp;·&nbsp;{fmt1(stats.min)}–{fmt1(stats.max)}{unit && numeric ? unit : ''}</span>

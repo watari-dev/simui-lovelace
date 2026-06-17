@@ -7,11 +7,13 @@ import type { CardComponentProps } from '../core/react-card';
 import type { BaseCardConfig } from '../core/types';
 import { renderIcon } from '../core/icon';
 import { readClimate } from './climate-util';
-import { TempTrack, discIcon } from './luminous';
+import { TempTrack, accentVar, discIcon } from './luminous';
 
 export interface ClimateCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
+  /** Force an accent colour (overrides the automatic hvac-action tint). */
+  color?: string;
   compact?: boolean;
 }
 
@@ -98,7 +100,7 @@ export function ClimateCard({ config }: CardComponentProps<ClimateCardConfig>) {
   return (
     <div
       className={`tile${compact ? ' compact' : ''}${dead ? ' is-unavailable' : ''}`}
-      style={{ ['--acc']: v.tint } as CSSProperties}
+      style={{ ['--acc']: accentVar(config.color) ?? v.tint } as CSSProperties}
       role="button"
       aria-label={name}
       tabIndex={0}

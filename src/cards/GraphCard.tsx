@@ -19,6 +19,12 @@ export interface GraphCardConfig extends BaseCardConfig {
   hours?: number;
   /** Range-toggle options, in hours (default [1, 12, 24, 168]). [] hides the toggle. */
   ranges?: number[];
+  /** Area fill under the line (default true). */
+  fill?: boolean;
+  /** Line stroke width in px (default 2.4). */
+  line_width?: number;
+  /** Show the Min / Avg / Max / Now stats footer (default true). */
+  show_stats?: boolean;
 }
 
 const W = 512, H = 150, PAD = 6;
@@ -162,8 +168,8 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
             const areaD = `${d} L ${(W - PAD).toFixed(1)} ${H} L ${PAD} ${H} Z`;
             return (
               <g key={si}>
-                {si === 0 && <path d={areaD} fill={`url(#${gradId})`} />}
-                <path d={d} fill="none" stroke={s.color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                {si === 0 && config.fill !== false && <path d={areaD} fill={`url(#${gradId})`} />}
+                <path d={d} fill="none" stroke={s.color} strokeWidth={config.line_width ?? 2.4} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
               </g>
             );
           })}
@@ -175,12 +181,14 @@ export function GraphCard({ config }: CardComponentProps<GraphCardConfig>) {
         </div>
       </div>
 
-      <div className="gstats">
-        <div>Min<b className="tnum">{fmtV(primary.min)}{primary.unit}</b></div>
-        <div>Avg<b className="tnum">{fmtV(primary.avg)}{primary.unit}</b></div>
-        <div>Max<b className="tnum">{fmtV(primary.max)}{primary.unit}</b></div>
-        <div>Now<b className="tnum">{fmtV(primary.cur)}{primary.unit}</b></div>
-      </div>
+      {config.show_stats !== false && (
+        <div className="gstats">
+          <div>Min<b className="tnum">{fmtV(primary.min)}{primary.unit}</b></div>
+          <div>Avg<b className="tnum">{fmtV(primary.avg)}{primary.unit}</b></div>
+          <div>Max<b className="tnum">{fmtV(primary.max)}{primary.unit}</b></div>
+          <div>Now<b className="tnum">{fmtV(primary.cur)}{primary.unit}</b></div>
+        </div>
+      )}
     </div>
   );
 }

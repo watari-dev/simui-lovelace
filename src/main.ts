@@ -13,9 +13,11 @@ const COLOR_OPTIONS = [
   { value: 'warm', label: 'Amber' },
   { value: 'cool', label: 'Blue' },
   { value: 'up', label: 'Green' },
+  { value: 'heat', label: 'Orange' },
   { value: 'down', label: 'Coral' },
   { value: 'grey', label: 'Grey' },
 ];
+const COLOR_FIELD = { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } } as const;
 
 // ── Register the cards ────────────────────────────────────────────────────────
 defineCard<LightCardConfig>('simui-light-card', LightCard, {
@@ -31,12 +33,13 @@ defineCard<LightCardConfig>('simui-light-card', LightCard, {
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
       { name: 'use_light_color', selector: { boolean: {} } },
+      COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Light',
       name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
-      use_light_color: 'Tint with the bulb’s colour', compact: 'Compact (dense)',
+      use_light_color: 'Tint with the bulb’s colour', color: 'Accent colour (override)', compact: 'Compact (dense)',
     },
     helpers: {
       use_light_color: 'On: the tile takes the light’s live colour. Off: a calm warm yellow.',
@@ -55,9 +58,10 @@ defineCard<ClimateCardConfig>('simui-climate-card', ClimateCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
+      COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', compact: 'Compact (dense)' },
+    labels: { entity: 'Thermostat', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour (override)', compact: 'Compact (dense)' },
   },
 });
 
@@ -71,11 +75,14 @@ defineCard<SensorCardConfig>('simui-sensor-card', SensorCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
-      { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
+      COLOR_FIELD,
+      { name: 'sparkline', selector: { boolean: {} } },
+      { name: 'show_delta', selector: { boolean: {} } },
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour', compact: 'Compact (dense)' },
+    labels: { entity: 'Sensor', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour', sparkline: '24 h sparkline', show_delta: '24 h delta badge', compact: 'Compact (dense)' },
     helpers: { color: 'Overrides the automatic colour picked from the sensor’s device class.' },
+    defaults: { sparkline: true, show_delta: true },
   },
 });
 
@@ -94,8 +101,11 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
-      { name: 'color', selector: { select: { mode: 'dropdown', options: COLOR_OPTIONS } } },
+      COLOR_FIELD,
       { name: 'hours', selector: { number: { min: 1, max: 720, step: 1, mode: 'box', unit_of_measurement: 'h' } } },
+      { name: 'line_width', selector: { number: { min: 1, max: 5, step: 0.2, mode: 'slider' } } },
+      { name: 'fill', selector: { boolean: {} } },
+      { name: 'show_stats', selector: { boolean: {} } },
     ],
     labels: {
       entity: 'Sensor',
@@ -103,12 +113,13 @@ defineCard<GraphCardConfig>('simui-graph-card', GraphCard, {
       name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action',
       color: 'Accent colour',
       hours: 'Default range (hours)',
+      line_width: 'Line width', fill: 'Fill under the line', show_stats: 'Show min / avg / max',
     },
     helpers: {
       color: 'Overrides the automatic colour picked from the sensor’s device class.',
       secondary: 'A second sensor overlaid on the same chart (e.g. humidity over temperature).',
     },
-    defaults: { hours: 24 },
+    defaults: { hours: 24, fill: true, show_stats: true, line_width: 2.4 },
   },
   cardSize: 4,
 });
@@ -123,9 +134,10 @@ defineCard<CoverCardConfig>('simui-cover-card', CoverCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
+      COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', compact: 'Compact (dense)' },
+    labels: { entity: 'Cover', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour (override)', compact: 'Compact (dense)' },
   },
 });
 
@@ -139,9 +151,10 @@ defineCard<LockCardConfig>('simui-lock-card', LockCard, {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'tap_action', selector: { ui_action: {} } },
+      COLOR_FIELD,
       { name: 'compact', selector: { boolean: {} } },
     ],
-    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', compact: 'Compact (dense)' },
+    labels: { entity: 'Lock', name: 'Name (optional)', icon: 'Icon (optional)', tap_action: 'Tap action', color: 'Accent colour (override)', compact: 'Compact (dense)' },
   },
 });
 

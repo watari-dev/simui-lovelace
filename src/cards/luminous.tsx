@@ -23,6 +23,10 @@ function swallow(handlers?: DragHandlers): { onPointerDown?: (e: ReactPointerEve
   };
 }
 
+/** Map a config `color:` accent name to its CSS var — the optional tint override on tiles. */
+const ACCENTS = new Set(['warm', 'cool', 'up', 'down', 'grey', 'heat']);
+export const accentVar = (name?: string): string | undefined => (name && ACCENTS.has(name) ? `var(--${name})` : undefined);
+
 // ── Dot bar (brightness / position) ───────────────────────────────────────────
 export function DotBar({
   value,

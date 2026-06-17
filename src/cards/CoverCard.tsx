@@ -7,11 +7,13 @@ import type { BaseCardConfig } from '../core/types';
 import { friendly, isActivateKey, isUnavailable, prettyState } from '../util';
 import { renderIcon } from '../core/icon';
 import { readCover } from './cover-util';
-import { DotBar, discIcon, sliderKeys } from './luminous';
+import { DotBar, accentVar, discIcon, sliderKeys } from './luminous';
 
 export interface CoverCardConfig extends BaseCardConfig {
   entity: string;
   name?: string;
+  /** Force an accent colour (overrides the default cover tint). */
+  color?: string;
   compact?: boolean;
 }
 
@@ -65,7 +67,7 @@ export function CoverCard({ config }: CardComponentProps<CoverCardConfig>) {
   return (
     <div
       className={`tile${compact ? ' compact' : ''}${dead ? ' is-unavailable' : ''}`}
-      style={{ ['--acc']: v.tint } as CSSProperties}
+      style={{ ['--acc']: accentVar(config.color) ?? v.tint } as CSSProperties}
       role="button"
       aria-label={name}
       tabIndex={0}
